@@ -2,7 +2,7 @@
 title: CallerID Vouching and Vetting (CIDVV)
 abbrev: CIDVV
 category: info
-docname: draft-anderson-askew-cidvv-00
+docname: draft-anderson-askew-cidvv
 submissiontype: IETF
 ipr: trust200902
 date: 2026-04
@@ -20,12 +20,9 @@ author:
     name: Roger Anderson
     organization: Jolly Roger Telephone Company
     email: roger@jollyrogertelephone.com
-    country: US
   -
     ins: P. Askew
     name: Phillip Askew
-    country: US
-
 --- abstract
 
 This document describes CIDVV ("CallerID Vouching and Vetting"), a lightweight protocol that uses the existing Public Switched Telephone Network (PSTN) and the North American Local Exchange Routing Guide (LERG) to provide strong cryptographic-style trust signals for Caller-ID without requiring central databases, certificates, or new signaling protocols such as STIR/SHAKEN.
@@ -106,12 +103,3 @@ This document has no IANA actions.
 # Acknowledgments
 
 TODO
-
-# Authors' Addresses
-
-Roger Anderson  
-Jolly Roger Telephone Company  
-Email: roger@jollyrogertelephone.com  
-
-Phillip Askew  
-Email: TBD
