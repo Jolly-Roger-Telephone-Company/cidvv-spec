@@ -20,11 +20,11 @@
 # Change the file extension to match the format (.xml for XML, etc...)
 #
 ###
-title: "TODO - Your title"
-abbrev: "TODO - Abbreviation"
+title: "CallerID Vouching and Vetting"
+abbrev: "CIDVV"
 category: info
 
-docname: draft-todo-yourname-protocol-latest
+docname: draft-anderson-askew-cidvv-latest
 submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
 number:
 date:
