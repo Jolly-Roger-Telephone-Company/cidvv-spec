@@ -1,91 +1,80 @@
 ---
-###
-# Test commit to trigger clean build
-# Internet-Draft Markdown Template
-# 
-# Rename this file from draft-todo-yourname-protocol.md to get started.
-# Draft name format is "draft-<yourname>-<workgroup>-<name>.md".
-#
-# For initial setup, you only need to edit the first block of fields.
-# Only "title" needs to be changed; delete "abbrev" if your title is short.
-# Any other content can be edited, but be careful not to introduce errors.
-# Some fields will be set automatically during setup if they are unchanged.
-#
-# Don't include "-00" or "-latest" in the filename.
-# Labels in the form draft-<yourname>-<workgroup>-<name>-latest are used by
-# the tools to refer to the current version; see "docname" for example.
-#
-# This template uses kramdown-rfc: https://github.com/cabo/kramdown-rfc
-# You can replace the entire file if you prefer a different format.
-# Change the file extension to match the format (.xml for XML, etc...)
-#
-###
-title: "CallerID Vouching and Vetting"
-abbrev: "CIDVV"
+title: CallerID Vouching and Vetting (CIDVV)
+abbrev: CIDVV
 category: info
-
 docname: draft-anderson-askew-cidvv-latest
-submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
-number:
-date:
-consensus: true
+submissiontype: IETF
+date: 2026-04
+consensus: false
 v: 3
-area: AREA
-workgroup: WG Working Group
 keyword:
- - next generation
- - unicorn
- - sparkling distributed ledger
+  - callerid
+  - vouching
+  - vetting
+  - LERG
+  - PSTN
+  - spoofing
+
 venue:
-  group: WG
-  type: Working Group
-  mail: WG@example.com
-  arch: https://example.com/WG
-  github: USER/REPO
-  latest: https://example.com/LATEST
+  github: "jollyrogertelephone/draft-cidvv"
 
 author:
- -
-    fullname: Your Name Here
-    organization: Your Organization Here
-    email: your.email@example.com
+  -
+    ins: R. Anderson
+    fullname: Roger Anderson
+    organization: Jolly Roger Telephone Company
+    email: roger@jollyrogertelephone.com
+    country: US
+  -
+    ins: P. Askew
+    fullname: Phillip Askew
+    organization: ""
+    email: ""
+    country: US
 
 normative:
-
 informative:
-
 ...
 
 --- abstract
-
-TODO Abstract
-
+This document describes CIDVV (CallerID Vouching and Vetting), a lightweight protocol that uses the existing PSTN and LERG to provide strong vouching and vetting of Caller-ID numbers.
 
 --- middle
-
 # Introduction
 
-TODO Introduction
-
+Virtually every telephone user worldwide receives spoofed, spam, and scam calls. This document defines CIDVV to restore trust in Caller-ID using only existing PSTN routing and the LERG.
 
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
 
+# Vouching Mechanism
+
+TODO — detailed 10-prefix flow
+
+# Vetting Mechanism
+
+TODO — detailed 11-prefix flow
 
 # Security Considerations
 
-TODO Security
-
+TODO
 
 # IANA Considerations
 
 This document has no IANA actions.
 
-
 --- back
-
 # Acknowledgments
 {:numbered="false"}
 
-TODO acknowledge.
+TODO
+
+# Authors' Addresses
+
+Roger Anderson  
+Jolly Roger Telephone Company  
+Email: roger@jollyrogertelephone.com  
+
+Phillip Askew  
+Email: TBD
