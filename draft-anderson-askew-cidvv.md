@@ -1,13 +1,13 @@
 ---
 title: CallerID Vouching and Vetting (CIDVV)
 abbrev: CIDVV
-docname: draft-anderson-askew-cidvv-latest
+docname: draft-anderson-askew-cidvv
 category: info
 submissiontype: IETF
 date: 2026-04
 consensus: false
 v: 3
-keyword: callerid, vouching, vetting, LERG, PSTN
+keyword: callerid, vouching, vetting
 
 venue:
   github: "jollyrogertelephone/draft-cidvv"
@@ -36,7 +36,11 @@ This document describes CIDVV (CallerID Vouching and Vetting).
 --- middle
 # Introduction
 
-This is a minimal working test draft.
+This is a minimal test draft for build verification.
+
+# Conventions and Definitions
+
+{::boilerplate bcp14-tagged}
 
 # Security Considerations
 
@@ -48,5 +52,6 @@ This document has no IANA actions.
 
 --- back
 # Acknowledgments
+{:numbered="false"}
 
 TODO
