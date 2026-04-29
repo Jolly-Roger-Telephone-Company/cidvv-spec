@@ -18,28 +18,22 @@ author:
     org: Jolly Roger Telephone Company
     email: roger@jollyrogertelephone.com
     country: US
-  -
-    ins: P. Askew
-    name: Phillip Askew
-    org: ""
-    email: ""
-    country: US
 
 normative:
 informative:
 ...
 
 --- abstract
-This document describes CIDVV (CallerID Vouching and Vetting).
+This document describes CIDVV.
 
 --- middle
 # Introduction
 
-This is a test draft.
+Test draft.
 
 # Security Considerations
 
-TODO
+TODO.
 
 # IANA Considerations
 
@@ -48,4 +42,4 @@ This document has no IANA actions.
 --- back
 # Acknowledgments
 
-TODO
+TODO.
