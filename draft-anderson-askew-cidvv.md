@@ -58,6 +58,7 @@ CIDVV operates entirely within normal PSTN routing behavior and does not require
 * OSP: Originating Service Provider
 * TSP: Terminating Service Provider
 * LERG: Local Exchange Routing Guide
+* CIDVV Platform: A system implementing this protocol
 
 # Protocol Overview
 
@@ -68,70 +69,106 @@ CIDVV uses special Caller-ID prefixes to signal protocol operations:
 
 CIDVV exchanges occur using short signaling dialogs and do not require media establishment.
 
-# CallerID Vouching
+# Protocol Operation
 
-## Overview
+## Vouching Procedure
 
-Vouching verifies that the originating service provider is authorized to originate calls for a telephone number.
+1. When Alice initiates a call to Bob, Alice's CIDVV platform MUST:
+   * Cache the tuple (Calling Number, Called Number)
+   * Retain this cache entry for approximately 10 seconds
+   * Reject the call attempt with SIP response 486 (Busy Here)
 
-## Successful Vouch
+2. Alice's call MUST then proceed normally through the PSTN.
 
-1. Alice calls Bob.
-2. Alice's CIDVV platform caches the attempted call (Caller → Callee) for a short duration (~10 seconds) and returns 486 (Busy).
-3. The call proceeds normally through the PSTN to Bob.
-4. Bob's system initiates a verification call using a "10" prefixed Caller-ID.
-5. Alice's CIDVV platform:
-   * Recognizes the "10" prefix
-   * Matches the call against its cache
-   * Returns 486 (Busy) if a match is found
-6. Bob treats this as a successful vouch and completes the call.
+3. Upon receiving the call, Bob's system MUST:
+   * Initiate a verification call to Alice
+   * Prefix the Calling Party Number with "10"
+   * Use the originally dialed number as the destination
 
-## Failed Vouch
+4. Upon receiving a call with a "10" prefix, Alice's CIDVV platform MUST:
+   * Strip the "10" prefix
+   * Swap the calling and called numbers
+   * Search for a matching cache entry
 
-If no cache match exists, Alice's CIDVV platform returns 603 (Decline). Bob treats the call as untrusted.
+5. If a match is found:
+   * The platform MUST respond with 486 (Busy Here)
 
-## Properties
+6. If no match is found:
+   * The platform MUST respond with 603 (Decline)
 
-* No central authority required
-* Uses existing PSTN routing
-* Prevents spoofing without access to authorized infrastructure
-* Works across SIP, SS7, and TDM networks
+7. Bob's system MUST:
+   * Treat a 486 response as a successful vouch
+   * Treat any other response as a failed vouch
 
-# CallerID Vetting
+## Vetting Procedure
 
-## Overview
+1. Alice and Bob MUST agree on:
+   * A shared secret
+   * A calling number
+   * A validity time window
 
-Vetting proves control of a telephone number using a two-call challenge-response exchange.
-
-## Successful Vet
-
-1. Alice and Bob agree on:
-   * Shared secret
-   * Vetting Caller-ID
-   * Time window
 2. Alice initiates a call using a Caller-ID prefixed with "11".
-3. Bob's CIDVV platform:
-   * Computes a SHA256-based challenge value
-   * Caches the result
-   * Returns 404 (Not Found)
-4. Alice computes the same value and places a second call using the computed value as Caller-ID (with "11" prefix).
-5. Bob verifies the value and returns 486 (Busy).
-6. Alice records a successful vet.
 
-## Failure Conditions
+3. Upon receiving the call, Bob's CIDVV platform MUST:
+   * Strip the "11" prefix
+   * Compute SHA256(called-number || shared-secret)
+   * Convert the result to a decimal representation
+   * Extract a fixed-length numeric value
+   * Cache this value for a short duration
+   * Respond with 404 (Not Found)
 
-Vetting fails if:
+4. Alice MUST:
+   * Perform the same computation
+   * Initiate a second call using the computed value (with "11" prefix) as Caller-ID
 
-* CIDVV is not implemented on the destination
-* Shared parameters do not match
-* Time window expires
+5. Upon receiving the second call, Bob's CIDVV platform MUST:
+   * Verify the value matches a cached entry
+   * Respond with 486 (Busy Here) if valid
+
+6. Alice MUST treat receipt of 486 as a successful vet.
+
+7. Any deviation from this sequence MUST be treated as failure.
+
+# Examples
+
+## Vouching Call Flow
+
+    Alice (CIDVV)        PSTN            Bob (CIDVV)
+         |                 |                  |
+         | INVITE          |                  |
+         |---------------> |                  |
+         | 486             |                  |
+         |<--------------- |                  |
+         |                 | INVITE           |
+         |                 |--------------->  |
+         |                 |                  |
+         |<------INVITE----|                  |  (CallerID: 10...)
+         |------486------->|                  |
+         |                 |                  |
+         |                 |  (Vouch success) |
+
+## Vetting Call Flow
+
+    Alice               PSTN             Bob
+      |                   |                |
+      | INVITE (11...)    |                |
+      |------------------>|                |
+      |                   |--------------->|
+      |                   | 404            |
+      |<------------------|<---------------|
+      |                   |                |
+      | INVITE (11+hash)  |                |
+      |------------------>|                |
+      |                   |--------------->|
+      |                   | 486            |
+      |<------------------|<---------------|
 
 # Security Considerations
 
 * Replay attacks are limited by short cache duration.
-* Implementations MUST rate-limit CIDVV signaling.
-* CIDVV relies on trust in PSTN routing and LERG data.
-* Vetting requires secure handling of shared secrets.
+* Implementations MUST rate-limit CIDVV signaling traffic.
+* CIDVV relies on correctness of PSTN routing and LERG data.
+* Shared secrets used in vetting MUST be protected.
 
 # IANA Considerations
 
