@@ -19,13 +19,19 @@ author:
     org: Jolly Roger Telephone Company
     email: roger@jollyrogertelephone.com
     country: US
+  -
+    ins: P. Askew
+    name: Phillip Askew
+    org: ""
+    email: ""
+    country: US
 
 normative:
 informative:
 ...
 
 --- abstract
-This document describes CIDVV (CallerID Vouching and Vetting), a lightweight protocol that uses the existing Public Switched Telephone Network (PSTN) and the Local Exchange Routing Guide (LERG) to strongly vouch and vet Caller-ID numbers.
+This document describes CIDVV (CallerID Vouching and Vetting), a lightweight protocol that uses the existing PSTN and LERG to provide strong vouching and vetting of Caller-ID numbers.
 
 --- middle
 # Introduction
