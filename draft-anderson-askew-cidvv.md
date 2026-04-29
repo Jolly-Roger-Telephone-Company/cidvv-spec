@@ -1,70 +1,73 @@
 ---
-title: "TODO - Your title"
-abbrev: "TODO - Abbreviation"
+title: CallerID Vouching and Vetting (CIDVV)
+abbrev: CIDVV
+docname: draft-anderson-askew-cidvv
 category: info
-
-docname: draft-anderson-askew-cidvv-latest
-submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
-number:
-date:
-consensus: true
+submissiontype: IETF
+date: 2026-04
+consensus: false
 v: 3
-# area: AREA
-# workgroup: WG Working Group
-keyword:
- - next generation
- - unicorn
- - sparkling distributed ledger
+keyword: callerid, vouching, vetting, LERG, PSTN
+
 venue:
-#  group: WG
-#  type: Working Group
-#  mail: WG@example.com
-#  arch: https://example.com/WG
   github: "jollyrogertelephone/draft-cidvv"
-  latest: "https://jollyrogertelephone.github.io/draft-cidvv/draft-anderson-askew-cidvv.html"
 
 author:
- -
-    fullname: "jollyrogertelephone"
-    organization: Your Organization Here
-    email: "78454008+jollyrogertelephone@users.noreply.github.com"
+  -
+    ins: R. Anderson
+    name: Roger Anderson
+    org: Jolly Roger Telephone Company
+    email: roger@jollyrogertelephone.com
+    country: US
+  -
+    ins: P. Askew
+    name: Phillip Askew
+    org: ""
+    email: ""
+    country: US
 
 normative:
-
 informative:
-
 ...
 
 --- abstract
-
-TODO Abstract
-
+This document describes CIDVV (CallerID Vouching and Vetting), a lightweight protocol that uses the existing Public Switched Telephone Network (PSTN) and the Local Exchange Routing Guide (LERG) to strongly vouch and vet Caller-ID numbers.
 
 --- middle
-
 # Introduction
 
-TODO Introduction
+Virtually every telephone user worldwide receives spoofed, spam, and scam calls. This document defines a simple mechanism to restore trust in Caller-ID.
 
+# Terminology
 
-# Conventions and Definitions
+TODO
 
-{::boilerplate bcp14-tagged}
+# Vouching Mechanism
 
+TODO
+
+# Vetting Mechanism
+
+TODO
 
 # Security Considerations
 
-TODO Security
-
+TODO
 
 # IANA Considerations
 
 This document has no IANA actions.
 
-
 --- back
-
 # Acknowledgments
-{:numbered="false"}
 
-TODO acknowledge.
+TODO
+
+# Authors' Addresses
+
+Roger Anderson  
+Jolly Roger Telephone Company  
+Email: roger@jollyrogertelephone.com  
+
+Phillip Askew  
+Email: TBD
