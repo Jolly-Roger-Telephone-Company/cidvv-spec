@@ -72,9 +72,9 @@ TODO
 
 # Authors' Addresses
 
-Roger Anderson  
-Jolly Roger Telephone Company  
-Email: roger@jollyrogertelephone.com  
+Roger Anderson
+Jolly Roger Telephone Company
+Email: roger@jollyrogertelephone.com
 
-Phillip Askew  
+Phillip Askew
 Email: TBD
