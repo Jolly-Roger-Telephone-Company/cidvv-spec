@@ -19,12 +19,6 @@ author:
     org: Jolly Roger Telephone Company
     email: roger@jollyrogertelephone.com
     country: US
-  -
-    ins: P. Askew
-    name: Phillip Askew
-    org: ""
-    email: ""
-    country: US
 
 normative:
 informative:
