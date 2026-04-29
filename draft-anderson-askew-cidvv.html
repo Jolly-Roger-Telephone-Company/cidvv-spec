@@ -4,15 +4,24 @@
 <meta charset="utf-8">
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
-<title>CallerID Vouching and Vetting</title>
-<meta content="Your Name Here" name="author">
-<meta content="
-       TODO Abstract 
-    " name="description">
+<title>CallerID Vouching and Vetting (CIDVV)</title>
+<meta content="Roger Anderson" name="author">
+<meta content="Phillip Askew" name="author">
+<meta content='
+       This document describes CIDVV ("CallerID Vouching and Vetting"), a lightweight protocol that uses the existing Public Switched Telephone Network (PSTN) and the North American Local Exchange Routing Guide (LERG) to provide strong cryptographic-style trust signals for Caller-ID without requiring central databases, certificates, or new signaling protocols such as STIR/SHAKEN. 
+       CIDVV defines two complementary mechanisms: 
+       
+         
+           Vouching  — proves that the originating carrier is authorized (per LERG) to send calls from a given number. 
+         
+         
+           Vetting  — allows a telephone number owner to prove ownership/control to third parties (branding services, trade organizations, etc.) using only PSTN signaling. 
+         
+       
+       Both mechanisms exploit otherwise-invalid E.164 prefixes "10" and "11" to create a side-channel signaling path carried entirely within normal PSTN routing. 
+    ' name="description">
 <meta content="xml2rfc 3.33.0" name="generator">
-<meta content="next generation" name="keyword">
-<meta content="unicorn" name="keyword">
-<meta content="sparkling distributed ledger" name="keyword">
+<meta content="telephony, callerid, vouching, vetting, spoofing, LERG, PSTN" name="keyword">
 <meta content="draft-anderson-askew-cidvv-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.33.0
@@ -1050,7 +1059,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <td class="right">April 2026</td>
 </tr></thead>
 <tfoot><tr>
-<td class="left">Here</td>
+<td class="left">Anderson &amp; Askew</td>
 <td class="center">Expires 31 October 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
@@ -1059,30 +1068,43 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <div id="internal-metadata" class="document-information">
 <dl id="identifiers">
 <dt class="label-workgroup">Workgroup:</dt>
-<dd class="workgroup">WG Working Group</dd>
+<dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
 <dd class="internet-draft">draft-anderson-askew-cidvv-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-04-29" class="published">29 April 2026</time>
+<time datetime="2026-04" class="published">April 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
 <dd class="expires"><time datetime="2026-10-31">31 October 2026</time></dd>
-<dt class="label-authors">Author:</dt>
+<dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
-      <div class="author-name">Y. N. Here</div>
-<div class="org">Your Organization Here</div>
+      <div class="author-name">R. Anderson</div>
+<div class="org">Jolly Roger Telephone Company</div>
+</div>
+<div class="author">
+      <div class="author-name">P. Askew</div>
 </div>
 </dd>
 </dl>
 </div>
-<h1 id="title">CallerID Vouching and Vetting</h1>
+<h1 id="title">CallerID Vouching and Vetting (CIDVV)</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">TODO Abstract<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">This document describes CIDVV ("CallerID Vouching and Vetting"), a lightweight protocol that uses the existing Public Switched Telephone Network (PSTN) and the North American Local Exchange Routing Guide (LERG) to provide strong cryptographic-style trust signals for Caller-ID without requiring central databases, certificates, or new signaling protocols such as STIR/SHAKEN.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">CIDVV defines two complementary mechanisms:<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-abstract-3.1">
+          <p id="section-abstract-3.1.1"><strong>Vouching</strong> — proves that the originating carrier is authorized (per LERG) to send calls from a given number.<a href="#section-abstract-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-abstract-3.2">
+          <p id="section-abstract-3.2.1"><strong>Vetting</strong> — allows a telephone number owner to prove ownership/control to third parties (branding services, trade organizations, etc.) using only PSTN signaling.<a href="#section-abstract-3.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-abstract-4">Both mechanisms exploit otherwise-invalid E.164 prefixes "10" and "11" to create a side-channel signaling path carried entirely within normal PSTN routing.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-about-this-document">
@@ -1090,14 +1112,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
       </h2>
 <p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
 <p id="section-note.1-2">
-        The latest revision of this draft can be found at <span><a href="https://example.com/LATEST">https://example.com/LATEST</a></span>.
+        The latest revision of this draft can be found at <span><a href="https://jollyrogertelephone.github.io/draft-cidvv/draft-anderson-askew-cidvv.html">https://jollyrogertelephone.github.io/draft-cidvv/draft-anderson-askew-cidvv.html</a></span>.
         Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-anderson-askew-cidvv/">https://datatracker.ietf.org/doc/draft-anderson-askew-cidvv/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
-<p id="section-note.1-3">
-        Discussion of this document takes place on the
-        WG Working Group mailing list (<span><a href="mailto:WG@example.com">mailto:WG@example.com</a></span>),
-        which is archived at <span><a href="https://example.com/WG">https://example.com/WG</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
-<p id="section-note.1-4">Source for this draft and an issue tracker can be found at
-        <span><a href="https://github.com/USER/REPO">https://github.com/USER/REPO</a></span>.<a href="#section-note.1-4" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/jollyrogertelephone/draft-cidvv">https://github.com/jollyrogertelephone/draft-cidvv</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
 </section>
 <div id="status-of-memo">
 <section id="section-boilerplate.1">
@@ -1118,7 +1136,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 31 October 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 3 October 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1151,22 +1169,35 @@ svg :is([fill="white"], [fill^="#fff"]) {
             <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
-            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
-            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-vouching-mechanism" class="internal xref">Vouching Mechanism</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1" class="keepWithNext"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-successful-vouch-example" class="internal xref">Successful Vouch Example</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
-            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-vetting-mechanism" class="internal xref">Vetting Mechanism</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-successful-vetting-example" class="internal xref">Successful Vetting Example</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
-            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
-            <p id="section-toc.1-1.6.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
-            <p id="section-toc.1-1.7.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+            <p id="section-toc.1-1.7.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
 </li>
         </ul>
 </nav>
@@ -1177,73 +1208,188 @@ svg :is([fill="white"], [fill^="#fff"]) {
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">TODO Introduction<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-1">Virtually every telephone user worldwide receives spoofed, spam, and scam calls. Caller-ID has become almost meaningless because the signaling path and the authoritative routing tables (LERG) are only loosely coupled. This document defines a simple, deployable mechanism that closes that gap.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">CIDVV leverages two key facts:<a href="#section-1-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-1-3">
+<li id="section-1-3.1">
+          <p id="section-1-3.1.1">The LERG provides authoritative mapping of every NPA-NXX to its authorized service provider.<a href="#section-1-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-1-3.2">
+          <p id="section-1-3.2.1">The North American Numbering Plan reserves leading digits "10" and "11" after the country code as invalid for normal E.164 numbers, creating safe prefix space for signaling.<a href="#section-1-3.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-1-4">By prefixing called or calling numbers with these digits and using brief rejected call dialogs, CIDVV achieves strong vouching and vetting with zero billable media and no central authority.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">The domain <code>cidvv.org</code> has been procured for future reference material, code, and community support.<a href="#section-1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="conventions-and-definitions">
+<div id="terminology">
 <section id="section-2">
-      <h2 id="name-conventions-and-definitions">
-<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
+      <h2 id="name-terminology">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
       </h2>
-<p id="section-2-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
-"<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
-described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
-appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2-1.1">
+          <p id="section-2-1.1.1"><strong>Alice</strong>: The calling party (originator) who presents a telephone number as Caller-ID.<a href="#section-2-1.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.2">
+          <p id="section-2-1.2.1"><strong>Bob</strong>: The called party (terminator) who receives the call and relies on the displayed/vetted Caller-ID.<a href="#section-2-1.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.3">
+          <p id="section-2-1.3.1"><strong>Eve</strong>: A passive eavesdropper who can observe signaling or media but does not alter calls.<a href="#section-2-1.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.4">
+          <p id="section-2-1.4.1"><strong>Mallory</strong>: A malicious active attacker (scammer, robocaller, or spoofing operator) who forges Caller-ID or attempts to inject deceptive calls.<a href="#section-2-1.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.5">
+          <p id="section-2-1.5.1"><strong>OSP (Originating Service Provider)</strong>: The carrier authorized by LERG to originate calls from a given number; issues vouches.<a href="#section-2-1.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.6">
+          <p id="section-2-1.6.1"><strong>TSP (Terminating Service Provider)</strong>: The carrier delivering the call to Bob; performs vetting.<a href="#section-2-1.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.7">
+          <p id="section-2-1.7.1"><strong>LERG</strong>: Local Exchange Routing Guide — the authoritative monthly database maintained by iconectiv that maps every NPA-NXX to its authorized Operating Company Number (OCN) and interconnection points.<a href="#section-2-1.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.8">
+          <p id="section-2-1.8.1"><strong>Vouch</strong>: A successful challenge-response exchange proving that the OSP is authorized for the claimed Caller-ID.<a href="#section-2-1.8.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.9">
+          <p id="section-2-1.9.1"><strong>Vet</strong>: A successful two-call exchange proving ownership/control of a telephone number to a third party.<a href="#section-2-1.9.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+</div>
+<div id="vouching-mechanism">
+<section id="section-3">
+      <h2 id="name-vouching-mechanism">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-vouching-mechanism" class="section-name selfRef">Vouching Mechanism</a>
+      </h2>
+<div id="successful-vouch-example">
+<section id="section-3.1">
+        <h3 id="name-successful-vouch-example">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-successful-vouch-example" class="section-name selfRef">Successful Vouch Example</a>
+        </h3>
+<ol start="1" type="1" class="normal type-1" id="section-3.1-1">
+<li id="section-3.1-1.1">
+            <p id="section-3.1-1.1.1">Alice (number 1-213-555-0175) wants to call Bob (1-916-555-0128). Both have CIDVV-capable platforms.<a href="#section-3.1-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-1.2">
+            <p id="section-3.1-1.2.1">Alice's SBC sends the call to her CIDVV platform.<a href="#section-3.1-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-1.3">
+            <p id="section-3.1-1.3.1">The CIDVV platform caches the attempt (from 12135550175 → 19165550128) for ~10 seconds and returns 486 User Busy.<a href="#section-3.1-1.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-1.4">
+            <p id="section-3.1-1.4.1">Alice's SBC routes the call normally into the PSTN.<a href="#section-3.1-1.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-1.5">
+            <p id="section-3.1-1.5.1">The call arrives at Bob's SBC.<a href="#section-3.1-1.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-1.6">
+            <p id="section-3.1-1.6.1">Bob's SBC prefixes the dialed number with "10" (1019165550128) and routes a new call to Alice's number using the prefixed number as Caller-ID.<a href="#section-3.1-1.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-1.7">
+            <p id="section-3.1-1.7.1">Alice's SBC recognizes the "10" prefix, forwards to her CIDVV platform.<a href="#section-3.1-1.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-1.8">
+            <p id="section-3.1-1.8.1">The CIDVV platform strips the "10", swaps From/To, finds the matching cache entry, and returns 486 User Busy.<a href="#section-3.1-1.8.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.1-1.9">
+            <p id="section-3.1-1.9.1">Bob's SBC receives the 486, recognizes a successful vouch, and delivers the original call to Bob.<a href="#section-3.1-1.9.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+</section>
+</div>
+</section>
+</div>
+<div id="vetting-mechanism">
+<section id="section-4">
+      <h2 id="name-vetting-mechanism">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-vetting-mechanism" class="section-name selfRef">Vetting Mechanism</a>
+      </h2>
+<div id="successful-vetting-example">
+<section id="section-4.1">
+        <h3 id="name-successful-vetting-example">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-successful-vetting-example" class="section-name selfRef">Successful Vetting Example</a>
+        </h3>
+<ol start="1" type="1" class="normal type-1" id="section-4.1-1">
+<li id="section-4.1-1.1">
+            <p id="section-4.1-1.1.1">Alice wants to vet Bob's number (1-916-555-0128). They share a secret key ("hamburger") and agree on Alice's vetting Caller-ID (1-213-555-0175) and a time window.<a href="#section-4.1-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-1.2">
+            <p id="section-4.1-1.2.1">Alice's CIDVV platform calls Bob using prefixed Caller-ID 1112135550175.<a href="#section-4.1-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-1.3">
+            <p id="section-4.1-1.3.1">Bob's CIDVV platform recognizes the "11" prefix, strips it, computes SHA256("19165550128" + "hamburger"), takes the first 10 digits of the decimal result (e.g., 1918486666), caches it, and returns 404 Not Found.<a href="#section-4.1-1.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-1.4">
+            <p id="section-4.1-1.4.1">Alice's platform repeats the calculation and calls again using 111918486666.<a href="#section-4.1-1.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-1.5">
+            <p id="section-4.1-1.5.1">Bob's platform recognizes the matching cached code and returns 486 User Busy.<a href="#section-4.1-1.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-1.6">
+            <p id="section-4.1-1.6.1">Alice's platform reports success to Alice.<a href="#section-4.1-1.6.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+</section>
+</div>
 </section>
 </div>
 <div id="security-considerations">
-<section id="section-3">
+<section id="section-5">
       <h2 id="name-security-considerations">
-<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
-<p id="section-3-1">TODO Security<a href="#section-3-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-1.1">
+          <p id="section-5-1.1.1">Cache timing attacks — The short cache window (≈10 seconds) limits replay windows.<a href="#section-5-1.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-1.2">
+          <p id="section-5-1.2.1">Denial of service — Implementations MUST rate-limit CIDVV challenge calls.<a href="#section-5-1.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-1.3">
+          <p id="section-5-1.3.1">Billing implications — All CIDVV exchanges are short SIP dialogs that should not generate billable minutes.<a href="#section-5-1.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-1.4">
+          <p id="section-5-1.4.1">International routing — Behavior of "10" and "11" prefixes outside NANP must be verified per destination country.<a href="#section-5-1.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-1.5">
+          <p id="section-5-1.5.1">Privacy — Vetting exchanges reveal only that a number owner is participating; no media is exchanged.<a href="#section-5-1.5.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
 </section>
 </div>
 <div id="iana-considerations">
-<section id="section-4">
+<section id="section-6">
       <h2 id="name-iana-considerations">
-<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-4-1">This document has no IANA actions.<a href="#section-4-1" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="sec-normative-references">
-<section id="section-5">
-      <h2 id="name-normative-references">
-<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
-      </h2>
-<dl class="references">
-<dt id="RFC2119">[RFC2119]</dt>
-      <dd>
-<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC8174">[RFC8174]</dt>
-    <dd>
-<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-</dl>
+<p id="section-6-1">This document has no IANA actions.<a href="#section-6-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="acknowledgments">
 <section id="appendix-A">
       <h2 id="name-acknowledgments">
-<a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
       </h2>
-<p id="appendix-A-1">TODO acknowledge.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+<p id="appendix-A-1">TODO<a href="#appendix-A-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="authors-addresses">
 <section id="appendix-B">
-      <h2 id="name-authors-address">
-<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
       </h2>
 <address class="vcard">
-        <div dir="auto" class="left"><span class="fn nameRole">Your Name Here</span></div>
-<div dir="auto" class="left"><span class="org">Your Organization Here</span></div>
+        <div dir="auto" class="left"><span class="fn nameRole">Roger Anderson</span></div>
+<div dir="auto" class="left"><span class="org">Jolly Roger Telephone Company</span></div>
 <div class="email">
 <span>Email:</span>
-<a href="mailto:your.email@example.com" class="email">your.email@example.com</a>
+<a href="mailto:roger@jollyrogertelephone.com" class="email">roger@jollyrogertelephone.com</a>
 </div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Phillip Askew</span></div>
 </address>
 </section>
 </div>
