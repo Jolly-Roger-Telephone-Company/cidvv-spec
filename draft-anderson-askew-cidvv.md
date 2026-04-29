@@ -73,62 +73,36 @@ CIDVV exchanges occur using short signaling dialogs and do not require media est
 
 ## Vouching Procedure
 
-1. When Alice initiates a call to Bob, Alice's CIDVV platform MUST:
-   * Cache the tuple (Calling Number, Called Number)
-   * Retain this cache entry for approximately 10 seconds
-   * Reject the call attempt with SIP response 486 (Busy Here)
+1. When Alice initiates a call to Bob, Alice's CIDVV platform MUST cache the tuple (Calling Number, Called Number), retain this cache entry for approximately 10 seconds, and reject the call attempt with SIP response 486 (Busy Here).
 
 2. Alice's call MUST then proceed normally through the PSTN.
 
-3. Upon receiving the call, Bob's system MUST:
-   * Initiate a verification call to Alice
-   * Prefix the Calling Party Number with "10"
-   * Use the originally dialed number as the destination
+3. Upon receiving the call, Bob's system MUST initiate a verification call to Alice, prefix the Calling Party Number with "10", and use the originally dialed number as the destination.
 
-4. Upon receiving a call with a "10" prefix, Alice's CIDVV platform MUST:
-   * Strip the "10" prefix
-   * Swap the calling and called numbers
-   * Search for a matching cache entry
+4. Upon receiving a call with a "10" prefix, Alice's CIDVV platform MUST strip the "10" prefix, swap the calling and called numbers, and search for a matching cache entry.
 
-5. If a match is found:
-   * The platform MUST respond with 486 (Busy Here)
+5. If a match is found, the platform MUST respond with 486 (Busy Here).
 
-6. If no match is found:
-   * The platform MUST respond with 603 (Decline)
+6. If no match is found, the platform MUST respond with 603 (Decline).
 
-7. Bob's system MUST:
-   * Treat a 486 response as a successful vouch
-   * Treat any other response as a failed vouch
+7. Bob's system MUST treat a 486 response as a successful vouch and MUST treat any other response as a failed vouch.
 
 ## Vetting Procedure
 
-1. Alice and Bob MUST agree on:
-   * A shared secret
-   * A calling number
-   * A validity time window
+1. Alice and Bob MUST agree on a shared secret, a calling number, and a validity time window.
 
 2. Alice initiates a call using a Caller-ID prefixed with "11".
 
-3. Upon receiving the call, Bob's CIDVV platform MUST:
-   * Strip the "11" prefix
-   * Compute SHA256(called-number || shared-secret)
-   * Convert the result to a decimal representation
-   * Extract a fixed-length numeric value
-   * Cache this value for a short duration
-   * Respond with 404 (Not Found)
+3. Upon receiving the call, Bob's CIDVV platform MUST strip the "11" prefix, compute SHA256(called-number || shared-secret), convert the result to a decimal representation, extract a fixed-length numeric value, cache this value for a short duration, and respond with 404 (Not Found).
 
-4. Alice MUST:
-   * Perform the same computation
-   * Initiate a second call using the computed value (with "11" prefix) as Caller-ID
+4. Alice MUST perform the same computation and initiate a second call using the computed value, with "11" prefix, as Caller-ID.
 
-5. Upon receiving the second call, Bob's CIDVV platform MUST:
-   * Verify the value matches a cached entry
-   * Respond with 486 (Busy Here) if valid
+5. Upon receiving the second call, Bob's CIDVV platform MUST verify that the value matches a cached entry and respond with 486 (Busy Here) if valid.
 
 6. Alice MUST treat receipt of 486 as a successful vet.
 
 7. Any deviation from this sequence MUST be treated as failure.
-
+8. 
 # Examples
 
 ## Vouching Call Flow
