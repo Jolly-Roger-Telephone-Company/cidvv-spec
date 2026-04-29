@@ -73,36 +73,33 @@ CIDVV exchanges occur using short signaling dialogs and do not require media est
 
 ## Vouching Procedure
 
-1. When Alice initiates a call to Bob, Alice's CIDVV platform MUST cache the tuple (Calling Number, Called Number), retain this cache entry for approximately 10 seconds, and reject the call attempt with SIP response 486 (Busy Here).
+Alice's CIDVV platform receives an attempted call from Alice to Bob. It MUST cache the calling number and called number for a short interval, normally about 10 seconds. It then rejects the attempt with SIP response 486 (Busy Here).
 
-2. Alice's call MUST then proceed normally through the PSTN.
+Alice's SBC then sends the call normally through the PSTN toward Bob.
 
-3. Upon receiving the call, Bob's system MUST initiate a verification call to Alice, prefix the Calling Party Number with "10", and use the originally dialed number as the destination.
+When Bob's system receives the call, Bob's system initiates a verification call toward Alice. The verification call uses a Caller-ID formed by prefixing Bob's number with the digits "10".
 
-4. Upon receiving a call with a "10" prefix, Alice's CIDVV platform MUST strip the "10" prefix, swap the calling and called numbers, and search for a matching cache entry.
+When Alice's CIDVV platform receives a call with a Caller-ID beginning with "10", it MUST remove the "10" prefix, compare the resulting number pair against the recent cache, and determine whether the original call attempt exists.
 
-5. If a match is found, the platform MUST respond with 486 (Busy Here).
+If a matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 486 (Busy Here). Bob's system treats this response as a successful vouch.
 
-6. If no match is found, the platform MUST respond with 603 (Decline).
-
-7. Bob's system MUST treat a 486 response as a successful vouch and MUST treat any other response as a failed vouch.
+If no matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 603 (Decline). Bob's system treats this response as a failed vouch.
 
 ## Vetting Procedure
 
-1. Alice and Bob MUST agree on a shared secret, a calling number, and a validity time window.
+Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting Caller-ID, and a validity time window.
 
-2. Alice initiates a call using a Caller-ID prefixed with "11".
+Alice places a vetting call to Bob using a Caller-ID beginning with the digits "11".
 
-3. Upon receiving the call, Bob's CIDVV platform MUST strip the "11" prefix, compute SHA256(called-number || shared-secret), convert the result to a decimal representation, extract a fixed-length numeric value, cache this value for a short duration, and respond with 404 (Not Found).
+When Bob's CIDVV platform receives the first vetting call, it removes the "11" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform then computes a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).
 
-4. Alice MUST perform the same computation and initiate a second call using the computed value, with "11" prefix, as Caller-ID.
+Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with "11" followed by the computed numeric code.
 
-5. Upon receiving the second call, Bob's CIDVV platform MUST verify that the value matches a cached entry and respond with 486 (Busy Here) if valid.
+When Bob's CIDVV platform receives the second vetting call, it removes the "11" prefix and compares the remaining numeric code to the recently cached value.
 
-6. Alice MUST treat receipt of 486 as a successful vet.
+If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.
 
-7. Any deviation from this sequence MUST be treated as failure.
-8. 
+Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as a failed vet.
 # Examples
 
 ## Vouching Call Flow
