@@ -80,7 +80,6 @@ Table of Contents
      4.1.  Vouching Procedure
      4.2.  Vetting Procedure
      4.3.  Vouching Call Flow
-     4.4.  Vetting Call Flow
    5.  Security Considerations
    6.  IANA Considerations
    Appendix A.  Acknowledgments
@@ -192,21 +191,46 @@ Table of Contents
 
 4.3.  Vouching Call Flow
 
-   Alice CIDVV_A SBC_A PSTN SBC_B Bob | | | | | | |------- INVITE
-   ------->| | | | | Step 1 | | | | | | | | | | | | |<- INVITE
-   -| | | | | | Step 2 | | | | | | | | | | | |-- Busy -->| | | | | |
-   Step 3 | | | | | | | | | | | | |- INVITE ->| | | | | | Step
-   4 | | | | | | | | | | | | |- INVITE ->| | | | | | Step
-   5 | | | | | | | | | | | |<- INVITE -| | | | | | Step
-   6 | | | | | | | | | | |<- INVITE -| | | | | | Step
-   7 | | | | | | | | | | |<- INVITE -| | | | | | Step
-   8 | | | | | | | | | | | |-- Busy -->| | | | | | Step
-   9 | | | | | | | | | | | | |-- Busy -->| | | | | | Step
-   10 | | | | | | | | | | | | |-- Busy -->| | | | | | Step
-   11 | | | | | | | | | | | | |- INVITE ->| | | | | | Step
-   12 | | | | | | |
+      Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
+        |           |           |           |           |           |
+        |------- INVITE ------->|           |           |           |
+        |  Step 1   |           |           |           |           |
+        |           |           |           |           |           |
+        |           |<- INVITE -|           |           |           |
+        |           |  Step 2   |           |           |           |
+        |           |           |           |           |           |
+        |           |-- Busy -->|           |           |           |
+        |           |  Step 3   |           |           |           |
+        |           |           |           |           |           |
+        |           |           |- INVITE ->|           |           |
+        |           |           |  Step 4   |           |           |
+        |           |           |           |           |           |
+        |           |           |           |- INVITE ->|           |
+        |           |           |           |  Step 5   |           |
+        |           |           |           |           |           |
+        |           |           |           |<- INVITE -|           |
+        |           |           |           |  Step 6   |           |
+        |           |           |           |           |           |
+        |           |           |<- INVITE -|           |           |
+        |           |           |  Step 7   |           |           |
+        |           |           |           |           |           |
+        |           |<- INVITE -|           |           |           |
+        |           |  Step 8   |           |           |           |
+        |           |           |           |           |           |
+        |           |-- Busy -->|           |           |           |
+        |           |  Step 9   |           |           |           |
+        |           |           |           |           |           |
+        |           |           |-- Busy -->|           |           |
+        |           |           |  Step 10  |           |           |
+        |           |           |           |           |           |
+        |           |           |           |-- Busy -->|           |
+        |           |           |           |  Step 11  |           |
+        |           |           |           |           |           |
+        |           |           |           |           |- INVITE ->|
+        |           |           |           |           |  Step 12  |
+        |           |           |           |           |           |
 
-4.4.  Vetting Call Flow
+   ## Vetting Call Flow
 
    Alice               PSTN             Bob
      |                   |                |
