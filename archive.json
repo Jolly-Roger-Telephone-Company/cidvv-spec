@@ -1,0 +1,83 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2026-04-30T03:31:57.942144+00:00",
+  "repo": "jollyrogertelephone/draft-cidvv",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [],
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOSPg1nM7Wxs12",
+      "title": "Update draft-anderson-askew-cidvv.md",
+      "url": "https://github.com/jollyrogertelephone/draft-cidvv/pull/1",
+      "state": "MERGED",
+      "author": "jollyrogertelephone",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "This written by chatgpt instead of grok",
+      "createdAt": "2026-04-29T15:33:23Z",
+      "updatedAt": "2026-04-29T17:31:24Z",
+      "baseRepository": "jollyrogertelephone/draft-cidvv",
+      "baseRefName": "main",
+      "baseRefOid": "f560e23ad9a9ee19757a13228f05d2b215e88f35",
+      "headRepository": "jollyrogertelephone/draft-cidvv",
+      "headRefName": "jollyrogertelephone-patch-1",
+      "headRefOid": "c98b3bac246ad31d6cbe9bf25f6ce0f5f7fd9f09",
+      "closedAt": "2026-04-29T17:31:24Z",
+      "mergedAt": "2026-04-29T17:31:24Z",
+      "mergedBy": "jollyrogertelephone",
+      "mergeCommit": {
+        "oid": "05d0f32aedb41a5572ed309cd0ed0cee4b75fb92"
+      },
+      "comments": [],
+      "reviews": []
+    }
+  ]
+}
