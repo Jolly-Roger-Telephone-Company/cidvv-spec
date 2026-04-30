@@ -104,19 +104,45 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
 
 ## Vouching Call Flow
 
-    Alice (CIDVV)        PSTN            Bob (CIDVV)
-         |                 |                  |
-         | INVITE          |                  |
-         |---------------> |                  |
-         | 486             |                  |
-         |<--------------- |                  |
-         |                 | INVITE           |
-         |                 |--------------->  |
-         |                 |                  |
-         |<------INVITE----|                  |  (CallerID: 10...)
-         |------486------->|                  |
-         |                 |                  |
-         |                 |  (Vouch success) |
+   Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
+     |           |           |           |           |           |
+     |------- INVITE ------->|           |           |           |
+     |  Step 1   |           |           |           |           |
+     |           |           |           |           |           |
+     |           |<- INVITE -|           |           |           |
+     |           |  Step 2   |           |           |           |
+     |           |           |           |           |           |
+     |           |-- Busy -->|           |           |           |
+     |           |  Step 3   |           |           |           |
+     |           |           |           |           |           |
+     |           |           |- INVITE ->|           |           |
+     |           |           |  Step 4   |           |           |
+     |           |           |           |           |           |
+     |           |           |           |- INVITE ->|           |
+     |           |           |           |  Step 5   |           |
+     |           |           |           |           |           |
+     |           |           |           |<- INVITE -|           |
+     |           |           |           |  Step 6   |           |
+     |           |           |           |           |           |
+     |           |           |<- INVITE -|           |           |
+     |           |           |  Step 7   |           |           |
+     |           |           |           |           |           |
+     |           |<- INVITE -|           |           |           |
+     |           |  Step 8   |           |           |           |
+     |           |           |           |           |           |
+     |           |-- Busy -->|           |           |           |
+     |           |  Step 9   |           |           |           |
+     |           |           |           |           |           |
+     |           |           |-- Busy -->|           |           |
+     |           |           |  Step 10  |           |           |
+     |           |           |           |           |           |
+     |           |           |           |-- Busy -->|           |
+     |           |           |           |  Step 11  |           |
+     |           |           |           |           |           |
+     |           |           |           |           |- INVITE ->|
+     |           |           |           |           |  Step 12  |
+     |           |           |           |           |           |
+
 
 ## Vetting Call Flow
 
