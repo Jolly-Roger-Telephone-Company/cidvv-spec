@@ -1060,7 +1060,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Anderson &amp; Askew</td>
-<td class="center">Expires 31 October 2026</td>
+<td class="center">Expires 1 November 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1078,7 +1078,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-10-31">31 October 2026</time></dd>
+<dd class="expires"><time datetime="2026-11-01">1 November 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1310,23 +1310,44 @@ svg :is([fill="white"], [fill^="#fff"]) {
         <h3 id="name-vouching-call-flow">
 <a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-vouching-call-flow" class="section-name selfRef">Vouching Call Flow</a>
         </h3>
-<div class="alignLeft art-text artwork" id="section-4.3-1">
-<pre>
-Alice (CIDVV)        PSTN            Bob (CIDVV)
-     |                 |                  |
-     | INVITE          |                  |
-     |---------------&gt; |                  |
-     | 486             |                  |
-     |&lt;--------------- |                  |
-     |                 | INVITE           |
-     |                 |---------------&gt;  |
-     |                 |                  |
-     |&lt;------INVITE----|                  |  (CallerID: 10...)
-     |------486-------&gt;|                  |
-     |                 |                  |
-     |                 |  (Vouch success) |
-</pre><a href="#section-4.3-1" class="pilcrow">¶</a>
-</div>
+<p id="section-4.3-1">Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
+     |           |           |           |           |           |
+     |------- INVITE -------&gt;|           |           |           |
+     |  Step 1   |           |           |           |           |
+     |           |           |           |           |           |
+     |           |&lt;- INVITE -|           |           |           |
+     |           |  Step 2   |           |           |           |
+     |           |           |           |           |           |
+     |           |-- Busy --&gt;|           |           |           |
+     |           |  Step 3   |           |           |           |
+     |           |           |           |           |           |
+     |           |           |- INVITE -&gt;|           |           |
+     |           |           |  Step 4   |           |           |
+     |           |           |           |           |           |
+     |           |           |           |- INVITE -&gt;|           |
+     |           |           |           |  Step 5   |           |
+     |           |           |           |           |           |
+     |           |           |           |&lt;- INVITE -|           |
+     |           |           |           |  Step 6   |           |
+     |           |           |           |           |           |
+     |           |           |&lt;- INVITE -|           |           |
+     |           |           |  Step 7   |           |           |
+     |           |           |           |           |           |
+     |           |&lt;- INVITE -|           |           |           |
+     |           |  Step 8   |           |           |           |
+     |           |           |           |           |           |
+     |           |-- Busy --&gt;|           |           |           |
+     |           |  Step 9   |           |           |           |
+     |           |           |           |           |           |
+     |           |           |-- Busy --&gt;|           |           |
+     |           |           |  Step 10  |           |           |
+     |           |           |           |           |           |
+     |           |           |           |-- Busy --&gt;|           |
+     |           |           |           |  Step 11  |           |
+     |           |           |           |           |           |
+     |           |           |           |           |- INVITE -&gt;|
+     |           |           |           |           |  Step 12  |
+     |           |           |           |           |           |<a href="#section-4.3-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="vetting-call-flow">

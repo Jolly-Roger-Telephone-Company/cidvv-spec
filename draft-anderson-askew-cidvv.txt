@@ -5,7 +5,7 @@
 Network Working Group                                        R. Anderson
 Internet-Draft                             Jolly Roger Telephone Company
 Intended status: Informational                                  P. Askew
-Expires: 31 October 2026                                      April 2026
+Expires: 1 November 2026                                      April 2026
 
 
                  CallerID Vouching and Vetting (CIDVV)
@@ -192,19 +192,19 @@ Table of Contents
 
 4.3.  Vouching Call Flow
 
-   Alice (CIDVV)        PSTN            Bob (CIDVV)
-        |                 |                  |
-        | INVITE          |                  |
-        |---------------> |                  |
-        | 486             |                  |
-        |<--------------- |                  |
-        |                 | INVITE           |
-        |                 |--------------->  |
-        |                 |                  |
-        |<------INVITE----|                  |  (CallerID: 10...)
-        |------486------->|                  |
-        |                 |                  |
-        |                 |  (Vouch success) |
+   Alice CIDVV_A SBC_A PSTN SBC_B Bob | | | | | | |------- INVITE
+   ------->| | | | | Step 1 | | | | | | | | | | | | |<- INVITE
+   -| | | | | | Step 2 | | | | | | | | | | | |-- Busy -->| | | | | |
+   Step 3 | | | | | | | | | | | | |- INVITE ->| | | | | | Step
+   4 | | | | | | | | | | | | |- INVITE ->| | | | | | Step
+   5 | | | | | | | | | | | |<- INVITE -| | | | | | Step
+   6 | | | | | | | | | | |<- INVITE -| | | | | | Step
+   7 | | | | | | | | | | |<- INVITE -| | | | | | Step
+   8 | | | | | | | | | | | |-- Busy -->| | | | | | Step
+   9 | | | | | | | | | | | | |-- Busy -->| | | | | | Step
+   10 | | | | | | | | | | | | |-- Busy -->| | | | | | Step
+   11 | | | | | | | | | | | | |- INVITE ->| | | | | | Step
+   12 | | | | | | |
 
 4.4.  Vetting Call Flow
 
