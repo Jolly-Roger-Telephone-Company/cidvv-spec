@@ -103,7 +103,7 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
 # Examples
 
 ## Vouching Call Flow
-
+~~~~
    Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
      |           |           |           |           |           |
      |------- INVITE ------->|           |           |           |
@@ -142,8 +142,7 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
      |           |           |           |           |- INVITE ->|
      |           |           |           |           |  Step 12  |
      |           |           |           |           |           |
-
-
+~~~~
 ## Vetting Call Flow
 
     Alice               PSTN             Bob
