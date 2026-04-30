@@ -230,7 +230,37 @@ Table of Contents
         |           |           |           |           |  Step 12  |
         |           |           |           |           |           |
 
-   ## Vetting Call Flow
+                   Figure 1: Example Call With Good Vouch
+
+   #### Step-by-step description
+
+   1.  *CIDVV_A* sends an INVITE to *SBC_A* with the original asserted
+       Caller-ID (e.g. From: "Alice" <sip:+15551234567@...>).
+
+   2.  *SBC_A* forwards the INVITE toward the PSTN, possibly adding P-
+       Asserted-Identity.
+
+   3.  The call traverses the PSTN network.
+
+   4.  *SBC_B* receives the call and forwards an INVITE to *CIDVV_B*
+       (the vetting service on the terminating side).
+
+   5.  *CIDVV_B* determines that the asserted number requires vouching.
+       It performs the first verification lookup and returns *404 Not
+       Found* (or 604 Does Not Exist Anywhere, depending on policy).
+
+   6.  The 404 propagates back through *SBC_B* to the PSTN.
+
+   7.  The PSTN returns the 404 to *SBC_A*.
+
+   8.  *SBC_A* returns the 404 to *CIDVV_A*. At this point the
+       originating vouching service knows the number needs further
+       manipulation (e.g. canonicalization, attestation level downgrade,
+       or fallback to a second vetting call).
+
+   Note that Caller-ID manipulation (normalization, prefix stripping, or
+   attestation token insertion) occurs at steps 2 and 5 inside the
+   vouching entities. ## Vetting Call Flow
 
    Alice               PSTN             Bob
      |                   |                |
