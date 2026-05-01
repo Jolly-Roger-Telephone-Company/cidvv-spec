@@ -135,6 +135,7 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
 # Examples
 
 ## Successful Vouch Call Flow
+
 ~~~~
    Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
      |           |           |           |           |           |
@@ -218,6 +219,7 @@ The diagram above shows the high-level message flow. The following numbered step
 This two-call mechanism (first vetting call + return vouch call) allows the originating CIDVV platform to confirm that the asserted Caller-ID is valid without completing the initial call.
 
 ## Failed Vouch Call Flow
+
 The following diagram shows a failed vouch attempt by an impersonator (Mallory) who spoofs Alice's Caller-ID.
 ~~~~
   Mallory     CIDVV_A      SBC_A        PSTN       SBC_B    Voicemail_B
@@ -286,6 +288,7 @@ This mechanism ensures that only calls that originated from a legitimate CIDVV p
 Vetting a number requires **two independent calls** (separate SIP dialogs). The first call checks whether the number is known; the second call performs the confirmation.
 
 ### First Vetting Call
+
 ~~~~
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
       |             |             |             |             |
@@ -317,6 +320,7 @@ Vetting a number requires **two independent calls** (separate SIP dialogs). The 
 {: title="First vetting call - creates cache entry or receives 404"}
 
 ### Second Vetting Call
+
 ~~~~
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
       |             |             |             |             |
