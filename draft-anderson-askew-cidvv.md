@@ -41,24 +41,55 @@ CIDVV requires no centralized databases, certificates, or new signaling protocol
 
 # Introduction
 
-Caller-ID spoofing is a global problem affecting all users of the telephone network. Existing mechanisms do not reliably bind signaling identity to authoritative numbering resources.
+Caller-ID spoofing remains one of the most persistent and damaging problems in modern telephony. Fraudsters routinely impersonate banks, government agencies, and trusted contacts, leading to billions of dollars in annual losses and widespread erosion of trust in telephone calls.
 
-CIDVV addresses this problem by leveraging:
+Having operated telephone networks for many years, the authors have seen firsthand the persistent problem of Caller-ID spoofing and the limitations of existing solutions.
 
-1. The Local Exchange Routing Guide (LERG), which defines authoritative routing ownership for telephone numbers.
-2. Reserved numbering space within E.164, specifically prefixes "10" and "11", which are invalid in the North American Numbering Plan and can therefore be used as signaling indicators.
+This document defines a lightweight vouching and vetting mechanism called **CIDVV** that allows the legitimate owner of a telephone number to prove control of that number using only the existing PSTN infrastructure. The mechanism requires no central authority, no shared database, and works across SIP, SS7/TDM, and international boundaries. It is designed to complement or serve as an alternative to STIR/SHAKEN in environments where those technologies are unavailable or insufficient.
 
-CIDVV operates entirely within normal PSTN routing behavior and does not require media exchange.
+CIDVV leverages two key elements of the existing telephone ecosystem:
+* The Local Exchange Routing Guide (LERG), which provides authoritative routing ownership for each telephone number.
+* Reserved prefixes within E.164 numbering space ("10" and "11"), which are invalid in the North American Numbering Plan and are used purely as signaling indicators.
+
+The mechanism operates entirely within normal PSTN routing behavior and requires no media exchange.
 
 # Terminology
 
-* Alice: Calling party
-* Bob: Called party
-* Mallory: Attacker attempting Caller-ID spoofing
-* OSP: Originating Service Provider
-* TSP: Terminating Service Provider
-* LERG: Local Exchange Routing Guide
-* CIDVV Platform: A system implementing this protocol
+* **Alice**: The calling party (originator of the call being vetted).
+* **Bob**: The called party (owner of the number being vetted).
+* **Mallory**: An attacker attempting to spoof a Caller-ID.
+* **OSP**: Originating Service Provider.
+* **TSP**: Terminating Service Provider.
+* **LERG**: Local Exchange Routing Guide.
+* **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
+* **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the two-call challenge-response mechanism described in this document. A successful vouch proves the calling party legitimately controls the asserted Caller-ID.
+* **Vet** (or **Vetting**): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
+* **Vouching Call**: One of the two short calls used in the CIDVV protocol (typically rejected with 404 or 486).
+
+## 2.  Motivation and Advantages
+
+The CIDVV vouching and vetting mechanism is designed to operate with minimal new infrastructure while providing strong protection against Caller-ID spoofing.  Its primary advantages are:
+
+* **Leverages existing PSTN infrastructure**: The mechanism uses the LERG and standard PSTN routing tables.  No central authority, shared database, registration service, or global vetting infrastructure is required.
+
+* **Strong anti-spoofing protection**: A successful vouch proves that the asserted Caller-ID is controlled by the legitimate owner, because only the real owner can generate the correct challenge-response sequence.  Spoofed calls are rejected early with 404 Not Found.
+
+* **Visibility into spoofing activity**: Telephone number owners gain direct insight into how often (and from where) their numbers are being spoofed worldwide through logged vetting attempts.
+
+* **Low signaling overhead**: The two short vetting calls replace what would otherwise be a completed fraudulent call, resulting in lower overall network load.
+
+* **Full TDM/SS7 compatibility**: The mechanism works natively across legacy SS7 and ISDN networks.  SIP is not required.
+
+* **International applicability**: The solution functions across international boundaries without relying on country-specific frameworks.
+
+* **Independent of STIR/SHAKEN**: It provides an effective alternative (or complement) in environments where STIR/SHAKEN is unavailable, not deployed, or insufficient.
+
+* **Enterprise and service-provider flexibility**:
+  * Enterprises can deploy their own CIDVV platform using open-source tools such as Kamailio or Asterisk.
+  * Service providers or third-party vendors (e.g., Variphy, TransUnion, iconectiv, Somos, TNS, First Orion, or others) can operate cloud-based vouching and vetting services.
+  * Customers can easily switch between providers, fostering real competition and driving down costs.
+
+This design lowers the barrier to entry and encourages broad adoption while avoiding the single points of failure and high coordination costs associated with centralized solutions. These properties make the vouching mechanism particularly suitable for service providers, enterprises, and end users who need robust Caller-ID validation today, using only existing telephone infrastructure.
 
 # Protocol Overview
 
