@@ -101,8 +101,8 @@ This design lowers the barrier to entry and encourages broad adoption while avoi
 
 CIDVV uses special Caller-ID prefixes to signal protocol operations:
 
-* "10" prefix — Vouching
-* "11" prefix — Vetting
+* "100" prefix — Vouching or Vetting
+* "101" prefix — Vetting Token Check
 
 CIDVV exchanges occur using short signaling dialogs and do not require media establishment.
 
@@ -114,25 +114,25 @@ Alice's CIDVV platform receives an attempted call from Alice to Bob. It MUST cac
 
 Alice's SBC then sends the call normally through the PSTN toward Bob.
 
-When Bob's system receives the call, Bob's system initiates a verification call toward Alice. The verification call uses a Caller-ID formed by prefixing Bob's number with the digits "10".
+When Bob's system receives the call, Bob's system initiates a verification call toward Alice. The verification call uses a Caller-ID formed by prefixing Bob's number with the digits "100".
 
-When Alice's CIDVV platform receives a call with a Caller-ID beginning with "10", it MUST remove the "10" prefix, compare the resulting number pair against the recent cache, and determine whether the original call attempt exists.
+When Alice's CIDVV platform receives a call with a Caller-ID beginning with "100", it MUST remove the "100" prefix, compare the resulting number pair against the recent cache, and determine whether the original call attempt exists.
 
 If a matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 486 (Busy Here). Bob's system treats this response as a successful vouch.
 
-If no matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 603 (Decline). Bob's system treats this response as a failed vouch.
+If no matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 404 (Not Found). Bob's system treats this response as a failed vouch.
 
 ## Vetting Procedure
 
 Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting Caller-ID, and a validity time window.
 
-Alice places a vetting call to Bob using a Caller-ID beginning with the digits "11".
+Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".
 
-When Bob's CIDVV platform receives the first vetting call, it removes the "11" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform then computes a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).
+When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform then computes a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).
 
-Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with "11" followed by the computed numeric code.
+Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.
 
-When Bob's CIDVV platform receives the second vetting call, it removes the "11" prefix and compares the remaining numeric code to the recently cached value.
+When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.
 
 If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.
 
@@ -153,31 +153,24 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
      |           |           |           |           |           |
      |           |-- Busy -->|           |           |           |
      |           |  Step 3   |           |           |           |
-     |           |           |           |           |           |
      |           |           |- INVITE ->|           |           |
      |           |           |  Step 4   |           |           |
-     |           |           |           |           |           |
      |           |           |           |- INVITE ->|           |
      |           |           |           |  Step 5   |           |
      |           |           |           |           |           |
      |           |           |           |<- INVITE -|           |
      |           |           |           |  Step 6   |           |
-     |           |           |           |           |           |
      |           |           |<- INVITE -|           |           |
      |           |           |  Step 7   |           |           |
-     |           |           |           |           |           |
      |           |<- INVITE -|           |           |           |
      |           |  Step 8   |           |           |           |
      |           |           |           |           |           |
      |           |-- Busy -->|           |           |           |
      |           |  Step 9   |           |           |           |
-     |           |           |           |           |           |
      |           |           |-- Busy -->|           |           |
      |           |           |  Step 10  |           |           |
-     |           |           |           |           |           |
      |           |           |           |-- Busy -->|           |
      |           |           |           |  Step 11  |           |
-     |           |           |           |           |           |
      |           |           |           |           |- INVITE ->|
      |           |           |           |           |  Step 12  |
      |           |           |           |           |           |
@@ -201,18 +194,18 @@ The diagram above shows the high-level message flow. The following numbered step
 5. The call reaches Bob's SBC via the PSTN.
 
 6. **Bob's SBC**:
-   - Prefixes `10` to the dialed number, resulting in `1019495550199`.
-   - Forwards the call back toward Alice's number (`+12125550100`) with the modified Caller-ID `+1019495550199`.
+   - Generates a Calling Party Number of `100` plus the last 12 digits of the dialed number, resulting in `10019495550199`.
+   - Forwards the call back toward Alice's number (`+12125550100`) with the modified Caller-ID `+10019495550199`.
 
 7. The return call arrives at Alice's SBC via the PSTN.
 
 8. **Alice's SBC**:
-   - Detects the leading `10` prefix on the Caller-ID.
+   - Detects the leading `100` prefix on the Caller-ID.
    - Routes the call to CIDVV_A for vouch verification.
 
 9. **CIDVV_A**:
-   - Receives the call with `To: +12125550100` and `From: +1019495550199`.
-   - Strips the `10` prefix from the From number, yielding `+19495550199`.
+   - Receives the call with `To: +12125550100` and `From: +10019495550199`.
+   - Strips the `100` prefix from the From number, yielding `+19495550199`.
    - Swaps the From and To values.
    - Looks up the resulting pair `(+12125550100, +19495550199)` in its short-term cache.
    - Finds a matching entry from step 3.
@@ -233,28 +226,22 @@ The following diagram shows a failed vouch attempt by an impersonator (Mallory) 
      |           |           |           |           |           |
      |------------- INVITE ------------->|           |           |
      |  Step 1   |           |           |           |           |
-     |           |           |           |           |           |
      |           |           |           |- INVITE ->|           |
      |           |           |           |  Step 2   |           |
      |           |           |           |           |           |
      |           |           |           |<- INVITE -|           |
      |           |           |           |  Step 3   |           |
-     |           |           |           |           |           |
      |           |           |<- INVITE -|           |           |
      |           |           |  Step 4   |           |           |
-     |           |           |           |           |           |
      |           |<- INVITE -|           |           |           |
      |           |  Step 5   |           |           |           |
      |           |           |           |           |           |
      |           |-NotFound->|           |           |           |
      |           |  Step 6   |           |           |           |
-     |           |           |           |           |           |
      |           |           |-NotFound->|           |           |
      |           |           |  Step 7   |           |           |
-     |           |           |           |           |           |
      |           |           |           |-NotFound->|           |
      |           |           |           |  Step 8   |           |
-     |           |           |           |           |           |
      |           |           |           |           |--- VM --->|
      |           |           |           |           |  Step 9   |
      |           |           |           |           |           |
@@ -268,18 +255,18 @@ The following diagram shows a failed vouch attempt by an impersonator (Mallory) 
 2. The call arrives at Bob’s SBC via the PSTN.
 
 3. **Bob’s SBC**:
-   - Prefixes `10` to the dialed number, creating `1019495550199`.
-   - Forwards the call toward Alice’s number (`+12125550100`) with the modified Caller-ID `+1019495550199`.
+   - Generates a Calling Party Number of `100` plus the last 12 digits of the dialed number, resulting in `10019495550199`.
+   - Forwards the call toward Alice’s number (`+12125550100`) with the modified Caller-ID `+10019495550199`.
 
 4. The call arrives at Alice’s SBC via the PSTN.
 
 5. **Alice’s SBC**:
-   - Detects the `10` prefix and recognizes this as a vouch call.
+   - Detects the `100` prefix and recognizes this as a vouch call.
    - Routes the call to CIDVV_A for verification.
 
 6. **CIDVV_A**:
-   - Processes `To: +12125550100` and `From: +1019495550199`.
-   - Strips the `10` prefix, yielding `+19495550199`.
+   - Processes `To: +12125550100` and `From: +10019495550199`.
+   - Strips the `100` prefix, yielding `+19495550199`.
    - Swaps From and To values.
    - Looks up the pair `(+12125550100, +19495550199)` in its short-term cache.
    - Finds no matching entry (because Alice never placed the original call).
@@ -300,32 +287,26 @@ Vetting a number requires **two independent calls** (separate SIP dialogs). The 
 ~~~~
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
       |             |             |             |             |
-      |-- INVITE -->|             |             |             |
+      |-- INVITE -->|             |             |             |      Step 1
       |   Step 1    |             |             |             |
-      |             |             |             |             |
       |             |-- INVITE -->|             |             |
       |             |   Step 2    |             |             |
-      |             |             |             |             |
       |             |             |-- INVITE -->|             |
       |             |             |   Step 3    |             |
-      |             |             |             |             |
       |             |             |             |-- INVITE -->|
       |             |             |             |   Step 4    |
       |             |             |             |             |
       |             |             |             |<-Not Found--|
       |             |             |             |   Step 5    |
-      |             |             |             |             |
       |             |             |<-Not Found--|             |
       |             |             |   Step 6    |             |
-      |             |             |             |             |
       |             |<-Not Found--|             |             |
       |             |   Step 7    |             |             |
-      |             |             |             |             |
       |<-Not Found--|             |             |             |
       |   Step 8    |             |             |             |
       |             |             |             |             |
 ~~~~
-{: title="First vetting call - creates cache entry or receives 404"}
+{: title="First vetting call with 100 - creates cache entry or receives 404"}
 
 ### Second Vetting Call
 
@@ -334,30 +315,24 @@ Vetting a number requires **two independent calls** (separate SIP dialogs). The 
       |             |             |             |             |
       |-- INVITE -->|             |             |             |
       |   Step 1    |             |             |             |
-      |             |             |             |             |
       |             |-- INVITE -->|             |             |
       |             |   Step 2    |             |             |
-      |             |             |             |             |
       |             |             |-- INVITE -->|             |
       |             |             |   Step 3    |             |
-      |             |             |             |             |
       |             |             |             |-- INVITE -->|
       |             |             |             |   Step 4    |
       |             |             |             |             |
       |             |             |             |<-Busy Here--|
       |             |             |             |   Step 5    |
-      |             |             |             |             |
       |             |             |<-Busy Here--|             |
       |             |             |   Step 6    |             |
-      |             |             |             |             |
       |             |<-Busy Here--|             |             |
       |             |   Step 7    |             |             |
-      |             |             |             |             |
       |<-Busy Here--|             |             |             |
       |   Step 8    |             |             |             |
       |             |             |             |             |
 ~~~~
-{: title="Second vetting call - confirms vouch with 486 Busy Here"}
+{: title="Vetting token check call with 101 - confirms vouch with 486 Busy Here"}
 
 ### Successful Caller-ID Vetting Flow
 
@@ -367,12 +342,13 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 
 2. Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional validity window (e.g. one week) into their respective CIDVV platforms.
 
-3. Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `+1112125550100` toward Bob’s number (`+19495550199`). The call traverses the PSTN.
+3. Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `+10012125550100` toward Bob’s number (`+19495550199`). The call traverses the PSTN.
 
-4. Bob’s SBC recognizes the leading `11` prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).
+4. Bob’s SBC recognizes the leading `100` prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).
 
 5. **CIDVV_B**:
-   - Strips the leading `11`, recovering Alice’s vetting Caller-ID `+12125550100`.
+   - Strips the leading `100`, recovering Alice’s Caller-ID `+12125550100`.
+   - Recognizes this as a pre-agreed Vetting Caller-ID
    - Computes the SHA-256 digest of the concatenated string
      `+12125550100+19495550199hamburger`.
    - Takes the first 8 hexadecimal characters (`b0092191`), converts to decimal (`2953388433`), pads to 10 digits, and prepends `1`, yielding `12953388433`.
@@ -381,13 +357,14 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 
 6. CIDVV_A receives the 404 and performs the identical hash calculation to derive `12953388433`.
 
-7. CIDVV_A immediately places a second vetting call to `+19495550199` using Caller-ID `+1112953388433`.
+7. CIDVV_A immediately places a second vetting call to `+19495550199` using the Vetting Token Check Caller-ID `+10112953388433`.
 
-8. Bob’s SBC again recognizes the `11` prefix and forwards the call to CIDVV_B.
+8. Bob’s SBC recognizes the `101` prefix on the Caller-ID and forwards the call to CIDVV_B.
 
 9. **CIDVV_B**:
-   - Strips the leading `11`.
-   - Observes that the incoming Caller-ID (`12953388433`) matches a recently cached vetting token.
+   - Reognizes the leading `101` as a Vetting Token Check call
+   - Strips the leading `101`.
+   - Observes that the remaining Caller-ID (`12953388433`) matches a recently cached vetting token.
    - Responds with **486 Busy Here** to signal a successful vet.
 
 10. CIDVV_A receives the 486 Busy Here and reports a successful vet to Alice.
