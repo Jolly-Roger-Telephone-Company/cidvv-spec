@@ -1,6 +1,3 @@
-<!-- Check headings to ensure they're separated by blank lines
-^#{1,6} .+\n[^\n]
--->
 ---
 title: CallerID Vouching and Vetting (CIDVV)
 abbrev: CIDVV
@@ -29,6 +26,9 @@ author:
     name: Phillip Askew
     country: US
 
+<!-- Check headings to ensure they're separated by blank lines
+^#{1,6} .+\n[^\n]
+-->
 --- abstract
 
 This document describes CallerID Vouching and Vetting (CIDVV), a lightweight protocol that improves trust in Caller-ID using existing Public Switched Telephone Network (PSTN) routing and numbering constraints.
