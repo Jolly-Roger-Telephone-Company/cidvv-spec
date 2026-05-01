@@ -79,7 +79,7 @@ Table of Contents
    4.  Protocol Operation
      4.1.  Vouching Procedure
      4.2.  Vetting Procedure
-     4.3.  Vouching Call Flow
+     4.3.  Successful Vouch Call Flow
    5.  Security Considerations
    6.  IANA Considerations
    Appendix A.  Acknowledgments
@@ -189,7 +189,7 @@ Table of Contents
    Any other response, timeout, code mismatch, expired cache entry, or
    unexpected Caller-ID MUST be treated as a failed vet. # Examples
 
-4.3.  Vouching Call Flow
+4.3.  Successful Vouch Call Flow
 
       Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
         |           |           |           |           |           |
@@ -232,35 +232,73 @@ Table of Contents
 
                    Figure 1: Example Call With Good Vouch
 
-   #### Step-by-step description
+   ### Successful Vouching Call Flow
 
-   1.  *CIDVV_A* sends an INVITE to *SBC_A* with the original asserted
-       Caller-ID (e.g. From: "Alice" <sip:+15551234567@...>).
+   The diagram above shows the high-level message flow.  The following
+   numbered steps provide the detailed behavior, including Caller-ID
+   manipulation performed by the CIDVV platforms.
 
-   2.  *SBC_A* forwards the INVITE toward the PSTN, possibly adding P-
-       Asserted-Identity.
+   1.   The originating user (Alice, Caller-ID +12125550100) initiates a
+        call to the destination user (Bob, dialed number +19495550199).
 
-   3.  The call traverses the PSTN network.
+   2.   The call is routed from Alice's User Agent to her SBC, which
+        forwards it to the originating CIDVV platform (CIDVV_A).
 
-   4.  *SBC_B* receives the call and forwards an INVITE to *CIDVV_B*
-       (the vetting service on the terminating side).
+   3.   *CIDVV_A*:
 
-   5.  *CIDVV_B* determines that the asserted number requires vouching.
-       It performs the first verification lookup and returns *404 Not
-       Found* (or 604 Does Not Exist Anywhere, depending on policy).
+        *  Caches the call attempt (From: +12125550100, To:
+           +19495550199) for a short period (≈10 seconds).
 
-   6.  The 404 propagates back through *SBC_B* to the PSTN.
+        *  Rejects the call with *486 Busy Here*.
 
-   7.  The PSTN returns the 404 to *SBC_A*.
+   4.   Alice's SBC receives the 486 and advances the original call
+        toward the PSTN using the original Caller-ID.
 
-   8.  *SBC_A* returns the 404 to *CIDVV_A*. At this point the
-       originating vouching service knows the number needs further
-       manipulation (e.g. canonicalization, attestation level downgrade,
-       or fallback to a second vetting call).
+   5.   The call reaches Bob's SBC via the PSTN.
 
-   Note that Caller-ID manipulation (normalization, prefix stripping, or
-   attestation token insertion) occurs at steps 2 and 5 inside the
-   vouching entities. ## Vetting Call Flow
+   6.   *Bob's SBC*:
+
+        *  Prefixes 10 to the dialed number, resulting in 1019495550199.
+
+        *  Forwards the call back toward Alice's number (+12125550100)
+           with the modified Caller-ID +1019495550199.
+
+   7.   The return call arrives at Alice's SBC via the PSTN.
+
+   8.   *Alice's SBC*:
+
+        *  Detects the leading 10 prefix on the Caller-ID.
+
+        *  Routes the call to CIDVV_A for vouch verification.
+
+   9.   *CIDVV_A*:
+
+        *  Receives the call with To: +12125550100 and From:
+           +1019495550199.
+
+        *  Strips the 10 prefix from the From number, yielding
+           +19495550199.
+
+        *  Swaps the From and To values.
+
+        *  Looks up the resulting pair (+12125550100, +19495550199) in
+           its short-term cache.
+
+        *  Finds a matching entry from step 3.
+
+        *  Considers this a successful vouch and returns *486 Busy
+           Here*.
+
+   10.  Bob's SBC receives the 486 via the PSTN, recognizes it as a
+        successful vouch response, and advances the original call to
+        Bob's User Agent.
+
+   11.  Bob's telephone rings.
+
+   This two-call mechanism (first vetting call + return vouch call)
+   allows the originating CIDVV platform to confirm that the asserted
+   Caller-ID is valid without completing the initial call. ## Vetting
+   Call Flow
 
    Alice               PSTN             Bob
      |                   |                |
