@@ -1,3 +1,6 @@
+<!-- Check headings to ensure they're separated by blank lines
+^#{1,6} .+\n[^\n]
+-->
 ---
 title: CallerID Vouching and Vetting (CIDVV)
 abbrev: CIDVV
@@ -285,6 +288,7 @@ The following diagram shows a failed vouch attempt by an impersonator (Mallory) 
 This mechanism ensures that only calls that originated from a legitimate CIDVV platform (i.e., those that previously cached the attempt) will pass vouching. Spoofed or unsolicited calls are rejected early.
 
 ## Vetting a Caller-ID Number
+
 Vetting a number requires **two independent calls** (separate SIP dialogs). The first call checks whether the number is known; the second call performs the confirmation.
 
 ### First Vetting Call
