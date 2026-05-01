@@ -227,6 +227,7 @@ This two-call mechanism (first vetting call + return vouch call) allows the orig
 ## Failed Vouch Call Flow
 
 The following diagram shows a failed vouch attempt by an impersonator (Mallory) who spoofs Alice's Caller-ID.
+
 ~~~~
   Mallory     CIDVV_A      SBC_A        PSTN       SBC_B    Voicemail_B
      |           |           |           |           |           |
