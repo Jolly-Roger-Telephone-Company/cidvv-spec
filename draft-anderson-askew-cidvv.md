@@ -131,6 +131,7 @@ When Bob's CIDVV platform receives the second vetting call, it removes the "11" 
 If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.
 
 Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as a failed vet.
+
 # Examples
 
 ## Successful Vouch Call Flow
@@ -175,6 +176,7 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
      |           |           |           |           |           |
 ~~~~
 {: #fig-successful-vouch title="Example Successful Vouch"}
+
 ### Successful Vouch Step-by-step description
 
 The diagram above shows the high-level message flow. The following numbered steps provide the detailed behavior, including Caller-ID manipulation performed by the CIDVV platforms.
@@ -249,6 +251,7 @@ The following diagram shows a failed vouch attempt by an impersonator (Mallory) 
      |           |           |           |           |           |
 ~~~~
 {: #fig-failed-vouch title="Example Failed Vouch"}
+
 ### Failed Vouch Step-by-step description
 
 1. Mallory spoofs Alice’s Caller-ID (`+12125550100`) and initiates a call to Bob (`+19495550199`).
@@ -281,6 +284,7 @@ This mechanism ensures that only calls that originated from a legitimate CIDVV p
 
 ## Vetting a Caller-ID Number
 Vetting a number requires **two independent calls** (separate SIP dialogs). The first call checks whether the number is known; the second call performs the confirmation.
+
 ### First Vetting Call
 ~~~~
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
@@ -342,6 +346,7 @@ Vetting a number requires **two independent calls** (separate SIP dialogs). The 
       |             |             |             |             |
 ~~~~
 {: title="Second vetting call - confirms vouch with 486 Busy Here"}
+
 ### 6.2. Successful Caller-ID Vetting Flow
 
 Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party controls the target telephone number and possesses the correct shared secret.
@@ -356,7 +361,7 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 
 5. **CIDVV_B**:
    - Strips the leading `11`, recovering Alice’s vetting Caller-ID `+12125550100`.
-   - Computes the SHA-256 digest of the concatenated string  
+   - Computes the SHA-256 digest of the concatenated string
      `+12125550100+19495550199hamburger`.
    - Takes the first 8 hexadecimal characters (`b0092191`), converts to decimal (`2953388433`), pads to 10 digits, and prepends `1`, yielding `12953388433`.
    - Caches this value for a short period (≈10 seconds).
