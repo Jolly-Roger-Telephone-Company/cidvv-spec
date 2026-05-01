@@ -143,8 +143,8 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
      |           |           |           |           |  Step 12  |
      |           |           |           |           |           |
 ~~~~
-{: #fig-good-vouch title="Example Call With Good Vouch"}
-### Successful Vouching Call Flow
+{: #fig-successful-vouch title="Example Successful Vouch"}
+### Successful Vouch Call Flow
 
 The diagram above shows the high-level message flow. The following numbered steps provide the detailed behavior, including Caller-ID manipulation performed by the CIDVV platforms.
 
@@ -183,21 +183,70 @@ The diagram above shows the high-level message flow. The following numbered step
 11. Bob's telephone rings.
 
 This two-call mechanism (first vetting call + return vouch call) allows the originating CIDVV platform to confirm that the asserted Caller-ID is valid without completing the initial call.
-## Vetting Call Flow
 
-    Alice               PSTN             Bob
-      |                   |                |
-      | INVITE (11...)    |                |
-      |------------------>|                |
-      |                   |--------------->|
-      |                   | 404            |
-      |<------------------|<---------------|
-      |                   |                |
-      | INVITE (11+hash)  |                |
-      |------------------>|                |
-      |                   |--------------->|
-      |                   | 486            |
-      |<------------------|<---------------|
+## Failed Vouch Call Flow
+The following diagram shows a failed vouch attempt by an impersonator (Mallory) who spoofs Alice's Caller-ID.
+~~~~
+  Mallory     CIDVV_A      SBC_A        PSTN       SBC_B    Voicemail_B
+     |           |           |           |           |           |
+     |------------- INVITE ------------->|           |           |
+     |  Step 1   |           |           |           |           |
+     |           |           |           |           |           |
+     |           |           |           |- INVITE ->|           |
+     |           |           |           |  Step 2   |           |
+     |           |           |           |           |           |
+     |           |           |           |<- INVITE -|           |
+     |           |           |           |  Step 3   |           |
+     |           |           |           |           |           |
+     |           |           |<- INVITE -|           |           |
+     |           |           |  Step 4   |           |           |
+     |           |           |           |           |           |
+     |           |<- INVITE -|           |           |           |
+     |           |  Step 5   |           |           |           |
+     |           |           |           |           |           |
+     |           |-NotFound->|           |           |           |
+     |           |  Step 6   |           |           |           |
+     |           |           |           |           |           |
+     |           |           |-NotFound->|           |           |
+     |           |           |  Step 7   |           |           |
+     |           |           |           |           |           |
+     |           |           |           |-NotFound->|           |
+     |           |           |           |  Step 8   |           |
+     |           |           |           |           |           |
+     |           |           |           |           |--- VM --->|
+     |           |           |           |           |  Step 9   |
+     |           |           |           |           |           |
+~~~~
+{: #fig-failed-vouch title="Example Failed Vouch"}
+#### Step-by-step description
+
+1. Mallory spoofs Alice’s Caller-ID (`+12125550100`) and initiates a call to Bob (`+19495550199`).
+
+2. The call arrives at Bob’s SBC via the PSTN.
+
+3. **Bob’s SBC**:
+   - Prefixes `10` to the dialed number, creating `1019495550199`.
+   - Forwards the call toward Alice’s number (`+12125550100`) with the modified Caller-ID `+1019495550199`.
+
+4. The call arrives at Alice’s SBC via the PSTN.
+
+5. **Alice’s SBC**:
+   - Detects the `10` prefix and recognizes this as a vouch call.
+   - Routes the call to CIDVV_A for verification.
+
+6. **CIDVV_A**:
+   - Processes `To: +12125550100` and `From: +1019495550199`.
+   - Strips the `10` prefix, yielding `+19495550199`.
+   - Swaps From and To values.
+   - Looks up the pair `(+12125550100, +19495550199)` in its short-term cache.
+   - Finds no matching entry (because Alice never placed the original call).
+   - Rejects the call with **404 Not Found**.
+
+7. The 404 propagates back through the PSTN to Bob’s SBC.
+
+8. **Bob’s SBC** recognizes the 404 as a failed vouch and either rejects the call or forwards it to Bob’s voicemail. Bob remains unaware of the impersonation attempt.
+
+This mechanism ensures that only calls that originated from a legitimate CIDVV platform (i.e., those that previously cached the attempt) will pass vouching. Spoofed or unsolicited calls are rejected early.
 
 # Security Considerations
 
