@@ -1348,10 +1348,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <p id="section-3-1">CIDVV uses special Caller-ID prefixes to signal protocol operations:<a href="#section-3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3-2.1">
-          <p id="section-3-2.1.1">"10" prefix — Vouching<a href="#section-3-2.1.1" class="pilcrow">¶</a></p>
+          <p id="section-3-2.1.1">"100" prefix — Vouching or Vetting<a href="#section-3-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-3-2.2">
-          <p id="section-3-2.2.1">"11" prefix — Vetting<a href="#section-3-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-3-2.2.1">"101" prefix — Vetting Token Check<a href="#section-3-2.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-3-3">CIDVV exchanges occur using short signaling dialogs and do not require media establishment.<a href="#section-3-3" class="pilcrow">¶</a></p>
@@ -1369,10 +1369,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
         </h3>
 <p id="section-4.1-1">Alice's CIDVV platform receives an attempted call from Alice to Bob. It MUST cache the calling number and called number for a short interval, normally about 10 seconds. It then rejects the attempt with SIP response 486 (Busy Here).<a href="#section-4.1-1" class="pilcrow">¶</a></p>
 <p id="section-4.1-2">Alice's SBC then sends the call normally through the PSTN toward Bob.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
-<p id="section-4.1-3">When Bob's system receives the call, Bob's system initiates a verification call toward Alice. The verification call uses a Caller-ID formed by prefixing Bob's number with the digits "10".<a href="#section-4.1-3" class="pilcrow">¶</a></p>
-<p id="section-4.1-4">When Alice's CIDVV platform receives a call with a Caller-ID beginning with "10", it MUST remove the "10" prefix, compare the resulting number pair against the recent cache, and determine whether the original call attempt exists.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
+<p id="section-4.1-3">When Bob's system receives the call, Bob's system initiates a verification call toward Alice. The verification call uses a Caller-ID formed by prefixing Bob's number with the digits "100".<a href="#section-4.1-3" class="pilcrow">¶</a></p>
+<p id="section-4.1-4">When Alice's CIDVV platform receives a call with a Caller-ID beginning with "100", it MUST remove the "100" prefix, compare the resulting number pair against the recent cache, and determine whether the original call attempt exists.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
 <p id="section-4.1-5">If a matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 486 (Busy Here). Bob's system treats this response as a successful vouch.<a href="#section-4.1-5" class="pilcrow">¶</a></p>
-<p id="section-4.1-6">If no matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 603 (Decline). Bob's system treats this response as a failed vouch.<a href="#section-4.1-6" class="pilcrow">¶</a></p>
+<p id="section-4.1-6">If no matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 404 (Not Found). Bob's system treats this response as a failed vouch.<a href="#section-4.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="vetting-procedure">
@@ -1381,10 +1381,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-vetting-procedure" class="section-name selfRef">Vetting Procedure</a>
         </h3>
 <p id="section-4.2-1">Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting Caller-ID, and a validity time window.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
-<p id="section-4.2-2">Alice places a vetting call to Bob using a Caller-ID beginning with the digits "11".<a href="#section-4.2-2" class="pilcrow">¶</a></p>
-<p id="section-4.2-3">When Bob's CIDVV platform receives the first vetting call, it removes the "11" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform then computes a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).<a href="#section-4.2-3" class="pilcrow">¶</a></p>
-<p id="section-4.2-4">Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with "11" followed by the computed numeric code.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
-<p id="section-4.2-5">When Bob's CIDVV platform receives the second vetting call, it removes the "11" prefix and compares the remaining numeric code to the recently cached value.<a href="#section-4.2-5" class="pilcrow">¶</a></p>
+<p id="section-4.2-2">Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".<a href="#section-4.2-2" class="pilcrow">¶</a></p>
+<p id="section-4.2-3">When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform then computes a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+<p id="section-4.2-5">When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.<a href="#section-4.2-5" class="pilcrow">¶</a></p>
 <p id="section-4.2-6">If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.<a href="#section-4.2-6" class="pilcrow">¶</a></p>
 <p id="section-4.2-7">Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as a failed vet.<a href="#section-4.2-7" class="pilcrow">¶</a></p>
 </section>
@@ -1415,31 +1415,24 @@ svg :is([fill="white"], [fill^="#fff"]) {
      |           |           |           |           |           |
      |           |-- Busy --&gt;|           |           |           |
      |           |  Step 3   |           |           |           |
-     |           |           |           |           |           |
      |           |           |- INVITE -&gt;|           |           |
      |           |           |  Step 4   |           |           |
-     |           |           |           |           |           |
      |           |           |           |- INVITE -&gt;|           |
      |           |           |           |  Step 5   |           |
      |           |           |           |           |           |
      |           |           |           |&lt;- INVITE -|           |
      |           |           |           |  Step 6   |           |
-     |           |           |           |           |           |
      |           |           |&lt;- INVITE -|           |           |
      |           |           |  Step 7   |           |           |
-     |           |           |           |           |           |
      |           |&lt;- INVITE -|           |           |           |
      |           |  Step 8   |           |           |           |
      |           |           |           |           |           |
      |           |-- Busy --&gt;|           |           |           |
      |           |  Step 9   |           |           |           |
-     |           |           |           |           |           |
      |           |           |-- Busy --&gt;|           |           |
      |           |           |  Step 10  |           |           |
-     |           |           |           |           |           |
      |           |           |           |-- Busy --&gt;|           |
      |           |           |           |  Step 11  |           |
-     |           |           |           |           |           |
      |           |           |           |           |- INVITE -&gt;|
      |           |           |           |           |  Step 12  |
      |           |           |           |           |           |
@@ -1483,10 +1476,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <p id="section-5.1.1-2.6.1"><strong>Bob's SBC</strong>:<a href="#section-5.1.1-2.6.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.1.1-2.6.2.1">
-                  <p id="section-5.1.1-2.6.2.1.1">Prefixes <code>10</code> to the dialed number, resulting in <code>1019495550199</code>.<a href="#section-5.1.1-2.6.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.1.1-2.6.2.1.1">Generates a Calling Party Number of <code>100</code> plus the last 12 digits of the dialed number, resulting in <code>10019495550199</code>.<a href="#section-5.1.1-2.6.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.1.1-2.6.2.2">
-                  <p id="section-5.1.1-2.6.2.2.1">Forwards the call back toward Alice's number (<code>+12125550100</code>) with the modified Caller-ID <code>+1019495550199</code>.<a href="#section-5.1.1-2.6.2.2.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.1.1-2.6.2.2.1">Forwards the call back toward Alice's number (<code>+12125550100</code>) with the modified Caller-ID <code>+10019495550199</code>.<a href="#section-5.1.1-2.6.2.2.1" class="pilcrow">¶</a></p>
 </li>
               </ul>
 </li>
@@ -1497,7 +1490,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <p id="section-5.1.1-2.8.1"><strong>Alice's SBC</strong>:<a href="#section-5.1.1-2.8.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.1.1-2.8.2.1">
-                  <p id="section-5.1.1-2.8.2.1.1">Detects the leading <code>10</code> prefix on the Caller-ID.<a href="#section-5.1.1-2.8.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.1.1-2.8.2.1.1">Detects the leading <code>100</code> prefix on the Caller-ID.<a href="#section-5.1.1-2.8.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.1.1-2.8.2.2">
                   <p id="section-5.1.1-2.8.2.2.1">Routes the call to CIDVV_A for vouch verification.<a href="#section-5.1.1-2.8.2.2.1" class="pilcrow">¶</a></p>
@@ -1508,10 +1501,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <p id="section-5.1.1-2.9.1"><strong>CIDVV_A</strong>:<a href="#section-5.1.1-2.9.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.1.1-2.9.2.1">
-                  <p id="section-5.1.1-2.9.2.1.1">Receives the call with <code>To: +12125550100</code> and <code>From: +1019495550199</code>.<a href="#section-5.1.1-2.9.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.1.1-2.9.2.1.1">Receives the call with <code>To: +12125550100</code> and <code>From: +10019495550199</code>.<a href="#section-5.1.1-2.9.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.1.1-2.9.2.2">
-                  <p id="section-5.1.1-2.9.2.2.1">Strips the <code>10</code> prefix from the From number, yielding <code>+19495550199</code>.<a href="#section-5.1.1-2.9.2.2.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.1.1-2.9.2.2.1">Strips the <code>100</code> prefix from the From number, yielding <code>+19495550199</code>.<a href="#section-5.1.1-2.9.2.2.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.1.1-2.9.2.3">
                   <p id="section-5.1.1-2.9.2.3.1">Swaps the From and To values.<a href="#section-5.1.1-2.9.2.3.1" class="pilcrow">¶</a></p>
@@ -1553,28 +1546,22 @@ svg :is([fill="white"], [fill^="#fff"]) {
      |           |           |           |           |           |
      |------------- INVITE -------------&gt;|           |           |
      |  Step 1   |           |           |           |           |
-     |           |           |           |           |           |
      |           |           |           |- INVITE -&gt;|           |
      |           |           |           |  Step 2   |           |
      |           |           |           |           |           |
      |           |           |           |&lt;- INVITE -|           |
      |           |           |           |  Step 3   |           |
-     |           |           |           |           |           |
      |           |           |&lt;- INVITE -|           |           |
      |           |           |  Step 4   |           |           |
-     |           |           |           |           |           |
      |           |&lt;- INVITE -|           |           |           |
      |           |  Step 5   |           |           |           |
      |           |           |           |           |           |
      |           |-NotFound-&gt;|           |           |           |
      |           |  Step 6   |           |           |           |
-     |           |           |           |           |           |
      |           |           |-NotFound-&gt;|           |           |
      |           |           |  Step 7   |           |           |
-     |           |           |           |           |           |
      |           |           |           |-NotFound-&gt;|           |
      |           |           |           |  Step 8   |           |
-     |           |           |           |           |           |
      |           |           |           |           |--- VM ---&gt;|
      |           |           |           |           |  Step 9   |
      |           |           |           |           |           |
@@ -1600,10 +1587,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <p id="section-5.2.1-1.3.1"><strong>Bob’s SBC</strong>:<a href="#section-5.2.1-1.3.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.2.1-1.3.2.1">
-                  <p id="section-5.2.1-1.3.2.1.1">Prefixes <code>10</code> to the dialed number, creating <code>1019495550199</code>.<a href="#section-5.2.1-1.3.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.2.1-1.3.2.1.1">Generates a Calling Party Number of <code>100</code> plus the last 12 digits of the dialed number, resulting in <code>10019495550199</code>.<a href="#section-5.2.1-1.3.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.2.1-1.3.2.2">
-                  <p id="section-5.2.1-1.3.2.2.1">Forwards the call toward Alice’s number (<code>+12125550100</code>) with the modified Caller-ID <code>+1019495550199</code>.<a href="#section-5.2.1-1.3.2.2.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.2.1-1.3.2.2.1">Forwards the call toward Alice’s number (<code>+12125550100</code>) with the modified Caller-ID <code>+10019495550199</code>.<a href="#section-5.2.1-1.3.2.2.1" class="pilcrow">¶</a></p>
 </li>
               </ul>
 </li>
@@ -1614,7 +1601,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <p id="section-5.2.1-1.5.1"><strong>Alice’s SBC</strong>:<a href="#section-5.2.1-1.5.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.2.1-1.5.2.1">
-                  <p id="section-5.2.1-1.5.2.1.1">Detects the <code>10</code> prefix and recognizes this as a vouch call.<a href="#section-5.2.1-1.5.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.2.1-1.5.2.1.1">Detects the <code>100</code> prefix and recognizes this as a vouch call.<a href="#section-5.2.1-1.5.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.2.1-1.5.2.2">
                   <p id="section-5.2.1-1.5.2.2.1">Routes the call to CIDVV_A for verification.<a href="#section-5.2.1-1.5.2.2.1" class="pilcrow">¶</a></p>
@@ -1625,10 +1612,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <p id="section-5.2.1-1.6.1"><strong>CIDVV_A</strong>:<a href="#section-5.2.1-1.6.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.2.1-1.6.2.1">
-                  <p id="section-5.2.1-1.6.2.1.1">Processes <code>To: +12125550100</code> and <code>From: +1019495550199</code>.<a href="#section-5.2.1-1.6.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.2.1-1.6.2.1.1">Processes <code>To: +12125550100</code> and <code>From: +10019495550199</code>.<a href="#section-5.2.1-1.6.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.2.1-1.6.2.2">
-                  <p id="section-5.2.1-1.6.2.2.1">Strips the <code>10</code> prefix, yielding <code>+19495550199</code>.<a href="#section-5.2.1-1.6.2.2.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.2.1-1.6.2.2.1">Strips the <code>100</code> prefix, yielding <code>+19495550199</code>.<a href="#section-5.2.1-1.6.2.2.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.2.1-1.6.2.3">
                   <p id="section-5.2.1-1.6.2.3.1">Swaps From and To values.<a href="#section-5.2.1-1.6.2.3.1" class="pilcrow">¶</a></p>
@@ -1667,39 +1654,33 @@ svg :is([fill="white"], [fill^="#fff"]) {
           <h4 id="name-first-vetting-call">
 <a href="#section-5.3.1" class="section-number selfRef">5.3.1. </a><a href="#name-first-vetting-call" class="section-name selfRef">First Vetting Call</a>
           </h4>
-<span id="name-first-vetting-call-creates-"></span><figure id="figure-3">
+<span id="name-first-vetting-call-with-100"></span><figure id="figure-3">
             <div class="alignLeft art-text artwork" id="section-5.3.1-1.1">
 <pre>
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
       |             |             |             |             |
-      |-- INVITE --&gt;|             |             |             |
+      |-- INVITE --&gt;|             |             |             |      Step 1
       |   Step 1    |             |             |             |
-      |             |             |             |             |
       |             |-- INVITE --&gt;|             |             |
       |             |   Step 2    |             |             |
-      |             |             |             |             |
       |             |             |-- INVITE --&gt;|             |
       |             |             |   Step 3    |             |
-      |             |             |             |             |
       |             |             |             |-- INVITE --&gt;|
       |             |             |             |   Step 4    |
       |             |             |             |             |
       |             |             |             |&lt;-Not Found--|
       |             |             |             |   Step 5    |
-      |             |             |             |             |
       |             |             |&lt;-Not Found--|             |
       |             |             |   Step 6    |             |
-      |             |             |             |             |
       |             |&lt;-Not Found--|             |             |
       |             |   Step 7    |             |             |
-      |             |             |             |             |
       |&lt;-Not Found--|             |             |             |
       |   Step 8    |             |             |             |
       |             |             |             |             |
 </pre>
 </div>
 <figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
-<a href="#name-first-vetting-call-creates-" class="selfRef">First vetting call - creates cache entry or receives 404</a>
+<a href="#name-first-vetting-call-with-100" class="selfRef">First vetting call with 100 - creates cache entry or receives 404</a>
             </figcaption></figure>
 </section>
 </div>
@@ -1708,39 +1689,33 @@ svg :is([fill="white"], [fill^="#fff"]) {
           <h4 id="name-second-vetting-call">
 <a href="#section-5.3.2" class="section-number selfRef">5.3.2. </a><a href="#name-second-vetting-call" class="section-name selfRef">Second Vetting Call</a>
           </h4>
-<span id="name-second-vetting-call-confirm"></span><figure id="figure-4">
+<span id="name-vetting-token-check-call-wi"></span><figure id="figure-4">
             <div class="alignLeft art-text artwork" id="section-5.3.2-1.1">
 <pre>
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
       |             |             |             |             |
       |-- INVITE --&gt;|             |             |             |
       |   Step 1    |             |             |             |
-      |             |             |             |             |
       |             |-- INVITE --&gt;|             |             |
       |             |   Step 2    |             |             |
-      |             |             |             |             |
       |             |             |-- INVITE --&gt;|             |
       |             |             |   Step 3    |             |
-      |             |             |             |             |
       |             |             |             |-- INVITE --&gt;|
       |             |             |             |   Step 4    |
       |             |             |             |             |
       |             |             |             |&lt;-Busy Here--|
       |             |             |             |   Step 5    |
-      |             |             |             |             |
       |             |             |&lt;-Busy Here--|             |
       |             |             |   Step 6    |             |
-      |             |             |             |             |
       |             |&lt;-Busy Here--|             |             |
       |             |   Step 7    |             |             |
-      |             |             |             |             |
       |&lt;-Busy Here--|             |             |             |
       |   Step 8    |             |             |             |
       |             |             |             |             |
 </pre>
 </div>
 <figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
-<a href="#name-second-vetting-call-confirm" class="selfRef">Second vetting call - confirms vouch with 486 Busy Here</a>
+<a href="#name-vetting-token-check-call-wi" class="selfRef">Vetting token check call with 101 - confirms vouch with 486 Busy Here</a>
             </figcaption></figure>
 </section>
 </div>
@@ -1758,29 +1733,32 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <p id="section-5.3.3-2.2.1">Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional validity window (e.g. one week) into their respective CIDVV platforms.<a href="#section-5.3.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-5.3.3-2.3">
-              <p id="section-5.3.3-2.3.1">Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID <code>+1112125550100</code> toward Bob’s number (<code>+19495550199</code>). The call traverses the PSTN.<a href="#section-5.3.3-2.3.1" class="pilcrow">¶</a></p>
+              <p id="section-5.3.3-2.3.1">Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID <code>+10012125550100</code> toward Bob’s number (<code>+19495550199</code>). The call traverses the PSTN.<a href="#section-5.3.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-5.3.3-2.4">
-              <p id="section-5.3.3-2.4.1">Bob’s SBC recognizes the leading <code>11</code> prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).<a href="#section-5.3.3-2.4.1" class="pilcrow">¶</a></p>
+              <p id="section-5.3.3-2.4.1">Bob’s SBC recognizes the leading <code>100</code> prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).<a href="#section-5.3.3-2.4.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-5.3.3-2.5">
               <p id="section-5.3.3-2.5.1"><strong>CIDVV_B</strong>:<a href="#section-5.3.3-2.5.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.3.3-2.5.2.1">
-                  <p id="section-5.3.3-2.5.2.1.1">Strips the leading <code>11</code>, recovering Alice’s vetting Caller-ID <code>+12125550100</code>.<a href="#section-5.3.3-2.5.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.3.3-2.5.2.1.1">Strips the leading <code>100</code>, recovering Alice’s Caller-ID <code>+12125550100</code>.<a href="#section-5.3.3-2.5.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.3.3-2.5.2.2">
-                  <p id="section-5.3.3-2.5.2.2.1">Computes the SHA-256 digest of the concatenated string
-<code>+12125550100+19495550199hamburger</code>.<a href="#section-5.3.3-2.5.2.2.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.3.3-2.5.2.2.1">Recognizes this as a pre-agreed Vetting Caller-ID<a href="#section-5.3.3-2.5.2.2.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.3.3-2.5.2.3">
-                  <p id="section-5.3.3-2.5.2.3.1">Takes the first 8 hexadecimal characters (<code>b0092191</code>), converts to decimal (<code>2953388433</code>), pads to 10 digits, and prepends <code>1</code>, yielding <code>12953388433</code>.<a href="#section-5.3.3-2.5.2.3.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.3.3-2.5.2.3.1">Computes the SHA-256 digest of the concatenated string
+<code>+12125550100+19495550199hamburger</code>.<a href="#section-5.3.3-2.5.2.3.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.3.3-2.5.2.4">
-                  <p id="section-5.3.3-2.5.2.4.1">Caches this value for a short period (≈10 seconds).<a href="#section-5.3.3-2.5.2.4.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.3.3-2.5.2.4.1">Takes the first 8 hexadecimal characters (<code>b0092191</code>), converts to decimal (<code>2953388433</code>), pads to 10 digits, and prepends <code>1</code>, yielding <code>12953388433</code>.<a href="#section-5.3.3-2.5.2.4.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.3.3-2.5.2.5">
-                  <p id="section-5.3.3-2.5.2.5.1">Rejects the call with <strong>404 Not Found</strong>.<a href="#section-5.3.3-2.5.2.5.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.3.3-2.5.2.5.1">Caches this value for a short period (≈10 seconds).<a href="#section-5.3.3-2.5.2.5.1" class="pilcrow">¶</a></p>
+</li>
+                <li class="normal" id="section-5.3.3-2.5.2.6">
+                  <p id="section-5.3.3-2.5.2.6.1">Rejects the call with <strong>404 Not Found</strong>.<a href="#section-5.3.3-2.5.2.6.1" class="pilcrow">¶</a></p>
 </li>
               </ul>
 </li>
@@ -1788,22 +1766,25 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <p id="section-5.3.3-2.6.1">CIDVV_A receives the 404 and performs the identical hash calculation to derive <code>12953388433</code>.<a href="#section-5.3.3-2.6.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-5.3.3-2.7">
-              <p id="section-5.3.3-2.7.1">CIDVV_A immediately places a second vetting call to <code>+19495550199</code> using Caller-ID <code>+1112953388433</code>.<a href="#section-5.3.3-2.7.1" class="pilcrow">¶</a></p>
+              <p id="section-5.3.3-2.7.1">CIDVV_A immediately places a second vetting call to <code>+19495550199</code> using the Vetting Token Check Caller-ID <code>+10112953388433</code>.<a href="#section-5.3.3-2.7.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-5.3.3-2.8">
-              <p id="section-5.3.3-2.8.1">Bob’s SBC again recognizes the <code>11</code> prefix and forwards the call to CIDVV_B.<a href="#section-5.3.3-2.8.1" class="pilcrow">¶</a></p>
+              <p id="section-5.3.3-2.8.1">Bob’s SBC recognizes the <code>101</code> prefix on the Caller-ID and forwards the call to CIDVV_B.<a href="#section-5.3.3-2.8.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-5.3.3-2.9">
               <p id="section-5.3.3-2.9.1"><strong>CIDVV_B</strong>:<a href="#section-5.3.3-2.9.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.3.3-2.9.2.1">
-                  <p id="section-5.3.3-2.9.2.1.1">Strips the leading <code>11</code>.<a href="#section-5.3.3-2.9.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.3.3-2.9.2.1.1">Reognizes the leading <code>101</code> as a Vetting Token Check call<a href="#section-5.3.3-2.9.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.3.3-2.9.2.2">
-                  <p id="section-5.3.3-2.9.2.2.1">Observes that the incoming Caller-ID (<code>12953388433</code>) matches a recently cached vetting token.<a href="#section-5.3.3-2.9.2.2.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.3.3-2.9.2.2.1">Strips the leading <code>101</code>.<a href="#section-5.3.3-2.9.2.2.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-5.3.3-2.9.2.3">
-                  <p id="section-5.3.3-2.9.2.3.1">Responds with <strong>486 Busy Here</strong> to signal a successful vet.<a href="#section-5.3.3-2.9.2.3.1" class="pilcrow">¶</a></p>
+                  <p id="section-5.3.3-2.9.2.3.1">Observes that the remaining Caller-ID (<code>12953388433</code>) matches a recently cached vetting token.<a href="#section-5.3.3-2.9.2.3.1" class="pilcrow">¶</a></p>
+</li>
+                <li class="normal" id="section-5.3.3-2.9.2.4">
+                  <p id="section-5.3.3-2.9.2.4.1">Responds with <strong>486 Busy Here</strong> to signal a successful vet.<a href="#section-5.3.3-2.9.2.4.1" class="pilcrow">¶</a></p>
 </li>
               </ul>
 </li>
