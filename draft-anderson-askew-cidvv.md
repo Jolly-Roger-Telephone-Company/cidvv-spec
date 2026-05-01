@@ -25,10 +25,13 @@ author:
     ins: P. Askew
     name: Phillip Askew
     country: US
+---
 
-<!-- Check headings to ensure they're separated by blank lines
-^#{1,6} .+\n[^\n]
+<!-- 
+Notes:
+Headings (starting with #) must be separated by a blank line. Can use this regex to find: ^#{1,6} .+\n[^\n]
 -->
+
 --- abstract
 
 This document describes CallerID Vouching and Vetting (CIDVV), a lightweight protocol that improves trust in Caller-ID using existing Public Switched Telephone Network (PSTN) routing and numbering constraints.
