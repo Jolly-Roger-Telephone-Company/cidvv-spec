@@ -144,7 +144,7 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
      |           |           |           |           |           |
 ~~~~
 {: #fig-successful-vouch title="Example Successful Vouch"}
-### Successful Vouch Call Flow
+### Successful Vouch Step-by-step description
 
 The diagram above shows the high-level message flow. The following numbered steps provide the detailed behavior, including Caller-ID manipulation performed by the CIDVV platforms.
 
@@ -218,7 +218,7 @@ The following diagram shows a failed vouch attempt by an impersonator (Mallory) 
      |           |           |           |           |           |
 ~~~~
 {: #fig-failed-vouch title="Example Failed Vouch"}
-#### Step-by-step description
+### Failed Vouch Step-by-step description
 
 1. Mallory spoofs Alice’s Caller-ID (`+12125550100`) and initiates a call to Bob (`+19495550199`).
 
@@ -247,6 +247,112 @@ The following diagram shows a failed vouch attempt by an impersonator (Mallory) 
 8. **Bob’s SBC** recognizes the 404 as a failed vouch and either rejects the call or forwards it to Bob’s voicemail. Bob remains unaware of the impersonation attempt.
 
 This mechanism ensures that only calls that originated from a legitimate CIDVV platform (i.e., those that previously cached the attempt) will pass vouching. Spoofed or unsolicited calls are rejected early.
+
+## Vetting a Caller-ID Number
+Vetting a number requires **two independent calls** (separate SIP dialogs). The first call checks whether the number is known; the second call performs the confirmation.
+### First Vetting Call
+~~~~
+   CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
+      |             |             |             |             |
+      |-- INVITE -->|             |             |             |
+      |   Step 1    |             |             |             |
+      |             |             |             |             |
+      |             |-- INVITE -->|             |             |
+      |             |   Step 2    |             |             |
+      |             |             |             |             |
+      |             |             |-- INVITE -->|             |
+      |             |             |   Step 3    |             |
+      |             |             |             |             |
+      |             |             |             |-- INVITE -->|
+      |             |             |             |   Step 4    |
+      |             |             |             |             |
+      |             |             |             |<-Not Found--|
+      |             |             |             |   Step 5    |
+      |             |             |             |             |
+      |             |             |<-Not Found--|             |
+      |             |             |   Step 6    |             |
+      |             |             |             |             |
+      |             |<-Not Found--|             |             |
+      |             |   Step 7    |             |             |
+      |             |             |             |             |
+      |<-Not Found--|             |             |             |
+      |   Step 8    |             |             |             |
+      |             |             |             |             |
+~~~~
+{: title="First vetting call - creates cache entry or receives 404"}
+
+### Second Vetting Call
+~~~~
+   CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
+      |             |             |             |             |
+      |-- INVITE -->|             |             |             |
+      |   Step 1    |             |             |             |
+      |             |             |             |             |
+      |             |-- INVITE -->|             |             |
+      |             |   Step 2    |             |             |
+      |             |             |             |             |
+      |             |             |-- INVITE -->|             |
+      |             |             |   Step 3    |             |
+      |             |             |             |             |
+      |             |             |             |-- INVITE -->|
+      |             |             |             |   Step 4    |
+      |             |             |             |             |
+      |             |             |             |<-Busy Here--|
+      |             |             |             |   Step 5    |
+      |             |             |             |             |
+      |             |             |<-Busy Here--|             |
+      |             |             |   Step 6    |             |
+      |             |             |             |             |
+      |             |<-Busy Here--|             |             |
+      |             |   Step 7    |             |             |
+      |             |             |             |             |
+      |<-Busy Here--|             |             |             |
+      |   Step 8    |             |             |             |
+      |             |             |             |             |
+~~~~
+{: title="Second vetting call - confirms vouch with 486 Busy Here"}
+### 6.2. Successful Caller-ID Vetting Flow
+
+Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party controls the target telephone number and possesses the correct shared secret.
+
+1. Alice and Bob agree on a shared secret (e.g. `hamburger`) and Alice’s vetting Caller-ID (`+12125550100`).
+
+2. Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional validity window (e.g. one week) into their respective CIDVV platforms.
+
+3. Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `+1112125550100` toward Bob’s number (`+19495550199`). The call traverses the PSTN.
+
+4. Bob’s SBC recognizes the leading `11` prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).
+
+5. **CIDVV_B**:
+   - Strips the leading `11`, recovering Alice’s vetting Caller-ID `+12125550100`.
+   - Computes the SHA-256 digest of the concatenated string  
+     `+12125550100+19495550199hamburger`.
+   - Takes the first 8 hexadecimal characters (`b0092191`), converts to decimal (`2953388433`), pads to 10 digits, and prepends `1`, yielding `12953388433`.
+   - Caches this value for a short period (≈10 seconds).
+   - Rejects the call with **404 Not Found**.
+
+6. CIDVV_A receives the 404 and performs the identical hash calculation to derive `12953388433`.
+
+7. CIDVV_A immediately places a second vetting call to `+19495550199` using Caller-ID `+1112953388433`.
+
+8. Bob’s SBC again recognizes the `11` prefix and forwards the call to CIDVV_B.
+
+9. **CIDVV_B**:
+   - Strips the leading `11`.
+   - Observes that the incoming Caller-ID (`12953388433`) matches a recently cached vetting token.
+   - Responds with **486 Busy Here** to signal a successful vet.
+
+10. CIDVV_A receives the 486 Busy Here and reports a successful vet to Alice.
+
+#### Vetting Failure Cases
+
+A vetting attempt may fail for the following reasons:
+
+* Bob does not have a participating CIDVV platform — the first call will not return 404, or the second call will not return 486.
+* The shared secret, Alice’s vetting Caller-ID, or time window does not match — the two calls will not produce the expected 404 + 486 sequence.
+* Network or policy restrictions prevent one or both calls from reaching the remote CIDVV platform.
+
+This two-call challenge-response mechanism provides strong confirmation that the remote number is both reachable via the PSTN and controlled by an entity that knows the shared secret.
 
 # Security Considerations
 
