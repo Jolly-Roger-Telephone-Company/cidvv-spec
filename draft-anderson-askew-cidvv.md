@@ -66,7 +66,7 @@ The mechanism operates entirely within normal PSTN routing behavior and requires
 * **Vet** (or **Vetting**): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
 * **Vouching Call**: One of the two short calls used in the CIDVV protocol (typically rejected with 404 or 486).
 
-## 2.  Motivation and Advantages
+## Motivation and Advantages
 
 The CIDVV vouching and vetting mechanism is designed to operate with minimal new infrastructure while providing strong protection against Caller-ID spoofing.  Its primary advantages are:
 
@@ -347,7 +347,7 @@ Vetting a number requires **two independent calls** (separate SIP dialogs). The 
 ~~~~
 {: title="Second vetting call - confirms vouch with 486 Busy Here"}
 
-### 6.2. Successful Caller-ID Vetting Flow
+### Successful Caller-ID Vetting Flow
 
 Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party controls the target telephone number and possesses the correct shared secret.
 
