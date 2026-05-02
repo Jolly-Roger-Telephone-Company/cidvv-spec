@@ -90,8 +90,8 @@ Table of Contents
    6.  Examples
      6.1.  Successful Vouch Call Flow
        6.1.1.  Successful Vouch Step-by-step description
-     6.2.  Failed Vouch Call Flow
-       6.2.1.  Failed Vouch Step-by-step description
+     6.2.  Unsuccessful Vouch Call Flow
+       6.2.1.  Unsuccessful Vouch Step-by-step description
      6.3.  Vetting a Caller-ID Number
        6.3.1.  First Vetting Call
        6.3.2.  Second Vetting Call
@@ -196,6 +196,15 @@ Table of Contents
 
    *  *Vouching Call*: One of the two short calls used in the CIDVV
       protocol (typically rejected with 404 or 486).
+
+   *  *Successful Vouch*: A verification result indicating that a
+      matching cache entry was found.
+
+   *  *Unsuccessful Vouch*: A verification result indicating that no
+      matching cache entry was found.
+
+   *  *Verification Not Performed*: A condition where verification could
+      not be completed due to system or network conditions.
 
 2.1.  Motivation and Advantages
 
@@ -361,7 +370,7 @@ Table of Contents
    response as a successful vet.
 
    Any other response, timeout, code mismatch, expired cache entry, or
-   unexpected Caller-ID MUST be treated as a failed vet.
+   unexpected Caller-ID MUST be treated as an unsuccessful vet.
 
 6.  Examples
 
@@ -469,10 +478,10 @@ Table of Contents
    allows the originating CIDVV platform to confirm that the asserted
    Caller-ID is valid without completing the initial call.
 
-6.2.  Failed Vouch Call Flow
+6.2.  Unsuccessful Vouch Call Flow
 
-   The following diagram shows a failed vouch attempt by an impersonator
-   (Mallory) who spoofs Alice's Caller-ID.
+   The following diagram shows an unsuccessful vouch attempt by an
+   impersonator (Mallory) who spoofs Alice's Caller-ID.
 
    Mallory     CIDVV_A      SBC_A        PSTN       SBC_B    Voicemail_B
       |           |           |           |           |           |
@@ -498,9 +507,9 @@ Table of Contents
       |           |           |           |           |  Step 9   |
       |           |           |           |           |           |
 
-                     Figure 2: Example Failed Vouch
+                  Figure 2: Example Unsuccessful Vouch
 
-6.2.1.  Failed Vouch Step-by-step description
+6.2.1.  Unsuccessful Vouch Step-by-step description
 
    1.  Mallory spoofs Alice’s Caller-ID (+12125550100) and initiates a
        call to Bob (+19495550199).
@@ -541,7 +550,7 @@ Table of Contents
 
    7.  The 404 propagates back through the PSTN to Bob’s SBC.
 
-   8.  *Bob’s SBC* recognizes the 404 as a failed vouch and either
+   8.  *Bob’s SBC* recognizes the 404 as a unsuccessful vouch and either
        rejects the call or forwards it to Bob’s voicemail.  Bob remains
        unaware of the impersonation attempt.
 
@@ -742,8 +751,8 @@ Table of Contents
 
    CIDVV platforms rely on short-lived state.  Upon restart or loss of
    state, implementations SHOULD continue accepting new call deposits
-   but MUST treat all verification requests as failed until sufficient
-   state has been rebuilt.
+   but MUST treat all verification requests as unsuccessful until
+   sufficient state has been rebuilt.
 
    Implementations SHOULD return a non-success response (e.g., 4xx, 5xx,
    or 6xx).  A 603 (Decline) response is commonly used to indicate that
@@ -828,8 +837,8 @@ Table of Contents
    for denial-of-service (DoS) purposes.
 
    Implementations MUST: - Rate-limit CIDVV signaling requests - Detect
-   and suppress repeated failed attempts - Bound resource usage for
-   temporary state
+   and suppress repeated unsuccessful attempts - Bound resource usage
+   for temporary state
 
    Implementations SHOULD: - Apply per-source and per-destination limits
    - Monitor for anomalous traffic patterns

@@ -1220,10 +1220,10 @@ modification.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
                 </ul>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
-                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-failed-vouch-call-flow" class="internal xref">Failed Vouch Call Flow</a></p>
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-unsuccessful-vouch-call-flo" class="internal xref">Unsuccessful Vouch Call Flow</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2.2.1">
-                    <p id="section-toc.1-1.6.2.2.2.1.1"><a href="#section-6.2.1" class="auto internal xref">6.2.1</a>.  <a href="#name-failed-vouch-step-by-step-d" class="internal xref">Failed Vouch Step-by-step description</a></p>
+                    <p id="section-toc.1-1.6.2.2.2.1.1"><a href="#section-6.2.1" class="auto internal xref">6.2.1</a>.  <a href="#name-unsuccessful-vouch-step-by-" class="internal xref">Unsuccessful Vouch Step-by-step description</a></p>
 </li>
                 </ul>
 </li>
@@ -1402,6 +1402,15 @@ authoritative routing ownership for telephone numbers.<a href="#section-1-7.1.1"
         <li class="normal" id="section-2-1.10">
           <p id="section-2-1.10.1"><strong>Vouching Call</strong>: One of the two short calls used in the CIDVV protocol (typically rejected with 404 or 486).<a href="#section-2-1.10.1" class="pilcrow">¶</a></p>
 </li>
+        <li class="normal" id="section-2-1.11">
+          <p id="section-2-1.11.1"><strong>Successful Vouch</strong>: A verification result indicating that a matching cache entry was found.<a href="#section-2-1.11.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.12">
+          <p id="section-2-1.12.1"><strong>Unsuccessful Vouch</strong>: A verification result indicating that no matching cache entry was found.<a href="#section-2-1.12.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.13">
+          <p id="section-2-1.13.1"><strong>Verification Not Performed</strong>: A condition where verification could not be completed due to system or network conditions.<a href="#section-2-1.13.1" class="pilcrow">¶</a></p>
+</li>
       </ul>
 <div id="motivation-and-advantages">
 <section id="section-2.1">
@@ -1550,7 +1559,7 @@ or intermediaries) as an indication of an unsuccessful vouch.<a href="#section-5
 <p id="section-5.2-4">Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.<a href="#section-5.2-4" class="pilcrow">¶</a></p>
 <p id="section-5.2-5">When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.<a href="#section-5.2-5" class="pilcrow">¶</a></p>
 <p id="section-5.2-6">If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.<a href="#section-5.2-6" class="pilcrow">¶</a></p>
-<p id="section-5.2-7">Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as a failed vet.<a href="#section-5.2-7" class="pilcrow">¶</a></p>
+<p id="section-5.2-7">Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as an unsuccessful vet.<a href="#section-5.2-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1696,13 +1705,13 @@ or intermediaries) as an indication of an unsuccessful vouch.<a href="#section-5
 </div>
 </section>
 </div>
-<div id="failed-vouch-call-flow">
+<div id="unsuccessful-vouch-call-flow">
 <section id="section-6.2">
-        <h3 id="name-failed-vouch-call-flow">
-<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-failed-vouch-call-flow" class="section-name selfRef">Failed Vouch Call Flow</a>
+        <h3 id="name-unsuccessful-vouch-call-flo">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-unsuccessful-vouch-call-flo" class="section-name selfRef">Unsuccessful Vouch Call Flow</a>
         </h3>
-<p id="section-6.2-1">The following diagram shows a failed vouch attempt by an impersonator (Mallory) who spoofs Alice's Caller-ID.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
-<span id="name-example-failed-vouch"></span><div id="fig-failed-vouch">
+<p id="section-6.2-1">The following diagram shows an unsuccessful vouch attempt by an impersonator (Mallory) who spoofs Alice's Caller-ID.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<span id="name-example-unsuccessful-vouch"></span><div id="fig-unsuccessful-vouch">
 <figure id="figure-2">
           <div class="alignLeft art-text artwork" id="section-6.2-2.1">
 <pre>
@@ -1732,13 +1741,13 @@ or intermediaries) as an indication of an unsuccessful vouch.<a href="#section-5
 </pre>
 </div>
 <figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
-<a href="#name-example-failed-vouch" class="selfRef">Example Failed Vouch</a>
+<a href="#name-example-unsuccessful-vouch" class="selfRef">Example Unsuccessful Vouch</a>
           </figcaption></figure>
 </div>
-<div id="failed-vouch-step-by-step-description">
+<div id="unsuccessful-vouch-step-by-step-description">
 <section id="section-6.2.1">
-          <h4 id="name-failed-vouch-step-by-step-d">
-<a href="#section-6.2.1" class="section-number selfRef">6.2.1. </a><a href="#name-failed-vouch-step-by-step-d" class="section-name selfRef">Failed Vouch Step-by-step description</a>
+          <h4 id="name-unsuccessful-vouch-step-by-">
+<a href="#section-6.2.1" class="section-number selfRef">6.2.1. </a><a href="#name-unsuccessful-vouch-step-by-" class="section-name selfRef">Unsuccessful Vouch Step-by-step description</a>
           </h4>
 <ol start="1" type="1" class="normal type-1" id="section-6.2.1-1">
 <li id="section-6.2.1-1.1">
@@ -1799,7 +1808,7 @@ or intermediaries) as an indication of an unsuccessful vouch.<a href="#section-5
               <p id="section-6.2.1-1.7.1">The 404 propagates back through the PSTN to Bob’s SBC.<a href="#section-6.2.1-1.7.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.2.1-1.8">
-              <p id="section-6.2.1-1.8.1"><strong>Bob’s SBC</strong> recognizes the 404 as a failed vouch and either rejects the call or forwards it to Bob’s voicemail. Bob remains unaware of the impersonation attempt.<a href="#section-6.2.1-1.8.1" class="pilcrow">¶</a></p>
+              <p id="section-6.2.1-1.8.1"><strong>Bob’s SBC</strong> recognizes the 404 as a unsuccessful vouch and either rejects the call or forwards it to Bob’s voicemail. Bob remains unaware of the impersonation attempt.<a href="#section-6.2.1-1.8.1" class="pilcrow">¶</a></p>
 </li>
           </ol>
 <p id="section-6.2.1-2">This mechanism ensures that only calls that originated from a legitimate CIDVV platform (i.e., those that previously cached the attempt) will pass vouching. Spoofed or unsolicited calls are rejected early.<a href="#section-6.2.1-2" class="pilcrow">¶</a></p>
@@ -2057,7 +2066,7 @@ implementing CIDVV.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
         </h3>
 <p id="section-8.2-1">CIDVV platforms rely on short-lived state. Upon restart or loss of
 state, implementations SHOULD continue accepting new call deposits
-but MUST treat all verification requests as failed until sufficient
+but MUST treat all verification requests as unsuccessful until sufficient
 state has been rebuilt.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
 <p id="section-8.2-2">Implementations SHOULD return a non-success response (e.g., 4xx,
 5xx, or 6xx). A 603 (Decline) response is commonly used to indicate
@@ -2163,7 +2172,7 @@ cannot complete the vouching process.<a href="#section-9.3-1" class="pilcrow">¶
 for denial-of-service (DoS) purposes.<a href="#section-9.4-1" class="pilcrow">¶</a></p>
 <p id="section-9.4-2">Implementations MUST:
 - Rate-limit CIDVV signaling requests
-- Detect and suppress repeated failed attempts
+- Detect and suppress repeated unsuccessful attempts
 - Bound resource usage for temporary state<a href="#section-9.4-2" class="pilcrow">¶</a></p>
 <p id="section-9.4-3">Implementations SHOULD:
 - Apply per-source and per-destination limits
