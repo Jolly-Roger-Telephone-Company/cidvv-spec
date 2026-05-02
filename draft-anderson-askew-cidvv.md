@@ -8,7 +8,7 @@ ipr: trust200902
 date: 2026-04
 consensus: false
 v: 3
-keyword: telephony, callerid, spoofing, PSTN, LERG
+keyword: telephony, callerid, spoofing, PSTN
 
 venue:
   github: "jollyrogertelephone/draft-cidvv"
@@ -90,8 +90,7 @@ CIDVV leverages two key elements of the existing telephone ecosystem:
 
 * Existing routing databases and numbering plans, which provide
   authoritative routing ownership for telephone numbers.
-* Digit sequences unlikely to conflict with valid numbering plans
-  (e.g., "100" and "101"), used to encode short-lived signaling.
+* Digit sequences chosen to minimize conflict with valid numbering plans (e.g., "100" and "101")
 
 The mechanism operates entirely within normal PSTN routing behavior and requires no media exchange.
 
@@ -102,7 +101,6 @@ The mechanism operates entirely within normal PSTN routing behavior and requires
 * **Mallory**: An attacker attempting to spoof a Caller-ID.
 * **OSP**: Originating Service Provider.
 * **TSP**: Terminating Service Provider.
-* **LERG**: Local Exchange Routing Guide.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the two-call challenge-response mechanism described in this document. A successful vouch proves the calling party legitimately controls the asserted Caller-ID.
 * **Vet** (or **Vetting**): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
@@ -112,9 +110,9 @@ The mechanism operates entirely within normal PSTN routing behavior and requires
 
 The CIDVV vouching and vetting mechanism is designed to operate with minimal new infrastructure while providing strong protection against Caller-ID spoofing.  Its primary advantages are:
 
-* **Leverages existing PSTN infrastructure**: The mechanism uses the LERG and standard PSTN routing tables.  No central authority, shared database, registration service, or global vetting infrastructure is required.
+* **Leverages existing PSTN infrastructure**: The mechanism uses existing numbering plans and routing databases to direct calls without requiring additional infrastructure.
 
-* **Strong anti-spoofing protection**: A successful vouch proves that the asserted Caller-ID is controlled by the legitimate owner, because only the real owner can generate the correct challenge-response sequence.  Spoofed calls are rejected early with 404 Not Found.
+* **Strong anti-spoofing protection**: A successful vouch proves that the asserted Caller-ID is controlled by the legitimate owner, because only the real owner can generate the correct challenge-response sequence. Spoofed calls are typically rejected early, often resulting in failure responses such as 404 Not Found.
 
 * **Visibility into spoofing activity**: Telephone number owners gain direct insight into how often (and from where) their numbers are being spoofed worldwide through logged vetting attempts.
 
@@ -153,6 +151,11 @@ CIDVV uses special Caller-ID prefixes to signal protocol operations:
 * "101" prefix — Vetting Token Check
 
 CIDVV exchanges occur using short signaling dialogs and do not require media establishment.
+
+CIDVV signaling is encoded entirely within numeric Calling Party
+Number values to maximize survivability across heterogeneous SIP and
+SS7/TDM networks.
+
 
 # Protocol Operation
 
@@ -410,7 +413,7 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 8. Bob’s SBC recognizes the `101` prefix on the Caller-ID and forwards the call to CIDVV_B.
 
 9. **CIDVV_B**:
-   - Reognizes the leading `101` as a Vetting Token Check call
+   - Recognizes the leading `101` as a Vetting Token Check call
    - Strips the leading `101`.
    - Observes that the remaining Caller-ID (`12953388433`) matches a recently cached vetting token.
    - Responds with **486 Busy Here** to signal a successful vet.
@@ -483,7 +486,7 @@ state, implementations SHOULD continue accepting new call deposits
 but MUST treat all verification requests as failed until sufficient
 state has been rebuilt.
 
-implementations SHOULD return a non-success response (e.g., 4xx,
+Implementations SHOULD return a non-success response (e.g., 4xx,
 5xx, or 6xx). A 603 (Decline) response is commonly used to indicate
 that verification could not be performed.
 
