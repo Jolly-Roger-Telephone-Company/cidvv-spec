@@ -97,6 +97,18 @@ The CIDVV vouching and vetting mechanism is designed to operate with minimal new
 
 This design lowers the barrier to entry and encourages broad adoption while avoiding the single points of failure and high coordination costs associated with centralized solutions. These properties make the vouching mechanism particularly suitable for service providers, enterprises, and end users who need robust Caller-ID validation today, using only existing telephone infrastructure.
 
+# Design Principles
+
+CIDVV is designed to operate under the assumption that intermediate
+networks may normalize, truncate, or otherwise modify signaling
+information. The protocol therefore encodes all required signaling in
+a numeric Calling Party Number that can survive traversal of mixed
+SIP and SS7/TDM networks.
+
+CIDVV does not require successful call completion. It relies only on
+the ability of signaling indicators and failure responses to traverse
+the network path.
+
 # Protocol Overview
 
 CIDVV uses special Caller-ID prefixes to signal protocol operations:
@@ -379,12 +391,89 @@ A vetting attempt may fail for the following reasons:
 
 This two-call challenge-response mechanism provides strong confirmation that the remote number is both reachable via the PSTN and controlled by an entity that knows the shared secret.
 
+# Deployment Considerations
+
+## Behavior of Non-CIDVV Systems
+
+Systems that do not implement CIDVV are not expected to recognize
+CIDVV signaling prefixes. Such systems will typically process CIDVV
+calls as ordinary calls and may return responses such as 603
+(Decline), 404 (Not Found), or other locally generated responses.
+
+CIDVV implementations MUST treat any unexpected response as a
+non-participating system and consider the vouch or vet attempt
+unsuccessful.
+
+## Handling of CIDVV Signaling Calls
+
+Networks that recognize CIDVV SHOULD NOT present calls with Calling
+Party Numbers beginning with "100" or "101" to end users.
+
+Such calls SHOULD be intercepted by network elements or CIDVV
+platforms and SHOULD result in non-success responses (e.g., 486 or
+603). A 200 OK response MUST NOT be generated for CIDVV signaling
+calls.
+
+Call analytics, labeling, and fraud detection systems SHOULD
+recognize CIDVV signaling prefixes ("100" and "101") and treat such
+calls as protocol signaling rather than ordinary subscriber calls.
+
+# Operational Considerations
+
+## Protocol Operation - Vouching
+
+If a vouching call results in a provisional response (e.g., 180
+Ringing) or a successful response (200 OK), the originating system
+SHOULD immediately cancel the call and treat the attempt as if the
+remote system does not implement CIDVV.
+
+## Failure and Restart Behavior
+
+CIDVV platforms rely on short-lived state. Upon restart or loss of
+state, implementations SHOULD continue accepting new call deposits
+but MUST treat all verification requests as failed until sufficient
+state has been rebuilt.
+
+During such conditions, implementations SHOULD return a response such
+as 603 (Decline) to indicate that verification could not be
+performed.
+
+Implementations SHOULD fail closed (treating requests as unverified)
+rather than risk false-positive validation.
+
+## Prefix Preservation
+
+SIP intermediaries and SBCs that support CIDVV SHOULD preserve the
+Calling Party Number digits used for CIDVV signaling, including the
+leading "100" or "101" prefix, across trusted interfaces unless local
+policy explicitly rejects the call.
+
+CIDVV does not rely on Type-of-Number (TON) preservation and assumes
+that intermediate networks may normalize or reinterpret numbering
+format.
+
 # Security Considerations
 
 * Replay attacks are limited by short cache duration.
 * Implementations MUST rate-limit CIDVV signaling traffic.
 * CIDVV relies on correctness of PSTN routing and LERG data.
 * Shared secrets used in vetting MUST be protected.
+
+CIDVV implementations SHOULD avoid storing telephone numbers in
+plaintext within temporary state stores. Instead, implementations MAY
+store a derived value such as a cryptographic hash computed over the
+calling number, called number, and a local secret.
+
+Temporary state SHOULD expire automatically after a short interval
+(e.g., 10 seconds) using mechanisms such as in-memory or TTL-based
+data stores.
+
+The CIDVV signaling value carried in the Calling Party Number is not
+globally unique. It is used only as a short-lived correlation key in
+combination with the called number and local state.
+
+Implementations MUST NOT treat CIDVV-prefixed values as routable or
+globally meaningful telephone numbers.
 
 # IANA Considerations
 
