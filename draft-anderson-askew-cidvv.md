@@ -102,6 +102,7 @@ The mechanism operates entirely within normal PSTN routing behavior and requires
 * **OSP**: Originating Service Provider.
 * **TSP**: Terminating Service Provider.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
+* **CIDVV-aware Network Element**: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the two-call challenge-response mechanism described in this document. A successful vouch proves the calling party legitimately controls the asserted Caller-ID.
 * **Vet** (or **Vetting**): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
 * **Vouching Call**: One of the two short calls used in the CIDVV protocol (typically rejected with 404 or 486).
@@ -156,6 +157,26 @@ CIDVV signaling is encoded entirely within numeric Calling Party
 Number values to maximize survivability across heterogeneous SIP and
 SS7/TDM networks.
 
+## Response Semantics
+
+CIDVV uses SIP response codes as local signaling indicators between
+participating systems.
+
+In typical deployments:
+
+* 486 (Busy Here) indicates a successful vouch or vet.
+* 404 (Not Found) indicates an unsuccessful vouch or vet.
+* 603 (Decline) indicates that CIDVV is not implemented or that
+  verification could not be performed.
+
+However, intermediate SIP and SS7/TDM networks may translate,
+modify, or replace response codes. As a result, CIDVV implementations
+MUST NOT rely on specific numeric response codes being preserved
+end-to-end.
+
+Instead, implementations MUST interpret responses based on observed
+behavior and expected signaling patterns (e.g., immediate rejection,
+timeout, or call progression).
 
 # Protocol Operation
 
@@ -169,9 +190,15 @@ When Bob's system receives the call, Bob's system initiates a verification call 
 
 When Alice's CIDVV platform receives a call with a Caller-ID beginning with "100", it MUST remove the "100" prefix, compare the resulting number pair against the recent cache, and determine whether the original call attempt exists.
 
-If a matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 486 (Busy Here). Bob's system treats this response as a successful vouch.
+If a matching cache entry exists, Alice's CIDVV platform MUST reject
+the verification call with SIP response 486 (Busy Here). This
+response is interpreted by CIDVV-aware network elements (e.g., SBCs
+or intermediaries) as an indication of a successful vouch.
 
-If no matching cache entry exists, Alice's CIDVV platform MUST reject the verification call with SIP response 404 (Not Found). Bob's system treats this response as a failed vouch.
+If no matching cache entry exists, Alice's CIDVV platform MUST reject
+the verification call with SIP response 404 (Not Found). This
+response is interpreted by CIDVV-aware network elements (e.g., SBCs
+or intermediaries) as an indication of an unsuccessful vouch.
 
 ## Vetting Procedure
 
