@@ -8,17 +8,22 @@
 <meta content="Roger Anderson" name="author">
 <meta content="Phillip Askew" name="author">
 <meta content="
-       This document describes CallerID Vouching and Vetting (CIDVV), a lightweight protocol that improves trust in Caller-ID using existing Public Switched Telephone Network (PSTN) routing and numbering constraints. 
-       CIDVV defines two mechanisms: 
-       
-         
-           Vouching — verification that a call originates from the authorized service provider for a given telephone number. 
-         
-         
-           Vetting — verification that an entity controls a telephone number. 
-         
-       
-       CIDVV requires no centralized databases, certificates, or new signaling protocols and operates using existing PSTN infrastructure. 
+       Caller-ID spoofing remains a significant problem in telephony,
+particularly across inter-domain and international call paths where
+identity frameworks may not be consistently applied. 
+       This document defines Caller-ID Vouching and Vetting (CIDVV), a
+lightweight verification mechanism that uses short-lived signaling
+exchanges encoded within the Calling Party Number to confirm that a
+calling party can receive calls at the asserted number. 
+       CIDVV is designed to operate across heterogeneous SIP and SS7/TDM
+networks without requiring new protocol extensions or persistent
+identity infrastructure. It relies on existing call routing behavior
+and the exchange of failure responses rather than successful call
+completion. 
+       The mechanism improves resistance to Caller-ID spoofing by requiring
+demonstrable control of the asserted number, while remaining
+incrementally deployable and tolerant of intermediate network
+modification. 
     " name="description">
 <meta content="xml2rfc 3.33.0" name="generator">
 <meta content="telephony, callerid, spoofing, PSTN, LERG" name="keyword">
@@ -1094,17 +1099,22 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <h1 id="title">CallerID Vouching and Vetting (CIDVV)</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This document describes CallerID Vouching and Vetting (CIDVV), a lightweight protocol that improves trust in Caller-ID using existing Public Switched Telephone Network (PSTN) routing and numbering constraints.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2">CIDVV defines two mechanisms:<a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-abstract-3.1">
-          <p id="section-abstract-3.1.1">Vouching — verification that a call originates from the authorized service provider for a given telephone number.<a href="#section-abstract-3.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-abstract-3.2">
-          <p id="section-abstract-3.2.1">Vetting — verification that an entity controls a telephone number.<a href="#section-abstract-3.2.1" class="pilcrow">¶</a></p>
-</li>
-      </ul>
-<p id="section-abstract-4">CIDVV requires no centralized databases, certificates, or new signaling protocols and operates using existing PSTN infrastructure.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">Caller-ID spoofing remains a significant problem in telephony,
+particularly across inter-domain and international call paths where
+identity frameworks may not be consistently applied.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">This document defines Caller-ID Vouching and Vetting (CIDVV), a
+lightweight verification mechanism that uses short-lived signaling
+exchanges encoded within the Calling Party Number to confirm that a
+calling party can receive calls at the asserted number.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">CIDVV is designed to operate across heterogeneous SIP and SS7/TDM
+networks without requiring new protocol extensions or persistent
+identity infrastructure. It relies on existing call routing behavior
+and the exchange of failure responses rather than successful call
+completion.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-4">The mechanism improves resistance to Caller-ID spoofing by requiring
+demonstrable control of the asserted number, while remaining
+incrementally deployable and tolerant of intermediate network
+modification.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-about-this-document">
@@ -1237,6 +1247,9 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
                 <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-handling-of-cidvv-signaling" class="internal xref">Handling of CIDVV Signaling Calls</a></p>
 </li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3">
+                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-response-variability" class="internal xref">Response Variability</a></p>
+</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
@@ -1251,10 +1264,48 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.3">
                 <p id="section-toc.1-1.8.2.3.1"><a href="#section-8.3" class="auto internal xref">8.3</a>.  <a href="#name-prefix-preservation" class="internal xref">Prefix Preservation</a></p>
 </li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.4">
+                <p id="section-toc.1-1.8.2.4.1"><a href="#section-8.4" class="auto internal xref">8.4</a>.  <a href="#name-interaction-with-call-analy" class="internal xref">Interaction with Call Analytics and Fraud Detection</a></p>
+</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
             <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.1">
+                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="auto internal xref">9.1</a>.  <a href="#name-trust-model" class="internal xref">Trust Model</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.2">
+                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="auto internal xref">9.2</a>.  <a href="#name-replay-attacks" class="internal xref">Replay Attacks</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.3">
+                <p id="section-toc.1-1.9.2.3.1"><a href="#section-9.3" class="auto internal xref">9.3</a>.  <a href="#name-spoofing-resistance" class="internal xref">Spoofing Resistance</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.4">
+                <p id="section-toc.1-1.9.2.4.1"><a href="#section-9.4" class="auto internal xref">9.4</a>.  <a href="#name-denial-of-service" class="internal xref">Denial of Service</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.5">
+                <p id="section-toc.1-1.9.2.5.1"><a href="#section-9.5" class="auto internal xref">9.5</a>.  <a href="#name-amplification-and-reflectio" class="internal xref">Amplification and Reflection</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.6">
+                <p id="section-toc.1-1.9.2.6.1"><a href="#section-9.6" class="auto internal xref">9.6</a>.  <a href="#name-response-code-manipulation" class="internal xref">Response Code Manipulation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.7">
+                <p id="section-toc.1-1.9.2.7.1"><a href="#section-9.7" class="auto internal xref">9.7</a>.  <a href="#name-data-privacy" class="internal xref">Data Privacy</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.8">
+                <p id="section-toc.1-1.9.2.8.1"><a href="#section-9.8" class="auto internal xref">9.8</a>.  <a href="#name-hash-based-token-security-v" class="internal xref">Hash-Based Token Security (Vetting)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.9">
+                <p id="section-toc.1-1.9.2.9.1"><a href="#section-9.9" class="auto internal xref">9.9</a>.  <a href="#name-failure-modes" class="internal xref">Failure Modes</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.10">
+                <p id="section-toc.1-1.9.2.10.1"><a href="#section-9.10" class="auto internal xref">9.10</a>. <a href="#name-interoperability-risks" class="internal xref">Interoperability Risks</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.11">
+                <p id="section-toc.1-1.9.2.11.1"><a href="#section-9.11" class="auto internal xref">9.11</a>. <a href="#name-residual-risk" class="internal xref">Residual Risk</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
             <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
@@ -1274,13 +1325,41 @@ svg :is([fill="white"], [fill^="#fff"]) {
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">Caller-ID spoofing remains one of the most persistent and damaging problems in modern telephony. Fraudsters routinely impersonate banks, government agencies, and trusted contacts, leading to billions of dollars in annual losses and widespread erosion of trust in telephone calls.<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">Having operated telephone networks for many years, the authors have seen firsthand the persistent problem of Caller-ID spoofing and the limitations of existing solutions.<a href="#section-1-2" class="pilcrow">¶</a></p>
-<p id="section-1-3">This document defines a lightweight vouching and vetting mechanism called <strong>CIDVV</strong> that allows the legitimate owner of a telephone number to prove control of that number using only the existing PSTN infrastructure. The mechanism requires no central authority, no shared database, and works across SIP, SS7/TDM, and international boundaries. It is designed to complement or serve as an alternative to STIR/SHAKEN in environments where those technologies are unavailable or insufficient.<a href="#section-1-3" class="pilcrow">¶</a></p>
-<p id="section-1-4">CIDVV leverages two key elements of the existing telephone ecosystem:
-* The Local Exchange Routing Guide (LERG), which provides authoritative routing ownership for each telephone number.
-* Reserved prefixes within E.164 numbering space ("10" and "11"), which are invalid in the North American Numbering Plan and are used purely as signaling indicators.<a href="#section-1-4" class="pilcrow">¶</a></p>
-<p id="section-1-5">The mechanism operates entirely within normal PSTN routing behavior and requires no media exchange.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-1">Caller-ID spoofing is widely used in fraudulent and nuisance calling,
+particularly in environments where calls traverse multiple
+administrative domains and heterogeneous network technologies.
+Although mechanisms such as STIR/SHAKEN provide cryptographic
+attestation of caller identity, their effectiveness is limited by
+partial deployment and challenges in international interconnection.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">This document defines Caller-ID Vouching and Vetting (CIDVV), a
+mechanism that verifies caller identity through network reachability
+rather than asserted identity. CIDVV requires that a party claiming a
+Caller-ID be able to receive a return call at that number within a
+short time window.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">CIDVV operates by encoding signaling information within the Calling
+Party Number and leveraging existing call routing behavior to perform
+a challenge-response exchange. The protocol does not require new SIP
+headers, protocol extensions, or changes to SS7 signaling, and is
+designed to function across mixed SIP and TDM networks.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">CIDVV is incrementally deployable and does not require universal
+adoption to provide benefit. It tolerates modification of signaling
+by intermediate networks and relies only on the ability of signaling
+calls and failure responses to traverse the network path.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">CIDVV does not provide absolute identity assurance but significantly
+raises the cost of Caller-ID spoofing by requiring demonstrable
+control of the asserted number.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">CIDVV leverages two key elements of the existing telephone ecosystem:<a href="#section-1-6" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-7.1">
+          <p id="section-1-7.1.1">Existing routing databases and numbering plans, which provide
+authoritative routing ownership for telephone numbers.<a href="#section-1-7.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-7.2">
+          <p id="section-1-7.2.1">Digit sequences unlikely to conflict with valid numbering plans
+(e.g., "100" and "101"), used to encode short-lived signaling.<a href="#section-1-7.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-1-8">The mechanism operates entirely within normal PSTN routing behavior and requires no media exchange.<a href="#section-1-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="terminology">
@@ -1378,9 +1457,9 @@ networks may normalize, truncate, or otherwise modify signaling
 information. The protocol therefore encodes all required signaling in
 a numeric Calling Party Number that can survive traversal of mixed
 SIP and SS7/TDM networks.<a href="#section-3-1" class="pilcrow">¶</a></p>
-<p id="section-3-2">CIDVV does not require successful call completion. It relies only on
-the ability of signaling indicators and failure responses to traverse
-the network path.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-2">CIDVV relies only on the ability of signaling indicators and failure
+responses to traverse the network path; it does not require specific
+response codes to be preserved.<a href="#section-3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="protocol-overview">
@@ -1873,11 +1952,9 @@ the network path.<a href="#section-3-2" class="pilcrow">¶</a></p>
         </h3>
 <p id="section-7.1-1">Systems that do not implement CIDVV are not expected to recognize
 CIDVV signaling prefixes. Such systems will typically process CIDVV
-calls as ordinary calls and may return responses such as 603
-(Decline), 404 (Not Found), or other locally generated responses.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
-<p id="section-7.1-2">CIDVV implementations MUST treat any unexpected response as a
-non-participating system and consider the vouch or vet attempt
-unsuccessful.<a href="#section-7.1-2" class="pilcrow">¶</a></p>
+calls as ordinary calls and may return a wide range of responses.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
+<p id="section-7.1-2">CIDVV implementations MUST treat any response that does not match the
+expected protocol behavior as indicating a non-participating system.<a href="#section-7.1-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="handling-of-cidvv-signaling-calls">
@@ -1888,12 +1965,29 @@ unsuccessful.<a href="#section-7.1-2" class="pilcrow">¶</a></p>
 <p id="section-7.2-1">Networks that recognize CIDVV SHOULD NOT present calls with Calling
 Party Numbers beginning with "100" or "101" to end users.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
 <p id="section-7.2-2">Such calls SHOULD be intercepted by network elements or CIDVV
-platforms and SHOULD result in non-success responses (e.g., 486 or
-603). A 200 OK response MUST NOT be generated for CIDVV signaling
-calls.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
+platforms and SHOULD result in a non-success response (e.g., 4xx,
+5xx, or 6xx class response codes). Implementations commonly use
+responses such as 486 (Busy Here) or 603 (Decline).<a href="#section-7.2-2" class="pilcrow">¶</a></p>
 <p id="section-7.2-3">Call analytics, labeling, and fraud detection systems SHOULD
 recognize CIDVV signaling prefixes ("100" and "101") and treat such
 calls as protocol signaling rather than ordinary subscriber calls.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
+<p id="section-7.2-4">CIDVV signaling calls are not intended to complete. Implementations
+SHOULD minimize call duration and signaling load and SHOULD avoid any
+media establishment.<a href="#section-7.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="response-variability">
+<section id="section-7.3">
+        <h3 id="name-response-variability">
+<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-response-variability" class="section-name selfRef">Response Variability</a>
+        </h3>
+<p id="section-7.3-1">CIDVV implementations MUST assume that response codes may be altered,
+mapped, or replaced by intermediate SIP or SS7/TDM networks. As a
+result, implementations MUST NOT rely on any specific response code
+being preserved end-to-end.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.3-2">Instead, implementations SHOULD interpret responses based on expected
+classes of behavior (e.g., success vs. failure) rather than exact
+numeric values.<a href="#section-7.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1910,8 +2004,8 @@ calls as protocol signaling rather than ordinary subscriber calls.<a href="#sect
         </h3>
 <p id="section-8.1-1">If a vouching call results in a provisional response (e.g., 180
 Ringing) or a successful response (200 OK), the originating system
-SHOULD immediately cancel the call and treat the attempt as if the
-remote system does not implement CIDVV.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
+SHOULD immediately cancel the call and treat the remote system as not
+implementing CIDVV.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="failure-and-restart-behavior">
@@ -1923,9 +2017,9 @@ remote system does not implement CIDVV.<a href="#section-8.1-1" class="pilcrow">
 state, implementations SHOULD continue accepting new call deposits
 but MUST treat all verification requests as failed until sufficient
 state has been rebuilt.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
-<p id="section-8.2-2">During such conditions, implementations SHOULD return a response such
-as 603 (Decline) to indicate that verification could not be
-performed.<a href="#section-8.2-2" class="pilcrow">¶</a></p>
+<p id="section-8.2-2">implementations SHOULD return a non-success response (e.g., 4xx,
+5xx, or 6xx). A 603 (Decline) response is commonly used to indicate
+that verification could not be performed.<a href="#section-8.2-2" class="pilcrow">¶</a></p>
 <p id="section-8.2-3">Implementations SHOULD fail closed (treating requests as unverified)
 rather than risk false-positive validation.<a href="#section-8.2-3" class="pilcrow">¶</a></p>
 </section>
@@ -1944,6 +2038,23 @@ that intermediate networks may normalize or reinterpret numbering
 format.<a href="#section-8.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
+<div id="interaction-with-call-analytics-and-fraud-detection">
+<section id="section-8.4">
+        <h3 id="name-interaction-with-call-analy">
+<a href="#section-8.4" class="section-number selfRef">8.4. </a><a href="#name-interaction-with-call-analy" class="section-name selfRef">Interaction with Call Analytics and Fraud Detection</a>
+        </h3>
+<p id="section-8.4-1">CIDVV signaling calls use Calling Party Number values that may appear
+anomalous to call analytics, labeling, and fraud detection systems.<a href="#section-8.4-1" class="pilcrow">¶</a></p>
+<p id="section-8.4-2">Systems that support such analytics SHOULD recognize CIDVV signaling
+prefixes (e.g., "100" and "101") and treat such calls as protocol
+signaling rather than ordinary subscriber traffic.<a href="#section-8.4-2" class="pilcrow">¶</a></p>
+<p id="section-8.4-3">CIDVV signaling calls are not intended to be presented to end users
+and SHOULD NOT be labeled or blocked as malicious traffic when
+processed within cooperating networks.<a href="#section-8.4-3" class="pilcrow">¶</a></p>
+<p id="section-8.4-4">Failure to recognize CIDVV signaling may result in increased false
+positives or suppression of verification attempts.<a href="#section-8.4-4" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="security-considerations">
@@ -1951,32 +2062,165 @@ format.<a href="#section-8.3-2" class="pilcrow">¶</a></p>
       <h2 id="name-security-considerations">
 <a href="#section-9" class="section-number selfRef">9. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
-<ul class="normal">
-<li class="normal" id="section-9-1.1">
-          <p id="section-9-1.1.1">Replay attacks are limited by short cache duration.<a href="#section-9-1.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-1.2">
-          <p id="section-9-1.2.1">Implementations MUST rate-limit CIDVV signaling traffic.<a href="#section-9-1.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-1.3">
-          <p id="section-9-1.3.1">CIDVV relies on correctness of PSTN routing and LERG data.<a href="#section-9-1.3.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-1.4">
-          <p id="section-9-1.4.1">Shared secrets used in vetting MUST be protected.<a href="#section-9-1.4.1" class="pilcrow">¶</a></p>
-</li>
-      </ul>
-<p id="section-9-2">CIDVV implementations SHOULD avoid storing telephone numbers in
-plaintext within temporary state stores. Instead, implementations MAY
-store a derived value such as a cryptographic hash computed over the
-calling number, called number, and a local secret.<a href="#section-9-2" class="pilcrow">¶</a></p>
-<p id="section-9-3">Temporary state SHOULD expire automatically after a short interval
-(e.g., 10 seconds) using mechanisms such as in-memory or TTL-based
-data stores.<a href="#section-9-3" class="pilcrow">¶</a></p>
-<p id="section-9-4">The CIDVV signaling value carried in the Calling Party Number is not
-globally unique. It is used only as a short-lived correlation key in
-combination with the called number and local state.<a href="#section-9-4" class="pilcrow">¶</a></p>
-<p id="section-9-5">Implementations MUST NOT treat CIDVV-prefixed values as routable or
-globally meaningful telephone numbers.<a href="#section-9-5" class="pilcrow">¶</a></p>
+<p id="section-9-1">CIDVV relies on short-lived signaling exchanges and does not require
+persistent identity infrastructure. Its security properties are
+derived from control of telephone number routing and the ability to
+complete a two-call challenge-response sequence.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<div id="trust-model">
+<section id="section-9.1">
+        <h3 id="name-trust-model">
+<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-trust-model" class="section-name selfRef">Trust Model</a>
+        </h3>
+<p id="section-9.1-1">CIDVV assumes that:
+- The PSTN routes calls to the correct terminating service provider
+  for a given telephone number.
+- The terminating service provider has authoritative control over the
+  number and can originate return calls.
+- Intermediate networks may modify signaling but will generally
+  preserve sufficient information to allow correlation of requests
+  and responses.<a href="#section-9.1-1" class="pilcrow">¶</a></p>
+<p id="section-9.1-2">CIDVV does not assume that Caller-ID values are trustworthy; instead,
+it verifies control through network reachability.<a href="#section-9.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="replay-attacks">
+<section id="section-9.2">
+        <h3 id="name-replay-attacks">
+<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-replay-attacks" class="section-name selfRef">Replay Attacks</a>
+        </h3>
+<p id="section-9.2-1">CIDVV uses short-lived state (typically on the order of seconds) to
+correlate signaling exchanges. This limits the effectiveness of
+replay attacks.<a href="#section-9.2-1" class="pilcrow">¶</a></p>
+<p id="section-9.2-2">Implementations MUST:
+- Expire cached state quickly (e.g., within ~10 seconds)
+- Reject verification attempts that do not match recent state<a href="#section-9.2-2" class="pilcrow">¶</a></p>
+<p id="section-9.2-3">Replay within the validity window remains theoretically possible but
+requires precise timing and routing alignment.<a href="#section-9.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="spoofing-resistance">
+<section id="section-9.3">
+        <h3 id="name-spoofing-resistance">
+<a href="#section-9.3" class="section-number selfRef">9.3. </a><a href="#name-spoofing-resistance" class="section-name selfRef">Spoofing Resistance</a>
+        </h3>
+<p id="section-9.3-1">CIDVV prevents spoofing by requiring the party asserting a Caller-ID
+to successfully receive and respond to a return call routed via the
+PSTN. An attacker that cannot receive calls to the claimed number
+cannot complete the vouching process.<a href="#section-9.3-1" class="pilcrow">¶</a></p>
+<p id="section-9.3-2">However, CIDVV does not prevent attacks where:
+- The attacker controls the terminating endpoint for the number
+- The attacker has compromised the service provider infrastructure<a href="#section-9.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="denial-of-service">
+<section id="section-9.4">
+        <h3 id="name-denial-of-service">
+<a href="#section-9.4" class="section-number selfRef">9.4. </a><a href="#name-denial-of-service" class="section-name selfRef">Denial of Service</a>
+        </h3>
+<p id="section-9.4-1">CIDVV introduces additional signaling traffic, which may be abused
+for denial-of-service (DoS) purposes.<a href="#section-9.4-1" class="pilcrow">¶</a></p>
+<p id="section-9.4-2">Implementations MUST:
+- Rate-limit CIDVV signaling requests
+- Detect and suppress repeated failed attempts
+- Bound resource usage for temporary state<a href="#section-9.4-2" class="pilcrow">¶</a></p>
+<p id="section-9.4-3">Implementations SHOULD:
+- Apply per-source and per-destination limits
+- Monitor for anomalous traffic patterns<a href="#section-9.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="amplification-and-reflection">
+<section id="section-9.5">
+        <h3 id="name-amplification-and-reflectio">
+<a href="#section-9.5" class="section-number selfRef">9.5. </a><a href="#name-amplification-and-reflectio" class="section-name selfRef">Amplification and Reflection</a>
+        </h3>
+<p id="section-9.5-1">CIDVV generates return calls as part of its operation. Care MUST be
+taken to ensure that this behavior cannot be exploited for
+amplification or reflection attacks.<a href="#section-9.5-1" class="pilcrow">¶</a></p>
+<p id="section-9.5-2">Implementations SHOULD:
+- Only initiate return calls in response to valid inbound attempts
+- Limit the rate of outbound verification calls
+- Avoid generating multiple responses for a single triggering event<a href="#section-9.5-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="response-code-manipulation">
+<section id="section-9.6">
+        <h3 id="name-response-code-manipulation">
+<a href="#section-9.6" class="section-number selfRef">9.6. </a><a href="#name-response-code-manipulation" class="section-name selfRef">Response Code Manipulation</a>
+        </h3>
+<p id="section-9.6-1">CIDVV does not rely on specific SIP response codes being preserved
+end-to-end. Intermediate networks may translate or modify response
+codes.<a href="#section-9.6-1" class="pilcrow">¶</a></p>
+<p id="section-9.6-2">Implementations MUST interpret responses based on expected behavior
+(success vs. failure) rather than exact numeric values.<a href="#section-9.6-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="data-privacy">
+<section id="section-9.7">
+        <h3 id="name-data-privacy">
+<a href="#section-9.7" class="section-number selfRef">9.7. </a><a href="#name-data-privacy" class="section-name selfRef">Data Privacy</a>
+        </h3>
+<p id="section-9.7-1">CIDVV exchanges inherently expose calling and called numbers within
+signaling messages.<a href="#section-9.7-1" class="pilcrow">¶</a></p>
+<p id="section-9.7-2">Implementations SHOULD:
+- Avoid storing telephone numbers in plaintext where possible
+- Use derived values (e.g., cryptographic hashes) for temporary state
+- Limit retention of any identifying data<a href="#section-9.7-2" class="pilcrow">¶</a></p>
+<p id="section-9.7-3">Temporary state MUST be short-lived and automatically expired.<a href="#section-9.7-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="hash-based-token-security-vetting">
+<section id="section-9.8">
+        <h3 id="name-hash-based-token-security-v">
+<a href="#section-9.8" class="section-number selfRef">9.8. </a><a href="#name-hash-based-token-security-v" class="section-name selfRef">Hash-Based Token Security (Vetting)</a>
+        </h3>
+<p id="section-9.8-1">Vetting operations use shared secrets and derived tokens.<a href="#section-9.8-1" class="pilcrow">¶</a></p>
+<p id="section-9.8-2">Implementations MUST:
+- Use cryptographically secure hash functions (e.g., SHA-256)
+- Protect shared secrets from disclosure
+- Ensure tokens are valid only within a short time window<a href="#section-9.8-2" class="pilcrow">¶</a></p>
+<p id="section-9.8-3">Implementations SHOULD:
+- Include sufficient entropy in derived tokens
+- Avoid predictable or reusable values<a href="#section-9.8-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="failure-modes">
+<section id="section-9.9">
+        <h3 id="name-failure-modes">
+<a href="#section-9.9" class="section-number selfRef">9.9. </a><a href="#name-failure-modes" class="section-name selfRef">Failure Modes</a>
+        </h3>
+<p id="section-9.9-1">CIDVV implementations MUST fail closed. If verification cannot be
+completed due to:
+- network errors
+- state loss
+- unexpected responses<a href="#section-9.9-1" class="pilcrow">¶</a></p>
+<p id="section-9.9-2">the result MUST be treated as unverified.<a href="#section-9.9-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="interoperability-risks">
+<section id="section-9.10">
+        <h3 id="name-interoperability-risks">
+<a href="#section-9.10" class="section-number selfRef">9.10. </a><a href="#name-interoperability-risks" class="section-name selfRef">Interoperability Risks</a>
+        </h3>
+<p id="section-9.10-1">CIDVV operates across heterogeneous networks, including SIP and
+SS7/TDM environments. Intermediate systems may:
+- modify Calling Party Number values
+- truncate digits
+- alter signaling behavior<a href="#section-9.10-1" class="pilcrow">¶</a></p>
+<p id="section-9.10-2">These behaviors may cause verification to fail but MUST NOT result in
+false-positive validation.<a href="#section-9.10-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="residual-risk">
+<section id="section-9.11">
+        <h3 id="name-residual-risk">
+<a href="#section-9.11" class="section-number selfRef">9.11. </a><a href="#name-residual-risk" class="section-name selfRef">Residual Risk</a>
+        </h3>
+<p id="section-9.11-1">CIDVV improves resistance to Caller-ID spoofing but does not provide
+absolute identity assurance. It should be considered a probabilistic
+verification mechanism that significantly raises the cost of
+spoofing attacks rather than eliminating them entirely.<a href="#section-9.11-1" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="iana-considerations">
