@@ -34,28 +34,64 @@ Headings (starting with #) must be separated by a blank line. Can use this regex
 
 --- abstract
 
-This document describes CallerID Vouching and Vetting (CIDVV), a lightweight protocol that improves trust in Caller-ID using existing Public Switched Telephone Network (PSTN) routing and numbering constraints.
+Caller-ID spoofing remains a significant problem in telephony,
+particularly across inter-domain and international call paths where
+identity frameworks may not be consistently applied.
 
-CIDVV defines two mechanisms:
+This document defines Caller-ID Vouching and Vetting (CIDVV), a
+lightweight verification mechanism that uses short-lived signaling
+exchanges encoded within the Calling Party Number to confirm that a
+calling party can receive calls at the asserted number.
 
-* Vouching — verification that a call originates from the authorized service provider for a given telephone number.
-* Vetting — verification that an entity controls a telephone number.
+CIDVV is designed to operate across heterogeneous SIP and SS7/TDM
+networks without requiring new protocol extensions or persistent
+identity infrastructure. It relies on existing call routing behavior
+and the exchange of failure responses rather than successful call
+completion.
 
-CIDVV requires no centralized databases, certificates, or new signaling protocols and operates using existing PSTN infrastructure.
+The mechanism improves resistance to Caller-ID spoofing by requiring
+demonstrable control of the asserted number, while remaining
+incrementally deployable and tolerant of intermediate network
+modification.
 
 --- middle
 
 # Introduction
 
-Caller-ID spoofing remains one of the most persistent and damaging problems in modern telephony. Fraudsters routinely impersonate banks, government agencies, and trusted contacts, leading to billions of dollars in annual losses and widespread erosion of trust in telephone calls.
+Caller-ID spoofing is widely used in fraudulent and nuisance calling,
+particularly in environments where calls traverse multiple
+administrative domains and heterogeneous network technologies.
+Although mechanisms such as STIR/SHAKEN provide cryptographic
+attestation of caller identity, their effectiveness is limited by
+partial deployment and challenges in international interconnection.
 
-Having operated telephone networks for many years, the authors have seen firsthand the persistent problem of Caller-ID spoofing and the limitations of existing solutions.
+This document defines Caller-ID Vouching and Vetting (CIDVV), a
+mechanism that verifies caller identity through network reachability
+rather than asserted identity. CIDVV requires that a party claiming a
+Caller-ID be able to receive a return call at that number within a
+short time window.
 
-This document defines a lightweight vouching and vetting mechanism called **CIDVV** that allows the legitimate owner of a telephone number to prove control of that number using only the existing PSTN infrastructure. The mechanism requires no central authority, no shared database, and works across SIP, SS7/TDM, and international boundaries. It is designed to complement or serve as an alternative to STIR/SHAKEN in environments where those technologies are unavailable or insufficient.
+CIDVV operates by encoding signaling information within the Calling
+Party Number and leveraging existing call routing behavior to perform
+a challenge-response exchange. The protocol does not require new SIP
+headers, protocol extensions, or changes to SS7 signaling, and is
+designed to function across mixed SIP and TDM networks.
+
+CIDVV is incrementally deployable and does not require universal
+adoption to provide benefit. It tolerates modification of signaling
+by intermediate networks and relies only on the ability of signaling
+calls and failure responses to traverse the network path.
+
+CIDVV does not provide absolute identity assurance but significantly
+raises the cost of Caller-ID spoofing by requiring demonstrable
+control of the asserted number.
 
 CIDVV leverages two key elements of the existing telephone ecosystem:
-* The Local Exchange Routing Guide (LERG), which provides authoritative routing ownership for each telephone number.
-* Reserved prefixes within E.164 numbering space ("10" and "11"), which are invalid in the North American Numbering Plan and are used purely as signaling indicators.
+
+* Existing routing databases and numbering plans, which provide
+  authoritative routing ownership for telephone numbers.
+* Digit sequences unlikely to conflict with valid numbering plans
+  (e.g., "100" and "101"), used to encode short-lived signaling.
 
 The mechanism operates entirely within normal PSTN routing behavior and requires no media exchange.
 
@@ -105,9 +141,9 @@ information. The protocol therefore encodes all required signaling in
 a numeric Calling Party Number that can survive traversal of mixed
 SIP and SS7/TDM networks.
 
-CIDVV does not require successful call completion. It relies only on
-the ability of signaling indicators and failure responses to traverse
-the network path.
+CIDVV relies only on the ability of signaling indicators and failure
+responses to traverse the network path; it does not require specific
+response codes to be preserved.
 
 # Protocol Overview
 
@@ -397,12 +433,10 @@ This two-call challenge-response mechanism provides strong confirmation that the
 
 Systems that do not implement CIDVV are not expected to recognize
 CIDVV signaling prefixes. Such systems will typically process CIDVV
-calls as ordinary calls and may return responses such as 603
-(Decline), 404 (Not Found), or other locally generated responses.
+calls as ordinary calls and may return a wide range of responses.
 
-CIDVV implementations MUST treat any unexpected response as a
-non-participating system and consider the vouch or vet attempt
-unsuccessful.
+CIDVV implementations MUST treat any response that does not match the
+expected protocol behavior as indicating a non-participating system.
 
 ## Handling of CIDVV Signaling Calls
 
@@ -410,13 +444,28 @@ Networks that recognize CIDVV SHOULD NOT present calls with Calling
 Party Numbers beginning with "100" or "101" to end users.
 
 Such calls SHOULD be intercepted by network elements or CIDVV
-platforms and SHOULD result in non-success responses (e.g., 486 or
-603). A 200 OK response MUST NOT be generated for CIDVV signaling
-calls.
+platforms and SHOULD result in a non-success response (e.g., 4xx,
+5xx, or 6xx class response codes). Implementations commonly use
+responses such as 486 (Busy Here) or 603 (Decline).
 
 Call analytics, labeling, and fraud detection systems SHOULD
 recognize CIDVV signaling prefixes ("100" and "101") and treat such
 calls as protocol signaling rather than ordinary subscriber calls.
+
+CIDVV signaling calls are not intended to complete. Implementations
+SHOULD minimize call duration and signaling load and SHOULD avoid any
+media establishment.
+
+## Response Variability
+
+CIDVV implementations MUST assume that response codes may be altered,
+mapped, or replaced by intermediate SIP or SS7/TDM networks. As a
+result, implementations MUST NOT rely on any specific response code
+being preserved end-to-end.
+
+Instead, implementations SHOULD interpret responses based on expected
+classes of behavior (e.g., success vs. failure) rather than exact
+numeric values.
 
 # Operational Considerations
 
@@ -424,8 +473,8 @@ calls as protocol signaling rather than ordinary subscriber calls.
 
 If a vouching call results in a provisional response (e.g., 180
 Ringing) or a successful response (200 OK), the originating system
-SHOULD immediately cancel the call and treat the attempt as if the
-remote system does not implement CIDVV.
+SHOULD immediately cancel the call and treat the remote system as not
+implementing CIDVV.
 
 ## Failure and Restart Behavior
 
@@ -434,9 +483,9 @@ state, implementations SHOULD continue accepting new call deposits
 but MUST treat all verification requests as failed until sufficient
 state has been rebuilt.
 
-During such conditions, implementations SHOULD return a response such
-as 603 (Decline) to indicate that verification could not be
-performed.
+implementations SHOULD return a non-success response (e.g., 4xx,
+5xx, or 6xx). A 603 (Decline) response is commonly used to indicate
+that verification could not be performed.
 
 Implementations SHOULD fail closed (treating requests as unverified)
 rather than risk false-positive validation.
@@ -452,28 +501,153 @@ CIDVV does not rely on Type-of-Number (TON) preservation and assumes
 that intermediate networks may normalize or reinterpret numbering
 format.
 
+## Interaction with Call Analytics and Fraud Detection
+
+CIDVV signaling calls use Calling Party Number values that may appear
+anomalous to call analytics, labeling, and fraud detection systems.
+
+Systems that support such analytics SHOULD recognize CIDVV signaling
+prefixes (e.g., "100" and "101") and treat such calls as protocol
+signaling rather than ordinary subscriber traffic.
+
+CIDVV signaling calls are not intended to be presented to end users
+and SHOULD NOT be labeled or blocked as malicious traffic when
+processed within cooperating networks.
+
+Failure to recognize CIDVV signaling may result in increased false
+positives or suppression of verification attempts.
+
 # Security Considerations
 
-* Replay attacks are limited by short cache duration.
-* Implementations MUST rate-limit CIDVV signaling traffic.
-* CIDVV relies on correctness of PSTN routing and LERG data.
-* Shared secrets used in vetting MUST be protected.
+CIDVV relies on short-lived signaling exchanges and does not require
+persistent identity infrastructure. Its security properties are
+derived from control of telephone number routing and the ability to
+complete a two-call challenge-response sequence.
 
-CIDVV implementations SHOULD avoid storing telephone numbers in
-plaintext within temporary state stores. Instead, implementations MAY
-store a derived value such as a cryptographic hash computed over the
-calling number, called number, and a local secret.
+## Trust Model
 
-Temporary state SHOULD expire automatically after a short interval
-(e.g., 10 seconds) using mechanisms such as in-memory or TTL-based
-data stores.
+CIDVV assumes that:
+- The PSTN routes calls to the correct terminating service provider
+  for a given telephone number.
+- The terminating service provider has authoritative control over the
+  number and can originate return calls.
+- Intermediate networks may modify signaling but will generally
+  preserve sufficient information to allow correlation of requests
+  and responses.
 
-The CIDVV signaling value carried in the Calling Party Number is not
-globally unique. It is used only as a short-lived correlation key in
-combination with the called number and local state.
+CIDVV does not assume that Caller-ID values are trustworthy; instead,
+it verifies control through network reachability.
 
-Implementations MUST NOT treat CIDVV-prefixed values as routable or
-globally meaningful telephone numbers.
+## Replay Attacks
+
+CIDVV uses short-lived state (typically on the order of seconds) to
+correlate signaling exchanges. This limits the effectiveness of
+replay attacks.
+
+Implementations MUST:
+- Expire cached state quickly (e.g., within ~10 seconds)
+- Reject verification attempts that do not match recent state
+
+Replay within the validity window remains theoretically possible but
+requires precise timing and routing alignment.
+
+## Spoofing Resistance
+
+CIDVV prevents spoofing by requiring the party asserting a Caller-ID
+to successfully receive and respond to a return call routed via the
+PSTN. An attacker that cannot receive calls to the claimed number
+cannot complete the vouching process.
+
+However, CIDVV does not prevent attacks where:
+- The attacker controls the terminating endpoint for the number
+- The attacker has compromised the service provider infrastructure
+
+## Denial of Service
+
+CIDVV introduces additional signaling traffic, which may be abused
+for denial-of-service (DoS) purposes.
+
+Implementations MUST:
+- Rate-limit CIDVV signaling requests
+- Detect and suppress repeated failed attempts
+- Bound resource usage for temporary state
+
+Implementations SHOULD:
+- Apply per-source and per-destination limits
+- Monitor for anomalous traffic patterns
+
+## Amplification and Reflection
+
+CIDVV generates return calls as part of its operation. Care MUST be
+taken to ensure that this behavior cannot be exploited for
+amplification or reflection attacks.
+
+Implementations SHOULD:
+- Only initiate return calls in response to valid inbound attempts
+- Limit the rate of outbound verification calls
+- Avoid generating multiple responses for a single triggering event
+
+## Response Code Manipulation
+
+CIDVV does not rely on specific SIP response codes being preserved
+end-to-end. Intermediate networks may translate or modify response
+codes.
+
+Implementations MUST interpret responses based on expected behavior
+(success vs. failure) rather than exact numeric values.
+
+## Data Privacy
+
+CIDVV exchanges inherently expose calling and called numbers within
+signaling messages.
+
+Implementations SHOULD:
+- Avoid storing telephone numbers in plaintext where possible
+- Use derived values (e.g., cryptographic hashes) for temporary state
+- Limit retention of any identifying data
+
+Temporary state MUST be short-lived and automatically expired.
+
+## Hash-Based Token Security (Vetting)
+
+Vetting operations use shared secrets and derived tokens.
+
+Implementations MUST:
+- Use cryptographically secure hash functions (e.g., SHA-256)
+- Protect shared secrets from disclosure
+- Ensure tokens are valid only within a short time window
+
+Implementations SHOULD:
+- Include sufficient entropy in derived tokens
+- Avoid predictable or reusable values
+
+## Failure Modes
+
+CIDVV implementations MUST fail closed. If verification cannot be
+completed due to:
+- network errors
+- state loss
+- unexpected responses
+
+the result MUST be treated as unverified.
+
+## Interoperability Risks
+
+CIDVV operates across heterogeneous networks, including SIP and
+SS7/TDM environments. Intermediate systems may:
+- modify Calling Party Number values
+- truncate digits
+- alter signaling behavior
+
+These behaviors may cause verification to fail but MUST NOT result in
+false-positive validation.
+
+## Residual Risk
+
+CIDVV improves resistance to Caller-ID spoofing but does not provide
+absolute identity assurance. It should be considered a probabilistic
+verification mechanism that significantly raises the cost of
+spoofing attacks rather than eliminating them entirely.
 
 # IANA Considerations
 
