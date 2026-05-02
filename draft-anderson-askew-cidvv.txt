@@ -83,6 +83,7 @@ Table of Contents
      2.1.  Motivation and Advantages
    3.  Design Principles
    4.  Protocol Overview
+     4.1.  Response Semantics
    5.  Protocol Operation
      5.1.  Vouching Procedure
      5.2.  Vetting Procedure
@@ -175,6 +176,10 @@ Table of Contents
 
    *  *CIDVV Platform*: A system that implements the vouching and
       vetting procedures defined in this document.
+
+   *  *CIDVV-aware Network Element*: An SBC or intermediary that
+      recognizes CIDVV signaling prefixes and interprets associated
+      responses, but does not implement the full CIDVV platform logic.
 
    *  *Vouch*: The act of a CIDVV platform asserting that it has
       verified control of a telephone number through the two-call
@@ -273,6 +278,29 @@ Table of Contents
    Number values to maximize survivability across heterogeneous SIP and
    SS7/TDM networks.
 
+4.1.  Response Semantics
+
+   CIDVV uses SIP response codes as local signaling indicators between
+   participating systems.
+
+   In typical deployments:
+
+   *  486 (Busy Here) indicates a successful vouch or vet.
+
+   *  404 (Not Found) indicates an unsuccessful vouch or vet.
+
+   *  603 (Decline) indicates that CIDVV is not implemented or that
+      verification could not be performed.
+
+   However, intermediate SIP and SS7/TDM networks may translate, modify,
+   or replace response codes.  As a result, CIDVV implementations MUST
+   NOT rely on specific numeric response codes being preserved end-to-
+   end.
+
+   Instead, implementations MUST interpret responses based on observed
+   behavior and expected signaling patterns (e.g., immediate rejection,
+   timeout, or call progression).
+
 5.  Protocol Operation
 
 5.1.  Vouching Procedure
@@ -294,12 +322,14 @@ Table of Contents
    the original call attempt exists.
 
    If a matching cache entry exists, Alice's CIDVV platform MUST reject
-   the verification call with SIP response 486 (Busy Here).  Bob's
-   system treats this response as a successful vouch.
+   the verification call with SIP response 486 (Busy Here).  This
+   response is interpreted by CIDVV-aware network elements (e.g., SBCs
+   or intermediaries) as an indication of a successful vouch.
 
    If no matching cache entry exists, Alice's CIDVV platform MUST reject
-   the verification call with SIP response 404 (Not Found).  Bob's
-   system treats this response as a failed vouch.
+   the verification call with SIP response 404 (Not Found).  This
+   response is interpreted by CIDVV-aware network elements (e.g., SBCs
+   or intermediaries) as an indication of an unsuccessful vouch.
 
 5.2.  Vetting Procedure
 
