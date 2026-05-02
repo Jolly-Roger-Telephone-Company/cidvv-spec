@@ -106,6 +106,9 @@ The mechanism operates entirely within normal PSTN routing behavior and requires
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the two-call challenge-response mechanism described in this document. A successful vouch proves the calling party legitimately controls the asserted Caller-ID.
 * **Vet** (or **Vetting**): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
 * **Vouching Call**: One of the two short calls used in the CIDVV protocol (typically rejected with 404 or 486).
+* **Successful Vouch**: A verification result indicating that a matching cache entry was found.
+* **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
+* **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
 
 ## Motivation and Advantages
 
@@ -214,7 +217,7 @@ When Bob's CIDVV platform receives the Vetting Token Check call, it removes the 
 
 If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.
 
-Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as a failed vet.
+Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as an unsuccessful vet.
 
 # Examples
 
@@ -295,9 +298,9 @@ The diagram above shows the high-level message flow. The following numbered step
 
 This two-call mechanism (first vetting call + return vouch call) allows the originating CIDVV platform to confirm that the asserted Caller-ID is valid without completing the initial call.
 
-## Failed Vouch Call Flow
+## Unsuccessful Vouch Call Flow
 
-The following diagram shows a failed vouch attempt by an impersonator (Mallory) who spoofs Alice's Caller-ID.
+The following diagram shows an unsuccessful vouch attempt by an impersonator (Mallory) who spoofs Alice's Caller-ID.
 
 ~~~~
   Mallory     CIDVV_A      SBC_A        PSTN       SBC_B    Voicemail_B
@@ -324,9 +327,9 @@ The following diagram shows a failed vouch attempt by an impersonator (Mallory) 
      |           |           |           |           |  Step 9   |
      |           |           |           |           |           |
 ~~~~
-{: #fig-failed-vouch title="Example Failed Vouch"}
+{: #fig-unsuccessful-vouch title="Example Unsuccessful Vouch"}
 
-### Failed Vouch Step-by-step description
+### Unsuccessful Vouch Step-by-step description
 
 1. Mallory spoofs Alice’s Caller-ID (`+12125550100`) and initiates a call to Bob (`+19495550199`).
 
@@ -352,7 +355,7 @@ The following diagram shows a failed vouch attempt by an impersonator (Mallory) 
 
 7. The 404 propagates back through the PSTN to Bob’s SBC.
 
-8. **Bob’s SBC** recognizes the 404 as a failed vouch and either rejects the call or forwards it to Bob’s voicemail. Bob remains unaware of the impersonation attempt.
+8. **Bob’s SBC** recognizes the 404 as a unsuccessful vouch and either rejects the call or forwards it to Bob’s voicemail. Bob remains unaware of the impersonation attempt.
 
 This mechanism ensures that only calls that originated from a legitimate CIDVV platform (i.e., those that previously cached the attempt) will pass vouching. Spoofed or unsolicited calls are rejected early.
 
@@ -510,7 +513,7 @@ implementing CIDVV.
 
 CIDVV platforms rely on short-lived state. Upon restart or loss of
 state, implementations SHOULD continue accepting new call deposits
-but MUST treat all verification requests as failed until sufficient
+but MUST treat all verification requests as unsuccessful until sufficient
 state has been rebuilt.
 
 Implementations SHOULD return a non-success response (e.g., 4xx,
@@ -599,7 +602,7 @@ for denial-of-service (DoS) purposes.
 
 Implementations MUST:
 - Rate-limit CIDVV signaling requests
-- Detect and suppress repeated failed attempts
+- Detect and suppress repeated unsuccessful attempts
 - Bound resource usage for temporary state
 
 Implementations SHOULD:
