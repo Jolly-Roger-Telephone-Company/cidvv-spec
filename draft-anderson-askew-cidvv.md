@@ -221,11 +221,15 @@ this construction. A CIDVV platform MAY cache and compare the complete
 15-digit CIDVV Calling Party Number (including the prefix) rather than
 reconstructing it for comparison.
 
-Because CIDVV correlation is also scoped by the called number and a
-short Validity Window, collisions among rightmost 12-digit payload values
-are expected to be rare. Implementations SHOULD nevertheless treat
-ambiguous or colliding state as unsuccessful or indeterminate rather
-than risk false-positive validation.
+Because CIDVV payloads may be truncated to the rightmost 12 digits,
+distinct telephone numbers can, in rare cases, produce identical
+payload values. Correlation is therefore additionally scoped by the
+called number and the Validity Window.
+
+In such cases, multiple call attempts may be indistinguishable to the
+CIDVV platform and treated as a single correlation event. As a result,
+a successful verification may apply to more than one call attempt
+within the Validity Window.
 
 CIDVV verification consists of observing the behavior of one or more
 verification calls using distinct CIDVV prefixes.
