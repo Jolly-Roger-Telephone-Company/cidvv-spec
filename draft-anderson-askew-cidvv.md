@@ -113,6 +113,9 @@ signaling field used to convey that identity.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
 * **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
 * **Validity Window**: A short time interval during which CIDVV signaling state is considered valid for correlation purposes, typically on the order of 10 seconds.
+* * **Asserted Caller-ID**: The Caller-ID value that is being vouched or vetted (i.e., the number whose control is being verified). This is the value used as the basis for the CIDVV Token payload and as the cache lookup key in the tuple (Asserted-Caller-ID, CIDVV-Token).
+ 
+Once successfully vouched, an Asserted Caller-ID may be referred to informally as a "vouched number," but the formal term used in this document is "Asserted Caller-ID."
 
 ## Motivation and Advantages
 
@@ -270,7 +273,7 @@ distinct expected behaviors. The table below summarizes the differences:
 | 100    | Expect 486 Busy Here (cache hit) | Expect 404 Not Found (cache token) | Primary signal |
 | 101    | Expect 404 Not Found          | Expect 486 Busy Here (token match) | Secondary / check |
 
-Implementations distinguish context (vouching vs. vetting) primarily by the presence of a pre-agreed vetting Caller-ID and shared secret for that Vouched Number. Because vetting uses a specific Caller-ID designated for the procedure, overlap with ordinary vouching calls on the same number is expected to be rare. A CIDVV platform MUST treat calls using a known vetting Caller-ID according to the vetting response pattern (even if a live vouch cache entry exists) and MUST NOT treat a 101→404 response as a successful vouch when an active vetting procedure is in progress for that number.
+Implementations distinguish context (vouching vs. vetting) primarily by the presence of a pre-agreed vetting Caller-ID and shared secret for the asserted Caller-ID. Because vetting uses a specific Caller-ID designated for the procedure, overlap with ordinary vouching calls on the same number is expected to be rare. A CIDVV platform MUST treat calls using a known vetting Caller-ID according to the vetting response pattern (even if a live vouch cache entry exists) and MUST NOT treat a 101→404 response as a successful vouch when an active vetting procedure is in progress for that number.
 
 ## Response Semantics
 
@@ -859,7 +862,7 @@ recognize CIDVV signaling prefixes ("100" and "101") and treat such
 calls as protocol signaling rather than ordinary subscriber calls.
 
 CIDVV-aware elements SHOULD recognize and internally route CIDVV
-signaling calls using the vouched number without user presentation.
+signaling calls using the Asserted Caller-ID without user presentation.
 
 CIDVV signaling calls are not intended to complete. Implementations
 SHOULD minimize call duration and signaling load and SHOULD avoid any
@@ -874,7 +877,7 @@ modify response codes.
 
 ## Short-Term State Management
 
-CIDVV relies on short-lived state for the (Vouched-Number, CIDVV-Token)
+CIDVV relies on short-lived state for the (Asserted Caller-ID, CIDVV-Token)
 tuple, valid only for the Validity Window (typically on the order of
 10 seconds). Implementations MUST expire this state automatically and
 MUST fail closed: on restart or state loss, treat all verification
@@ -936,12 +939,12 @@ positives or suppression of verification attempts.
 
 CIDVV verification is probabilistic and based on reachability.
 It does not provide cryptographic identity guarantees and is
-intended to complement, not replace, mechanisms such as STIR/SHAKEN.
+intended to complement, not replace, mechanisms such as
+STIR/SHAKEN.
 
-CIDVV relies on short-lived signaling exchanges and does not require
-persistent identity infrastructure. Its security properties are
-derived from control of telephone number routing and the ability to
-complete a two-call challenge-response sequence.
+Its security properties derive from the inability of an attacker
+to receive calls at the asserted Caller-ID (the number being
+vouched).
 
 CIDVV does not provide per-call correlation and instead validates
 reachability within the validity window. This may result in multiple
@@ -975,8 +978,8 @@ Implementations MUST:
 - Expire cached state quickly (e.g., within ~10 seconds)
 - Reject verification attempts that do not match recent state
 
-Replay within the validity window remains theoretically possible but
-requires precise timing and routing alignment.
+Replay within the Validity Window remains theoretically possible but requires 
+precise timing and routing alignment (see Section <xref target="hash-function"/> for vetting tokens).
 
 ## Spoofing Resistance
 
