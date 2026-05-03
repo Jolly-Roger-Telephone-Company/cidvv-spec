@@ -105,7 +105,7 @@ The mechanism operates entirely within normal PSTN routing behavior and requires
 * **CIDVV-aware Network Element**: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the two-call challenge-response mechanism described in this document. A successful vouch proves the calling party legitimately controls the asserted Caller-ID.
 * **Vet** (or **Vetting**): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
-* **Vouching Call**: One of the two short calls used in the CIDVV protocol (typically rejected with 404 or 486).
+* **Vouching Call**: Vouching Call: A short verification call used in the CIDVV protocol. CIDVV defines a primary vouching call ("100") and an optional secondary vouching call ("101").
 * **Successful Vouch**: A verification result indicating that a matching cache entry was found.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
 * **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
@@ -116,7 +116,7 @@ The CIDVV vouching and vetting mechanism is designed to operate with minimal new
 
 * **Leverages existing PSTN infrastructure**: The mechanism uses existing numbering plans and routing databases to direct calls without requiring additional infrastructure.
 
-* **Strong anti-spoofing protection**: A successful vouch proves that the asserted Caller-ID is controlled by the legitimate owner, because only the real owner can generate the correct challenge-response sequence. Spoofed calls are typically rejected early, often resulting in failure responses such as 404 Not Found.
+* **Strong anti-spoofing protection**: A successful vouch provides strong evidence that the asserted Caller-ID is controlled by the legitimate owner, because only the real owner can generate the correct challenge-response sequence. Spoofed calls are typically rejected early, often resulting in failure responses such as 404 Not Found.
 
 * **Visibility into spoofing activity**: Telephone number owners gain direct insight into how often (and from where) their numbers are being spoofed worldwide through logged vetting attempts.
 
@@ -210,10 +210,11 @@ The expected behavior is:
   as a higher-assurance vouch.
 
 A CIDVV-aware network element MUST NOT treat a single response as
-sufficient evidence of a successful vouch.
+sufficient evidence of a successful vouch unless it corresponds to
+the expected behavior for the "100" prefix.
 
-Instead, a successful vouch requires observing the expected response
-patterns for both prefixes within the configured validity window.
+Additional verification calls (e.g., using the "101" prefix) MAY be
+used to increase assurance but are not required for a valid vouch.
 
 The two verification calls MAY be sent in any order or in parallel.
 Implementations MUST NOT assume ordering.
@@ -234,15 +235,16 @@ SS7/TDM networks.
 CIDVV uses observed call behavior as a signaling mechanism between
 participating systems. Because intermediate SIP and SS7/TDM networks
 may translate, modify, or replace response codes, implementations
-MUST interpret responses based on behavior rather than relying on
-specific numeric values.
+MUST interpret responses based on behavioral class (e.g., immediate
+rejection) and MUST be able to distinguish between "Busy"-class and
+"Not Found"-class rejection behaviors.
 
-Response interpretation is dependent on the Calling Party Number
-prefix used for the verification call.
+Implementations SHOULD use SIP 486 (Busy Here) and 404 (Not Found)
+as the canonical representations of these behaviors where possible.
 
-Responses such as 603 (Decline) are commonly used by systems that do
-not implement CIDVV or that intentionally reject such calls by policy.
-Such responses MUST be treated as unsuccessful verification results.
+CIDVV requires that these two rejection behaviors remain
+distinguishable across the signaling path. Environments that cannot
+preserve this distinction may not support enhanced verification.
 
 ### "100" Prefix (Primary Verification)
 
@@ -409,7 +411,7 @@ Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting C
 
 Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".
 
-When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform then computes a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).
+When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform MUST compute a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).
 
 Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.
 
@@ -725,15 +727,14 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
      12 digits of the Caller-ID, consistent with CIDVV payload
      constraints.
    - Recognizes this as a pre-agreed Vetting Caller-ID
-   - Computes the SHA-256 digest of the concatenated string
-     `+12125550100+19495550199hamburger`.
+   - Computes the SHA-256 digest over the UTF-8 string formed by concatenating: calling-number || called-number || shared-secret
    - Takes the first 8 hexadecimal characters (`b0092191`), converts to decimal (`2953388433`), pads to 10 digits, and prepends `1`, yielding `12953388433`.
    - Caches this value for a short period (≈10 seconds).
    - Rejects the call with **404 Not Found**.
 
 6. CIDVV_A receives the 404 and performs the identical hash calculation to derive `12953388433`.
 
-7. CIDVV_A immediately places a second vetting call to `+19495550199` using the Vetting Token Check Caller-ID `+10112953388433`.
+7. CIDVV_A immediately places a second vetting call to `+19495550199` using the Vetting Token Check Caller-ID `10112953388433`.
 
 8. Bob’s SBC recognizes the `101` prefix on the Caller-ID and forwards the call to CIDVV_B.
 
@@ -789,14 +790,10 @@ media establishment.
 
 ## Response Variability
 
-CIDVV implementations MUST assume that response codes may be altered,
-mapped, or replaced by intermediate SIP or SS7/TDM networks. As a
-result, implementations MUST NOT rely on any specific response code
-being preserved end-to-end.
-
-Instead, implementations SHOULD interpret responses based on expected
-classes of behavior (e.g., success vs. failure) rather than exact
-numeric values.
+Implementations SHOULD interpret responses based on behavioral class
+(e.g., success vs. immediate rejection) rather than relying solely on
+exact numeric values, as intermediate networks may translate or
+modify response codes.
 
 # Operational Considerations
 
@@ -849,6 +846,10 @@ Failure to recognize CIDVV signaling may result in increased false
 positives or suppression of verification attempts.
 
 # Security Considerations
+
+CIDVV verification is probabilistic and based on reachability.
+It does not provide cryptographic identity guarantees and is
+intended to complement, not replace, mechanisms such as STIR/SHAKEN.
 
 CIDVV relies on short-lived signaling exchanges and does not require
 persistent identity infrastructure. Its security properties are
