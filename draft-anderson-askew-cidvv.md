@@ -100,9 +100,8 @@ In this document, the term "Caller-ID" refers to the identity
 presented to users, while "Calling Party Number" refers to the
 signaling field used to convey that identity.
 
-* **Alice**: The calling party (originator of the call being vetted).
-* **Bob**: The called party (owner of the number being vetted).
-* **Mallory**: An attacker attempting to spoof a Caller-ID.
+* **Alice**: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob’s number.
+* **Bob**: The called party. In vetting flows Bob is the owner whose number is being vetted.* **Mallory**: An attacker attempting to spoof a Caller-ID.
 * **OSP**: Originating Service Provider.
 * **TSP**: Terminating Service Provider.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
@@ -338,7 +337,7 @@ ambiguous, the vouch MUST be treated as unsuccessful or indeterminate.
 
 Alice's CIDVV platform receives an attempted call from Alice to Bob.
 It MUST construct a CIDVV token as defined in Section <xref target="protocol-overview"/>
-by prefixing "100" to the rightmost 12 digits of the dialed number.
+by prefixing "100" to the dialed number.
 
 The CIDVV platform MUST cache the call attempt using the tuple:
 
@@ -439,7 +438,15 @@ one-to-one correspondence between specific call legs.
 ## Vetting Procedure
 {: #vetting-procedure }
 
-Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting Caller-ID, and a validity time window.
+Vetting a remote number requires two separate calls (distinct SIP
+dialogs) using a pre-agreed shared key. The process confirms that
+the **called party (Bob)** controls the target telephone number and
+possesses the correct shared secret. In the examples below, Alice is
+the verifier who initiates the two calls to Bob’s number in order to
+vet Bob’s number.
+
+Before vetting begins, Alice and Bob agree on a shared secret, Bob’s
+vetting Caller-ID, and a validity time window.
 
 Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".
 
@@ -741,7 +748,7 @@ separately, but together they constitute a single vetting operation.
 
 ### Successful Caller-ID Vetting Flow
 
-Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party controls the target telephone number and possesses the correct shared secret.
+Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party (Bob) controls the target telephone number and possesses the correct shared secret.
 
 1. Alice and Bob agree on a shared secret (e.g. `hamburger`) and Alice’s vetting Caller-ID (`+12125550100`, or its rightmost 12 digits for matching purposes)
 
