@@ -86,7 +86,8 @@ Table of Contents
      4.1.  Response Semantics
    5.  Protocol Operation
      5.1.  Vouching Procedure
-     5.2.  Vetting Procedure
+     5.2.  Correlation Model
+     5.3.  Vetting Procedure
    6.  Examples
      6.1.  Successful Vouch Call Flow
        6.1.1.  Successful Vouch Step-by-step description
@@ -340,7 +341,22 @@ Table of Contents
    response is interpreted by CIDVV-aware network elements (e.g., SBCs
    or intermediaries) as an indication of an unsuccessful vouch.
 
-5.2.  Vetting Procedure
+5.2.  Correlation Model
+
+   CIDVV vouching correlates calls using the asserted calling number,
+   the called number, and a short time window.  It does not attempt to
+   identify individual call legs across the PSTN.
+
+   If multiple calls with the same asserted calling number and called
+   number occur within the cache interval, implementations MAY treat
+   them as a single aggregate vouching state or MAY maintain a count of
+   pending attempts.
+
+   A successful vouch indicates that at least one matching call attempt
+   occurred during the validity window, rather than proving a one-to-one
+   correspondence between specific call legs.
+
+5.3.  Vetting Procedure
 
    Before vetting begins, Alice and Bob agree on a shared secret,
    Alice's vetting Caller-ID, and a validity time window.
@@ -794,6 +810,10 @@ Table of Contents
    persistent identity infrastructure.  Its security properties are
    derived from control of telephone number routing and the ability to
    complete a two-call challenge-response sequence.
+
+   CIDVV does not provide per-call correlation and instead validates
+   reachability within a short time window.  This may result in multiple
+   calls being validated by a single successful vouch.
 
 9.1.  Trust Model
 

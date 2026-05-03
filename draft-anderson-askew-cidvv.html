@@ -39,8 +39,8 @@ modification.
     platformdirs 4.9.6
     pycountry 24.6.1
     PyYAML 6.0.3
-    requests 2.32.5
-    wcwidth 0.6.0
+    requests 2.33.1
+    wcwidth 0.7.0
 -->
 <link href="draft-anderson-askew-cidvv.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1204,7 +1204,10 @@ modification.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
                 <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-vouching-procedure" class="internal xref">Vouching Procedure</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
-                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-vetting-procedure" class="internal xref">Vetting Procedure</a></p>
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-correlation-model" class="internal xref">Correlation Model</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-vetting-procedure" class="internal xref">Vetting Procedure</a></p>
 </li>
             </ul>
 </li>
@@ -1548,18 +1551,35 @@ response is interpreted by CIDVV-aware network elements (e.g., SBCs
 or intermediaries) as an indication of an unsuccessful vouch.<a href="#section-5.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="vetting-procedure">
+<div id="correlation-model">
 <section id="section-5.2">
-        <h3 id="name-vetting-procedure">
-<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-vetting-procedure" class="section-name selfRef">Vetting Procedure</a>
+        <h3 id="name-correlation-model">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-correlation-model" class="section-name selfRef">Correlation Model</a>
         </h3>
-<p id="section-5.2-1">Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting Caller-ID, and a validity time window.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
-<p id="section-5.2-2">Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".<a href="#section-5.2-2" class="pilcrow">¶</a></p>
-<p id="section-5.2-3">When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform then computes a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).<a href="#section-5.2-3" class="pilcrow">¶</a></p>
-<p id="section-5.2-4">Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.<a href="#section-5.2-4" class="pilcrow">¶</a></p>
-<p id="section-5.2-5">When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.<a href="#section-5.2-5" class="pilcrow">¶</a></p>
-<p id="section-5.2-6">If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.<a href="#section-5.2-6" class="pilcrow">¶</a></p>
-<p id="section-5.2-7">Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as an unsuccessful vet.<a href="#section-5.2-7" class="pilcrow">¶</a></p>
+<p id="section-5.2-1">CIDVV vouching correlates calls using the asserted calling number,
+the called number, and a short time window. It does not attempt to
+identify individual call legs across the PSTN.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<p id="section-5.2-2">If multiple calls with the same asserted calling number and called
+number occur within the cache interval, implementations MAY treat
+them as a single aggregate vouching state or MAY maintain a count of
+pending attempts.<a href="#section-5.2-2" class="pilcrow">¶</a></p>
+<p id="section-5.2-3">A successful vouch indicates that at least one matching call attempt
+occurred during the validity window, rather than proving a
+one-to-one correspondence between specific call legs.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="vetting-procedure">
+<section id="section-5.3">
+        <h3 id="name-vetting-procedure">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-vetting-procedure" class="section-name selfRef">Vetting Procedure</a>
+        </h3>
+<p id="section-5.3-1">Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting Caller-ID, and a validity time window.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<p id="section-5.3-2">Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".<a href="#section-5.3-2" class="pilcrow">¶</a></p>
+<p id="section-5.3-3">When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform then computes a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).<a href="#section-5.3-3" class="pilcrow">¶</a></p>
+<p id="section-5.3-4">Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.<a href="#section-5.3-4" class="pilcrow">¶</a></p>
+<p id="section-5.3-5">When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.<a href="#section-5.3-5" class="pilcrow">¶</a></p>
+<p id="section-5.3-6">If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.<a href="#section-5.3-6" class="pilcrow">¶</a></p>
+<p id="section-5.3-7">Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as an unsuccessful vet.<a href="#section-5.3-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2117,6 +2137,9 @@ positives or suppression of verification attempts.<a href="#section-8.4-4" class
 persistent identity infrastructure. Its security properties are
 derived from control of telephone number routing and the ability to
 complete a two-call challenge-response sequence.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<p id="section-9-2">CIDVV does not provide per-call correlation and instead validates
+reachability within a short time window. This may result in multiple
+calls being validated by a single successful vouch.<a href="#section-9-2" class="pilcrow">¶</a></p>
 <div id="trust-model">
 <section id="section-9.1">
         <h3 id="name-trust-model">
