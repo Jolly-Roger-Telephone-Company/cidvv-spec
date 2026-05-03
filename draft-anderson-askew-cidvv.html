@@ -1599,50 +1599,53 @@ telephone number.<a href="#section-4.1-10" class="pilcrow">¶</a></p>
 this construction. A CIDVV platform MAY cache and compare the complete
 15-digit CIDVV Calling Party Number (including the prefix) rather than
 reconstructing it for comparison.<a href="#section-4.1-11" class="pilcrow">¶</a></p>
-<p id="section-4.1-12">Because CIDVV correlation is also scoped by the called number and a
-short Validity Window, collisions among rightmost 12-digit payload values
-are expected to be rare. Implementations SHOULD nevertheless treat
-ambiguous or colliding state as unsuccessful or indeterminate rather
-than risk false-positive validation.<a href="#section-4.1-12" class="pilcrow">¶</a></p>
-<p id="section-4.1-13">CIDVV verification consists of observing the behavior of one or more
-verification calls using distinct CIDVV prefixes.<a href="#section-4.1-13" class="pilcrow">¶</a></p>
-<p id="section-4.1-14">A successful vouch requires that a verification call using the "100"
+<p id="section-4.1-12">Because CIDVV payloads may be truncated to the rightmost 12 digits,
+distinct telephone numbers can, in rare cases, produce identical
+payload values. Correlation is therefore additionally scoped by the
+called number and the Validity Window.<a href="#section-4.1-12" class="pilcrow">¶</a></p>
+<p id="section-4.1-13">In such cases, multiple call attempts may be indistinguishable to the
+CIDVV platform and treated as a single correlation event. As a result,
+a successful verification may apply to more than one call attempt
+within the Validity Window.<a href="#section-4.1-13" class="pilcrow">¶</a></p>
+<p id="section-4.1-14">CIDVV verification consists of observing the behavior of one or more
+verification calls using distinct CIDVV prefixes.<a href="#section-4.1-14" class="pilcrow">¶</a></p>
+<p id="section-4.1-15">A successful vouch requires that a verification call using the "100"
 prefix produce the expected response behavior. Additional
 verification calls (e.g., using the "101" prefix) MAY be used to
-achieve higher assurance.<a href="#section-4.1-14" class="pilcrow">¶</a></p>
-<p id="section-4.1-15">The expected behavior is:<a href="#section-4.1-15" class="pilcrow">¶</a></p>
+achieve higher assurance.<a href="#section-4.1-15" class="pilcrow">¶</a></p>
+<p id="section-4.1-16">The expected behavior is:<a href="#section-4.1-16" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-4.1-16.1">
-            <p id="section-4.1-16.1.1">Calls using the "100" prefix MUST result in SIP 486 Busy Here.
+<li class="normal" id="section-4.1-17.1">
+            <p id="section-4.1-17.1.1">Calls using the "100" prefix MUST result in SIP 486 Busy Here.
 Any other response, timeout, call progression, or successful call
-completion MUST be treated as an unsuccessful vouch.<a href="#section-4.1-16.1.1" class="pilcrow">¶</a></p>
+completion MUST be treated as an unsuccessful vouch.<a href="#section-4.1-17.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-4.1-16.2">
-            <p id="section-4.1-16.2.1">Calls using the "101" prefix are expected to result in SIP 404 Not Found.
+          <li class="normal" id="section-4.1-17.2">
+            <p id="section-4.1-17.2.1">Calls using the "101" prefix are expected to result in SIP 404 Not Found.
 A matching 101/404 result MAY be used with a successful 100/486 result
-as a higher-assurance vouch.<a href="#section-4.1-16.2.1" class="pilcrow">¶</a></p>
+as a higher-assurance vouch.<a href="#section-4.1-17.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-4.1-17">A CIDVV-aware network element MUST NOT treat a single response as
+<p id="section-4.1-18">A CIDVV-aware network element MUST NOT treat a single response as
 sufficient evidence of a successful vouch unless it corresponds to
-the expected behavior for the "100" prefix.<a href="#section-4.1-17" class="pilcrow">¶</a></p>
-<p id="section-4.1-18">Additional verification calls (e.g., using the "101" prefix) MAY be
-used to increase assurance but are not required for a valid vouch.<a href="#section-4.1-18" class="pilcrow">¶</a></p>
-<p id="section-4.1-19">The two verification calls MAY be sent in any order or in parallel.
-Implementations MUST NOT assume ordering.<a href="#section-4.1-19" class="pilcrow">¶</a></p>
-<p id="section-4.1-20">If either expected response is missing, altered, delayed, replaced by
+the expected behavior for the "100" prefix.<a href="#section-4.1-18" class="pilcrow">¶</a></p>
+<p id="section-4.1-19">Additional verification calls (e.g., using the "101" prefix) MAY be
+used to increase assurance but are not required for a valid vouch.<a href="#section-4.1-19" class="pilcrow">¶</a></p>
+<p id="section-4.1-20">The two verification calls MAY be sent in any order or in parallel.
+Implementations MUST NOT assume ordering.<a href="#section-4.1-20" class="pilcrow">¶</a></p>
+<p id="section-4.1-21">If either expected response is missing, altered, delayed, replaced by
 call progression, or inconsistent with the expected pattern, the
-result MUST be treated as unsuccessful or indeterminate.<a href="#section-4.1-20" class="pilcrow">¶</a></p>
-<p id="section-4.1-21">CIDVV exchanges occur using short signaling dialogs and do not require
-media establishment.<a href="#section-4.1-21" class="pilcrow">¶</a></p>
-<p id="section-4.1-22">CIDVV signaling is encoded entirely within numeric Calling Party
+result MUST be treated as unsuccessful or indeterminate.<a href="#section-4.1-21" class="pilcrow">¶</a></p>
+<p id="section-4.1-22">CIDVV exchanges occur using short signaling dialogs and do not require
+media establishment.<a href="#section-4.1-22" class="pilcrow">¶</a></p>
+<p id="section-4.1-23">CIDVV signaling is encoded entirely within numeric Calling Party
 Number values to maximize survivability across heterogeneous SIP and
-SS7/TDM networks.<a href="#section-4.1-22" class="pilcrow">¶</a></p>
-<p id="section-4.1-23">Vetting procedures MAY use full telephone numbers or truncated
+SS7/TDM networks.<a href="#section-4.1-23" class="pilcrow">¶</a></p>
+<p id="section-4.1-24">Vetting procedures MAY use full telephone numbers or truncated
 forms as input to cryptographic operations, independent of the
-CIDVV Calling Party Number encoding.<a href="#section-4.1-23" class="pilcrow">¶</a></p>
-<p id="section-4.1-24">CIDVV operations rely on state within the Validity Window, typically on the order of
-10 seconds.<a href="#section-4.1-24" class="pilcrow">¶</a></p>
+CIDVV Calling Party Number encoding.<a href="#section-4.1-24" class="pilcrow">¶</a></p>
+<p id="section-4.1-25">CIDVV operations rely on state within the Validity Window, typically on the order of
+10 seconds.<a href="#section-4.1-25" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="vouching-vs-vetting-response-patterns">
