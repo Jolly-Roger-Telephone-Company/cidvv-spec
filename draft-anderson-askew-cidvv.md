@@ -260,6 +260,18 @@ CIDVV Calling Party Number encoding.
 CIDVV operations rely on state within the validity window, typically on the order of
 10 seconds.
 
+## Vouching vs. Vetting Response Patterns
+
+CIDVV uses the same signaling prefixes for both operations but with
+distinct expected behaviors. The table below summarizes the differences:
+
+| Prefix | Vouching (live call)          | Vetting (pre-shared secret)      | Notes |
+|--------|-------------------------------|----------------------------------|-------|
+| 100    | Expect 486 Busy Here (cache hit) | Expect 404 Not Found (cache token) | Primary signal |
+| 101    | Expect 404 Not Found          | Expect 486 Busy Here (token match) | Secondary / check |
+
+Implementations MUST distinguish context (vouching vs. vetting) by whether a shared secret was pre-agreed for the Vouched Number. A CIDVV platform MUST NOT treat a 101→404 response as a successful vouch when an active vetting procedure exists for that number.
+
 ## Response Semantics
 
 CIDVV uses observed call behavior as a signaling mechanism between
