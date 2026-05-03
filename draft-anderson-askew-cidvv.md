@@ -147,14 +147,83 @@ CIDVV relies only on the ability of signaling indicators and failure
 responses to traverse the network path; it does not require specific
 response codes to be preserved.
 
-# Protocol Overview
+## Protocol Overview
+{: #protocol-overview }
 
 CIDVV uses special Caller-ID prefixes to signal protocol operations:
 
-* "100" prefix — Vouching or Vetting
-* "101" prefix — Vetting Token Check
+* "100" prefix — Primary Verification Call
+* "101" prefix — Secondary Verification Call
 
-CIDVV exchanges occur using short signaling dialogs and do not require media establishment.
+CIDVV Calling Party Numbers are numeric signaling values carried in
+the Calling Party Number field. They are not represented as E.164
+numbers and are shown without a leading "+" in this document.
+
+Ordinary subscriber telephone numbers (e.g., +12125550100) are shown
+in E.164 format for clarity, while CIDVV signaling values (e.g.,
+10019495550199) are shown as digit strings.
+
+CIDVV signaling Calling Party Numbers MUST fit within the 15-digit
+Calling Party Number limit commonly encountered in SS7 and ISDN
+networks. For this reason, CIDVV uses a three-digit prefix followed by a
+12-digit payload:
+
+   CIDVV-CPN = Prefix || Payload
+
+where Prefix is "100" or "101", and Payload is the rightmost 12 digits
+of the relevant telephone number after normalization to digits only.
+
+For vouching, the Payload is normally the rightmost 12 digits of the
+dialed number. For example, if Bob's number is +19495550199, the
+Payload is 19495550199 and the resulting CIDVV Calling Party Number
+is 10019495550199.
+
+A CIDVV-aware element generating a CIDVV verification call MUST
+truncate the payload, when necessary, to preserve the three-digit
+prefix and the rightmost 12 digits.
+
+A CIDVV platform MAY cache and compare the complete 15-digit CIDVV
+Calling Party Number, including the prefix, rather than stripping the
+prefix before lookup.
+
+Because CIDVV correlation is also scoped by the called number and a
+short validity window, collisions among rightmost-12-digit payloads
+are expected to be rare. Implementations SHOULD nevertheless treat
+ambiguous or colliding state as unsuccessful or indeterminate rather
+than risk false-positive validation.
+
+CIDVV verification consists of observing the behavior of one or more
+verification calls using distinct CIDVV prefixes.
+
+A successful vouch requires that a verification call using the "100"
+prefix produce the expected response behavior. Additional
+verification calls (e.g., using the "101" prefix) MAY be used to
+achieve higher assurance.
+
+The expected behavior is:
+
+* Calls using the "100" prefix MUST result in SIP 486 Busy Here.
+  Any other response, timeout, call progression, or successful call
+  completion MUST be treated as an unsuccessful vouch.
+* Calls using the "101" prefix are expected to result in SIP 404 Not Found.
+  A matching 101/404 result MAY be used with a successful 100/486 result
+  as a higher-assurance vouch.
+
+A CIDVV-aware network element MUST NOT treat a single response as
+sufficient evidence of a successful vouch.
+
+Instead, a successful vouch requires observing the expected response
+patterns for both prefixes within the configured validity window.
+
+The two verification calls MAY be sent in any order or in parallel.
+Implementations MUST NOT assume ordering.
+
+If either expected response is missing, altered, delayed, replaced by
+call progression, or inconsistent with the expected pattern, the
+result MUST be treated as unsuccessful or indeterminate.
+
+CIDVV exchanges occur using short signaling dialogs and do not require
+media establishment.
 
 CIDVV signaling is encoded entirely within numeric Calling Party
 Number values to maximize survivability across heterogeneous SIP and
@@ -162,46 +231,162 @@ SS7/TDM networks.
 
 ## Response Semantics
 
-CIDVV uses SIP response codes as local signaling indicators between
-participating systems.
+CIDVV uses observed call behavior as a signaling mechanism between
+participating systems. Because intermediate SIP and SS7/TDM networks
+may translate, modify, or replace response codes, implementations
+MUST interpret responses based on behavior rather than relying on
+specific numeric values.
 
-In typical deployments:
+Response interpretation is dependent on the Calling Party Number
+prefix used for the verification call.
 
-* 486 (Busy Here) indicates a successful vouch or vet.
-* 404 (Not Found) indicates an unsuccessful vouch or vet.
-* 603 (Decline) indicates that CIDVV is not implemented or that
-  verification could not be performed.
+Responses such as 603 (Decline) are commonly used by systems that do
+not implement CIDVV or that intentionally reject such calls by policy.
+Such responses MUST be treated as unsuccessful verification results.
 
-However, intermediate SIP and SS7/TDM networks may translate,
-modify, or replace response codes. As a result, CIDVV implementations
-MUST NOT rely on specific numeric response codes being preserved
-end-to-end.
+### "100" Prefix (Primary Verification)
 
-Instead, implementations MUST interpret responses based on observed
-behavior and expected signaling patterns (e.g., immediate rejection,
-timeout, or call progression).
+A call using the "100" prefix is considered successful only if it
+results in an immediate rejection consistent with a "Busy"-class
+response (e.g., SIP 486 Busy Here).
+
+A CIDVV implementation MUST treat any response other than this
+expected behavior — including ringing, call completion, timeout, or
+alternative error responses — as an unsuccessful verification.
+
+A successful "100" verification provides a baseline level of
+confidence that the asserted Caller-ID is routable and under the
+control of the originating party.
+
+### "101" Prefix (Secondary Verification)
+
+A call using the "101" prefix is used as an optional secondary
+validation signal.
+
+The expected behavior is an immediate rejection consistent with a
+"Not Found"-class response (e.g., SIP 404 Not Found).
+
+Because such responses are relatively common in the PSTN, a "101"
+verification alone MUST NOT be treated as evidence of a successful
+vouch.
+
+### Combined Verification
+
+Implementations MAY perform both "100" and "101" verification calls
+to achieve a higher level of assurance.
+
+In this case, a stronger validation result is obtained when:
+
+* The "100" verification produces the expected "Busy"-class behavior, AND
+* The "101" verification produces the expected "Not Found"-class behavior
+
+within a short time window.
+
+Implementations MUST NOT require the two verification calls to occur
+in any specific order.
+
+### Failure Handling
+
+If the expected behavior for a given prefix is not observed, the
+verification for that prefix MUST be treated as unsuccessful.
+
+If only the "100" verification succeeds, the result MAY be treated as
+a valid but lower-assurance vouch.
+
+If both "100" and "101" verifications succeed, the result MAY be
+treated as a higher-assurance vouch.
+
+If neither verification succeeds, or if results are inconsistent or
+ambiguous, the vouch MUST be treated as unsuccessful or indeterminate.
 
 # Protocol Operation
 
 ## Vouching Procedure
 
-Alice's CIDVV platform receives an attempted call from Alice to Bob. It MUST cache the calling number and called number for a short interval, normally about 10 seconds. It then rejects the attempt with SIP response 486 (Busy Here).
+Alice's CIDVV platform receives an attempted call from Alice to Bob.
+It MUST construct a CIDVV token as defined in Section <xref target="protocol-overview"/>
+by prefixing "100" to the rightmost 12 digits of the dialed number.
 
-Alice's SBC then sends the call normally through the PSTN toward Bob.
+The CIDVV platform MUST cache the call attempt using the tuple:
 
-When Bob's system receives the call, Bob's system initiates a verification call toward Alice. The verification call uses a Caller-ID formed by prefixing Bob's number with the digits "100".
+   (Called Number, CIDVV Token)
 
-When Alice's CIDVV platform receives a call with a Caller-ID beginning with "100", it MUST remove the "100" prefix, compare the resulting number pair against the recent cache, and determine whether the original call attempt exists.
+for a short interval, normally about 10 seconds.
 
-If a matching cache entry exists, Alice's CIDVV platform MUST reject
-the verification call with SIP response 486 (Busy Here). This
-response is interpreted by CIDVV-aware network elements (e.g., SBCs
-or intermediaries) as an indication of a successful vouch.
+The CIDVV platform then rejects the call with SIP response 486
+(Busy Here).
 
-If no matching cache entry exists, Alice's CIDVV platform MUST reject
-the verification call with SIP response 404 (Not Found). This
-response is interpreted by CIDVV-aware network elements (e.g., SBCs
-or intermediaries) as an indication of an unsuccessful vouch.
+Alice's SBC receives the 486 and advances the original call through
+the PSTN toward Bob using the original Caller-ID.
+
+When Bob's system receives the call, a CIDVV-aware network element
+(e.g., SBC) initiates a verification call toward Alice.
+
+### Primary Verification ("100")
+
+Bob's CIDVV-aware element constructs the CIDVV token using the same
+method (prefix "100" plus the rightmost 12 digits of the dialed
+number) and initiates a verification call toward Alice using that
+value as the Calling Party Number.
+
+When Alice's SBC receives a call with a Calling Party Number
+beginning with "100", it MUST route the call to the CIDVV platform.
+
+Upon receiving the verification call, Alice's CIDVV platform MUST
+look up the tuple:
+
+   (Called Number, CIDVV Token)
+
+in its short-term cache.
+
+If a matching cache entry exists, the CIDVV platform MUST reject the
+verification call with SIP response 486 (Busy Here).
+
+If no matching cache entry exists, the CIDVV platform MUST reject the
+verification call with SIP response 404 (Not Found).
+
+A successful "100" verification (i.e., receipt of 486) indicates that
+the originating party can receive calls at the asserted Caller-ID
+and constitutes a valid baseline vouch.
+
+### Secondary Verification ("101")
+
+Bob's CIDVV-aware element MAY initiate a second verification call
+using a CIDVV token constructed by prefixing "101" to the same
+12-digit payload.
+
+When Alice's SBC receives a call with a Calling Party Number
+beginning with "101", it MUST route the call to the CIDVV platform.
+
+Upon receiving such a call, the CIDVV platform MUST reject the call
+with SIP response 404 (Not Found), unless the call corresponds to an
+active vetting procedure (see Section X).
+
+A "101" verification call does not require cache lookup for vouching
+purposes and MUST NOT be used as a standalone indicator of a
+successful vouch.
+
+### Combined Verification Behavior
+
+Implementations MAY perform only the primary ("100") verification or
+MAY perform both primary and secondary verification.
+
+A successful "100" verification alone provides a valid vouch with
+baseline assurance.
+
+If both verification calls are performed, a higher-assurance vouch is
+obtained when:
+
+   "100" → 486, and
+   "101" → 404
+
+are both observed within the validity window.
+
+The two verification calls MAY occur in any order or in parallel.
+Implementations MUST NOT assume ordering.
+
+If the "100" verification fails, the vouch MUST be treated as
+unsuccessful regardless of any "101" result.
 
 ## Correlation Model
 
@@ -236,170 +421,269 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
 
 # Examples
 
-## Successful Vouch Call Flow
+## Successful Vouch Call Flow (Baseline)
+
+The following diagram shows a baseline successful vouch using only
+the primary "100" verification call. This provides a valid vouch with
+baseline assurance.
 
 ~~~~
    Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
      |           |           |           |           |           |
      |------- INVITE ------->|           |           |           |
-     |  Step 1   |           |           |           |           |
      |           |           |           |           |           |
      |           |<- INVITE -|           |           |           |
-     |           |  Step 2   |           |           |           |
      |           |           |           |           |           |
-     |           |-- Busy -->|           |           |           |
-     |           |  Step 3   |           |           |           |
+     |           |--- 486 -->|           |           |           |
      |           |           |- INVITE ->|           |           |
-     |           |           |  Step 4   |           |           |
      |           |           |           |- INVITE ->|           |
-     |           |           |           |  Step 5   |           |
      |           |           |           |           |           |
-     |           |           |           |<- INVITE -|           |
-     |           |           |           |  Step 6   |           |
-     |           |           |<- INVITE -|           |           |
-     |           |           |  Step 7   |           |           |
-     |           |<- INVITE -|           |           |           |
-     |           |  Step 8   |           |           |           |
+     |           |           |           |<- VFY100 -|           |
+     |           |           |<- VFY100 -|           |           |
+     |           |<- VFY100 -|           |           |           |
      |           |           |           |           |           |
-     |           |-- Busy -->|           |           |           |
-     |           |  Step 9   |           |           |           |
-     |           |           |-- Busy -->|           |           |
-     |           |           |  Step 10  |           |           |
-     |           |           |           |-- Busy -->|           |
-     |           |           |           |  Step 11  |           |
+     |           |--- 486 -->|           |           |           |
+     |           |           |--- 486 -->|           |           |
+     |           |           |           |--- 486 -->|           |
      |           |           |           |           |- INVITE ->|
-     |           |           |           |           |  Step 12  |
      |           |           |           |           |           |
 ~~~~
-{: #fig-successful-vouch title="Example Successful Vouch"}
+{: #fig-successful-vouch title="Example Successful Vouch (Baseline)"}
 
-### Successful Vouch Step-by-step description
+In the diagram, "VFY100" represents a verification call whose
+Calling Party Number is the CIDVV token formed as "100" followed by
+the rightmost 12 digits of the dialed number.
 
-The diagram above shows the high-level message flow. The following numbered steps provide the detailed behavior, including Caller-ID manipulation performed by the CIDVV platforms.
+### Successful Vouch (Baseline) Step-by-step description
 
-1. The originating user (Alice, Caller-ID `+12125550100`) initiates a call to the destination user (Bob, dialed number `+19495550199`).
+The diagram above shows the high-level message flow. The following
+numbered steps provide the detailed behavior, including Caller-ID
+manipulation performed by CIDVV platforms and CIDVV-aware elements.
 
-2. The call is routed from Alice's User Agent to her SBC, which forwards it to the originating CIDVV platform (CIDVV_A).
+1. The originating user (Alice, Caller-ID `+12125550100`) initiates a
+   call to the destination user (Bob, dialed number `+19495550199`).
+
+2. The call is routed from Alice's User Agent to her SBC, which
+   forwards it to the originating CIDVV platform (CIDVV_A).
 
 3. **CIDVV_A**:
-   - Caches the call attempt `(From: +12125550100, To: +19495550199)` for a short period (≈10 seconds).
+   - Constructs a CIDVV token by prefixing "100" to the rightmost
+     12 digits of the dialed number. In this case, the payload is
+     `19495550199`, resulting in the token `10019495550199`.
+   - Caches the call attempt using the tuple:
+       `(Called: +12125550100, Token: 10019495550199)`
+     for a short period (≈10 seconds).
    - Rejects the call with **486 Busy Here**.
 
-4. Alice's SBC receives the 486 and advances the original call toward the PSTN using the original Caller-ID.
+4. Alice's SBC receives the 486 and advances the original call toward
+   the PSTN using the original Caller-ID.
 
 5. The call reaches Bob's SBC via the PSTN.
 
-6. **Bob's SBC**:
-   - Generates a Calling Party Number of `100` plus the last 12 digits of the dialed number, resulting in `10019495550199`.
-   - Forwards the call back toward Alice's number (`+12125550100`) with the modified Caller-ID `+10019495550199`.
+6. **Bob's SBC (CIDVV-aware element)**:
+   - Constructs the same CIDVV token by prefixing "100" to the
+     rightmost 12 digits of the dialed number (`+19495550199`),
+     resulting in `10019495550199`.
+   - Initiates a verification call toward Alice's number
+     (`+12125550100`) using the Caller-ID `10019495550199`.
 
-7. The return call arrives at Alice's SBC via the PSTN.
+7. The verification call arrives at Alice's SBC via the PSTN.
 
 8. **Alice's SBC**:
-   - Detects the leading `100` prefix on the Caller-ID.
+   - Detects the leading "100" prefix on the Caller-ID.
    - Routes the call to CIDVV_A for vouch verification.
 
 9. **CIDVV_A**:
-   - Receives the call with `To: +12125550100` and `From: +10019495550199`.
-   - Strips the `100` prefix from the From number, yielding `+19495550199`.
-   - Swaps the From and To values.
-   - Looks up the resulting pair `(+12125550100, +19495550199)` in its short-term cache.
+   - Receives the call with:
+       `To: +12125550100`
+       `From: 10019495550199`
+   - Looks up the tuple:
+       `(Called: +12125550100, Token: 10019495550199)`
+     in its short-term cache.
    - Finds a matching entry from step 3.
-   - Considers this a successful vouch and returns **486 Busy Here**.
+   - Considers this a successful primary verification and returns
+     **486 Busy Here**.
 
-10. Bob's SBC receives the 486 via the PSTN, recognizes it as a successful vouch response, and advances the original call to Bob's User Agent.
+10. Bob's SBC receives the 486 via the PSTN, recognizes it as a
+    successful primary verification, and advances the original call
+    to Bob's User Agent.
 
 11. Bob's telephone rings.
 
-This two-call mechanism (first vetting call + return vouch call) allows the originating CIDVV platform to confirm that the asserted Caller-ID is valid without completing the initial call.
+This mechanism allows the originating CIDVV platform to confirm that
+the asserted Caller-ID is valid without completing the initial call.
 
-## Unsuccessful Vouch Call Flow
+## Successful Vouch Call Flow (Enhanced)
 
-The following diagram shows an unsuccessful vouch attempt by an impersonator (Mallory) who spoofs Alice's Caller-ID.
+The following diagram shows a successful vouch (Enhanced) using both
+the primary "100" verification call and an optional secondary "101"
+verification call. The "101" call provides additional assurance by
+producing a distinct response pattern when combined with a successful
+"100" verification. The "100" verification alone is sufficient for a
+baseline successful vouch.
+
+For clarity, the verification calls are shown sequentially. In
+practice, the two verification calls MAY occur in any order or in
+parallel.
 
 ~~~~
-  Mallory     CIDVV_A      SBC_A        PSTN       SBC_B    Voicemail_B
+   Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
      |           |           |           |           |           |
-     |------------- INVITE ------------->|           |           |
-     |  Step 1   |           |           |           |           |
-     |           |           |           |- INVITE ->|           |
-     |           |           |           |  Step 2   |           |
+     |------- INVITE ------->|           |           |           |
      |           |           |           |           |           |
-     |           |           |           |<- INVITE -|           |
-     |           |           |           |  Step 3   |           |
-     |           |           |<- INVITE -|           |           |
-     |           |           |  Step 4   |           |           |
      |           |<- INVITE -|           |           |           |
-     |           |  Step 5   |           |           |           |
      |           |           |           |           |           |
-     |           |-NotFound->|           |           |           |
-     |           |  Step 6   |           |           |           |
-     |           |           |-NotFound->|           |           |
-     |           |           |  Step 7   |           |           |
-     |           |           |           |-NotFound->|           |
-     |           |           |           |  Step 8   |           |
-     |           |           |           |           |--- VM --->|
-     |           |           |           |           |  Step 9   |
+     |           |--- 486 -->|           |           |           |
+     |           |           |- INVITE ->|           |           |
+     |           |           |           |- INVITE ->|           |
+     |           |           |           |           |           |
+     |           |           |           |<- VFY100 -|           |
+     |           |           |<- VFY100 -|           |           |
+     |           |<- VFY100 -|           |           |           |
+     |           |           |           |           |           |
+     |           |--- 486 -->|           |           |           |
+     |           |           |--- 486 -->|           |           |
+     |           |           |           |--- 486 -->|           |
+     |           |           |           |           |           |
+     |           |           |           |<- VFY101 -|           |
+     |           |           |<- VFY101 -|           |           |
+     |           |<- VFY101 -|           |           |           |
+     |           |           |           |           |           |
+     |           |--- 404 -->|           |           |           |
+     |           |           |--- 404 -->|           |           |
+     |           |           |           |--- 404 -->|           |
+     |           |           |           |           |- INVITE ->|
      |           |           |           |           |           |
 ~~~~
-{: #fig-unsuccessful-vouch title="Example Unsuccessful Vouch"}
 
-### Unsuccessful Vouch Step-by-step description
+In the diagram, "VFY100" and "VFY101" represent verification calls
+whose Calling Party Numbers are formed using the CIDVV token
+construction defined in Protocol Overview.
 
-1. Mallory spoofs Alice’s Caller-ID (`+12125550100`) and initiates a call to Bob (`+19495550199`).
+### Enhanced Successful Vouch Step-by-step description
 
-2. The call arrives at Bob’s SBC via the PSTN.
+The diagram above shows an enhanced vouch using both the primary
+"100" verification call and an optional secondary "101" verification
+call. The following steps describe the detailed behavior.
 
-3. **Bob’s SBC**:
-   - Generates a Calling Party Number of `100` plus the last 12 digits of the dialed number, resulting in `10019495550199`.
-   - Forwards the call toward Alice’s number (`+12125550100`) with the modified Caller-ID `+10019495550199`.
+1. The originating user (Alice, Caller-ID `+12125550100`) initiates a
+   call to the destination user (Bob, dialed number `+19495550199`).
 
-4. The call arrives at Alice’s SBC via the PSTN.
+2. The call is routed from Alice's User Agent to her SBC, which
+   forwards it to the originating CIDVV platform (CIDVV_A).
 
-5. **Alice’s SBC**:
-   - Detects the `100` prefix and recognizes this as a vouch call.
+3. **CIDVV_A**:
+   - Constructs a CIDVV token by prefixing "100" to the rightmost
+     12 digits of the dialed number (`19495550199`), resulting in
+     `10019495550199`.
+   - Caches the call attempt using the tuple:
+       `(Called: +12125550100, Token: 10019495550199)`
+     for a short period (≈10 seconds).
+   - Rejects the call with **486 Busy Here**.
+
+4. Alice's SBC receives the 486 and advances the original call toward
+   the PSTN using the original Caller-ID.
+
+5. The call reaches Bob's SBC via the PSTN.
+
+6. **Bob's SBC (CIDVV-aware element)**:
+   - Constructs the CIDVV token `10019495550199`.
+   - Initiates a primary verification call toward Alice's number
+     (`+12125550100`) using the Caller-ID `10019495550199`.
+
+7. The primary verification call arrives at Alice's SBC via the PSTN.
+
+8. **Alice's SBC**:
+   - Detects the leading "100" prefix.
    - Routes the call to CIDVV_A for verification.
 
-6. **CIDVV_A**:
-   - Processes `To: +12125550100` and `From: +10019495550199`.
-   - Strips the `100` prefix, yielding `+19495550199`.
-   - Swaps From and To values.
-   - Looks up the pair `(+12125550100, +19495550199)` in its short-term cache.
-   - Finds no matching entry (because Alice never placed the original call).
+9. **CIDVV_A**:
+   - Looks up `(Called: +12125550100, Token: 10019495550199)` in
+     its short-term cache.
+   - Finds a matching entry.
+   - Returns **486 Busy Here**.
+
+10. Bob's SBC receives the 486 and recognizes a successful primary
+    verification.
+
+11. **Bob's SBC (optional secondary verification)**:
+   - Constructs a second CIDVV token by prefixing "101" to the same
+     12-digit payload, resulting in `10119495550199`.
+   - Initiates a secondary verification call toward Alice's number
+     using the Caller-ID `10119495550199`.
+
+12. The secondary verification call arrives at Alice's SBC via the PSTN.
+
+13. **Alice's SBC**:
+   - Detects the leading "101" prefix.
+   - Routes the call to CIDVV_A for processing.
+
+14. **CIDVV_A**:
+   - Receives the call with:
+       `To: +12125550100`
+       `From: 10119495550199`
+   - Performs no matching cache lookup for this prefix in the
+     vouching context.
    - Rejects the call with **404 Not Found**.
 
-7. The 404 propagates back through the PSTN to Bob’s SBC.
+15. Bob's SBC receives the 404 and recognizes the expected secondary
+    verification behavior.
 
-8. **Bob’s SBC** recognizes the 404 as a unsuccessful vouch and either rejects the call or forwards it to Bob’s voicemail. Bob remains unaware of the impersonation attempt.
+16. Having observed:
+    - "100" → 486, and
+    - "101" → 404
+    within the validity window,
 
-This mechanism ensures that only calls that originated from a legitimate CIDVV platform (i.e., those that previously cached the attempt) will pass vouching. Spoofed or unsolicited calls are rejected early.
+    Bob's SBC treats this as a higher-assurance successful vouch.
+
+17. Bob's SBC advances the original call to Bob's User Agent.
+
+18. Bob's telephone rings.
+
+## Unsuccessful Vouch
+
+A vouch attempt is considered unsuccessful or indeterminate if the
+expected verification behavior is not observed.
+
+Specifically:
+
+* If a verification call using the "100" prefix does not result in
+  SIP 486 (Busy Here), the vouch MUST be treated as unsuccessful.
+
+* If both verification calls are performed, and the expected pattern
+  of:
+    - "100" → 486, and
+    - "101" → 404
+  is not observed within the validity window, the vouch MUST be
+  treated as unsuccessful or indeterminate.
+
+* A "101" verification result alone MUST NOT be treated as evidence
+  of a successful vouch.
+
+Implementations MUST fail closed. Any ambiguity, unexpected response,
+timeout, or call progression MUST result in an unsuccessful or
+indeterminate outcome.
 
 ## Vetting a Caller-ID Number
 
-Vetting a number requires **two independent calls** (separate SIP dialogs). The first call checks whether the number is known; the second call performs the confirmation.
+Vetting uses two independent verification calls that form a
+challenge-response sequence. For clarity, the calls are shown
+separately, but together they constitute a single vetting operation.
 
 ### First Vetting Call
 
 ~~~~
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
       |             |             |             |             |
-      |-- INVITE -->|             |             |             |      Step 1
-      |   Step 1    |             |             |             |
-      |             |-- INVITE -->|             |             |
-      |             |   Step 2    |             |             |
-      |             |             |-- INVITE -->|             |
-      |             |             |   Step 3    |             |
-      |             |             |             |-- INVITE -->|
-      |             |             |             |   Step 4    |
+      |-- VFY100 -->|             |             |             |
+      |             |-- VFY100 -->|             |             |
+      |             |             |-- VFY100 -->|             |
+      |             |             |             |-- VFY100 -->|
       |             |             |             |             |
-      |             |             |             |<-Not Found--|
-      |             |             |             |   Step 5    |
-      |             |             |<-Not Found--|             |
-      |             |             |   Step 6    |             |
-      |             |<-Not Found--|             |             |
-      |             |   Step 7    |             |             |
-      |<-Not Found--|             |             |             |
-      |   Step 8    |             |             |             |
+      |             |             |             |<--- 404 ----|
+      |             |             |<--- 404 ----|             |
+      |             |<--- 404 ----|             |             |
+      |<--- 404 ----|             |             |             |
       |             |             |             |             |
 ~~~~
 {: title="First vetting call with 100 - creates cache entry or receives 404"}
@@ -409,23 +693,15 @@ Vetting a number requires **two independent calls** (separate SIP dialogs). The 
 ~~~~
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
       |             |             |             |             |
-      |-- INVITE -->|             |             |             |
-      |   Step 1    |             |             |             |
-      |             |-- INVITE -->|             |             |
-      |             |   Step 2    |             |             |
-      |             |             |-- INVITE -->|             |
-      |             |             |   Step 3    |             |
-      |             |             |             |-- INVITE -->|
-      |             |             |             |   Step 4    |
+      |-- VFY101 -->|             |             |             |
+      |             |-- VFY101 -->|             |             |
+      |             |             |-- VFY101 -->|             |
+      |             |             |             |-- VFY101 -->|
       |             |             |             |             |
-      |             |             |             |<-Busy Here--|
-      |             |             |             |   Step 5    |
-      |             |             |<-Busy Here--|             |
-      |             |             |   Step 6    |             |
-      |             |<-Busy Here--|             |             |
-      |             |   Step 7    |             |             |
-      |<-Busy Here--|             |             |             |
-      |   Step 8    |             |             |             |
+      |             |             |             |<--- 486 ----|
+      |             |             |<--- 486 ----|             |
+      |             |<--- 486 ----|             |             |
+      |<--- 486 ----|             |             |             |
       |             |             |             |             |
 ~~~~
 {: title="Vetting token check call with 101 - confirms vouch with 486 Busy Here"}
@@ -434,16 +710,20 @@ Vetting a number requires **two independent calls** (separate SIP dialogs). The 
 
 Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party controls the target telephone number and possesses the correct shared secret.
 
-1. Alice and Bob agree on a shared secret (e.g. `hamburger`) and Alice’s vetting Caller-ID (`+12125550100`).
+1. Alice and Bob agree on a shared secret (e.g. `hamburger`) and Alice’s vetting Caller-ID (`+12125550100`, or its rightmost
+12 digits for matching purposes)
 
 2. Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional validity window (e.g. one week) into their respective CIDVV platforms.
 
-3. Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `+10012125550100` toward Bob’s number (`+19495550199`). The call traverses the PSTN.
+3. Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `10012125550100` toward Bob’s number (`+19495550199`). The call traverses the PSTN.
 
 4. Bob’s SBC recognizes the leading `100` prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).
 
 5. **CIDVV_B**:
-   - Strips the leading `100`, recovering Alice’s Caller-ID `+12125550100`.
+   - Strips the leading `100`, recovering Alice’s Caller-ID.
+   - For matching purposes, CIDVV_B MAY use only the rightmost
+     12 digits of the Caller-ID, consistent with CIDVV payload
+     constraints.
    - Recognizes this as a pre-agreed Vetting Caller-ID
    - Computes the SHA-256 digest of the concatenated string
      `+12125550100+19495550199hamburger`.
@@ -464,6 +744,9 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
    - Responds with **486 Busy Here** to signal a successful vet.
 
 10. CIDVV_A receives the 486 Busy Here and reports a successful vet to Alice.
+
+Use of the rightmost 12 digits is sufficient because collisions
+within the short vetting validity window are expected to be rare.
 
 #### Vetting Failure Cases
 
@@ -575,6 +858,10 @@ complete a two-call challenge-response sequence.
 CIDVV does not provide per-call correlation and instead validates
 reachability within a short time window. This may result in multiple
 calls being validated by a single successful vouch.
+
+The use of distinct response patterns across multiple verification
+calls (e.g., "100" → 486 and "101" → 404) increases resistance to
+false-positive validation arising from common network behaviors.
 
 ## Trust Model
 
