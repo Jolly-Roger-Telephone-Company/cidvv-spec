@@ -203,6 +203,21 @@ the verification call with SIP response 404 (Not Found). This
 response is interpreted by CIDVV-aware network elements (e.g., SBCs
 or intermediaries) as an indication of an unsuccessful vouch.
 
+## Correlation Model
+
+CIDVV vouching correlates calls using the asserted calling number,
+the called number, and a short time window. It does not attempt to
+identify individual call legs across the PSTN.
+
+If multiple calls with the same asserted calling number and called
+number occur within the cache interval, implementations MAY treat
+them as a single aggregate vouching state or MAY maintain a count of
+pending attempts.
+
+A successful vouch indicates that at least one matching call attempt
+occurred during the validity window, rather than proving a
+one-to-one correspondence between specific call legs.
+
 ## Vetting Procedure
 
 Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting Caller-ID, and a validity time window.
@@ -556,6 +571,10 @@ CIDVV relies on short-lived signaling exchanges and does not require
 persistent identity infrastructure. Its security properties are
 derived from control of telephone number routing and the ability to
 complete a two-call challenge-response sequence.
+
+CIDVV does not provide per-call correlation and instead validates
+reachability within a short time window. This may result in multiple
+calls being validated by a single successful vouch.
 
 ## Trust Model
 
