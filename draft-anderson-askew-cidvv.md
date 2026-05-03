@@ -79,8 +79,8 @@ designed to function across mixed SIP and TDM networks.
 
 CIDVV is incrementally deployable and does not require universal
 adoption to provide benefit. It tolerates modification of signaling
-by intermediate networks and relies only on the ability of signaling
-calls and failure responses to traverse the network path.
+by intermediate networks and relies on the ability of signaling calls and distinct failure
+response behaviors to traverse the network path.
 
 CIDVV does not provide absolute identity assurance but significantly
 raises the cost of Caller-ID spoofing by requiring demonstrable
@@ -106,7 +106,7 @@ signaling field used to convey that identity.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
 * **CIDVV-aware Network Element**: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the Asserted Caller-ID.
-* **Vet** (or **Vetting**): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
+* **Vet** (or **Vetting**): The process by which a CIDVV platform confirms the calling party controls the Asserted Caller-ID via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
 * **Vouching Call**: A short verification call used in the CIDVV protocol. CIDVV defines a primary vouching call ("100") and an optional secondary vouching call ("101").
 * **Successful Vouch**: A verification result indicating that a matching cache entry was found.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
@@ -196,6 +196,10 @@ where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
 "101", and Payload is the digit string of the Asserted Caller-ID
 (normalized per Section <xref target="number-normalization"/>).
 
+For vouching operations, the payload is derived from the called
+number. For vetting operations, the payload may be derived from
+computed token values.
+
 In the common case where the Asserted Caller-ID has 12 or fewer digits,
 the Payload is used in full, so the CIDVV-CPN is simply the three-digit
 prefix directly concatenated with the full Asserted Caller-ID digits.
@@ -209,7 +213,7 @@ telephone number.
 A CIDVV-aware element generating a CIDVV verification call MUST apply
 this construction. A CIDVV platform MAY cache and compare the complete
 15-digit CIDVV Calling Party Number (including the prefix) rather than
-stripping the prefix before lookup.
+reconstructing it for comparison.
 
 Because CIDVV correlation is also scoped by the called number and a
 short Validity Window, collisions among rightmost 12-digit payload values
@@ -279,9 +283,8 @@ Implementations distinguish context (vouching vs. vetting) primarily by the pres
 CIDVV uses observed call behavior as a signaling mechanism between
 participating systems. Because intermediate SIP and SS7/TDM networks
 may translate, modify, or replace response codes, implementations
-MUST interpret responses based on behavioral class (e.g., immediate
-rejection) and MUST be able to distinguish between "Busy"-class and
-"Not Found"-class rejection behaviors.
+Implementations MUST interpret responses based on behavioral class
+(e.g., "Busy"-class vs. "Not Found"-class) rather than exact numeric values.
 
 Implementations SHOULD use SIP 486 (Busy Here) and 404 (Not Found)
 as the canonical representations of these behaviors where possible.
@@ -487,7 +490,9 @@ vetting Caller-ID, and a validity time window.
 
 Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".
 
-When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform MUST compute a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).
+When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. 
+Bob's platform MUST compute the vetting token using the algorithm defined in Section <xref target="hash-function"/>. Bob's platform converts that value to decimal form, extracts a 
+fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).
 
 Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.
 
@@ -844,7 +849,7 @@ CIDVV signaling prefixes. Such systems will typically process CIDVV
 calls as ordinary calls and may return a wide range of responses.
 
 CIDVV implementations MUST treat any response that does not match the
-expected protocol behavior as indicating a non-participating system (see Section <xref target="vouching-vs-vetting"/> for response patterns).
+expected protocol behavior as indicating a non-participating system (see Section <xref target="protocol-overview"/> for response patterns).
 
 ## Handling of CIDVV Signaling Calls
 
@@ -1022,8 +1027,8 @@ CIDVV does not require specific SIP response codes to be preserved
 end-to-end, but it does require that distinct rejection behaviors
 (e.g., "busy" vs. "not found") remain distinguishable.
 
-Implementations MUST interpret responses based on expected behavior
-(success vs. failure) rather than exact numeric values.
+Implementations MUST interpret responses based on behavioral class
+(e.g., "Busy"-class vs. "Not Found"-class) rather than exact numeric values.
 
 ## Data Privacy
 
