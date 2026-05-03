@@ -213,7 +213,7 @@ prefix directly concatenated with the full Asserted Caller-ID digits.
 If the resulting CIDVV-CPN would exceed 15 digits (i.e., the asserted
 Caller-ID has more than 12 digits), the leading digits of the asserted
 Caller-ID are removed until the total length is exactly 15 digits.
-This truncation keeps the rightmost (least-significant) digits of the
+This truncation keeps the rightmost (most significant) digits of the
 telephone number.
 
 A CIDVV-aware element generating a CIDVV verification call MUST apply
@@ -479,6 +479,19 @@ Example (for illustration only):
 - SHA-256 first 8 hex → decimal → padded/prepended token = 12953388433 (or similar)
 
 Implementations MUST use the identical normalization and concatenation order for both vetting calls and any Redis (or equivalent) cache lookups. The token is valid only inside the Validity Window.
+
+### Multi-Tenant Considerations
+
+CIDVV platforms that perform vouching on behalf of multiple
+independent customers MUST ensure that correlation state is scoped
+per customer. This prevents unintended interaction between unrelated
+vouching operations that may produce identical CIDVV payload values.
+
+Implementations MAY use separate storage, partitioning, or
+customer-specific identifiers to achieve this isolation.
+
+This requirement does not apply to vetting operations, which are
+already scoped by the shared secret.
 
 ## Vetting Procedure
 {: #vetting-procedure }
