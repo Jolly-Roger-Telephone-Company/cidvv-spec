@@ -85,11 +85,12 @@ Table of Contents
    3.  Design Principles
    4.  Number Normalization
      4.1.  Protocol Overview
-     4.2.  Response Semantics
-       4.2.1.  "100" Prefix (Primary Verification)
-       4.2.2.  "101" Prefix (Secondary Verification)
-       4.2.3.  Combined Verification
-       4.2.4.  Failure Handling
+     4.2.  Vouching vs. Vetting Response Patterns
+     4.3.  Response Semantics
+       4.3.1.  "100" Prefix (Primary Verification)
+       4.3.2.  "101" Prefix (Secondary Verification)
+       4.3.3.  Combined Verification
+       4.3.4.  Failure Handling
    5.  Protocol Operation
      5.1.  Vouching Procedure
        5.1.1.  Primary Verification ("100")
@@ -405,7 +406,31 @@ Table of Contents
    CIDVV operations rely on state within the validity window, typically
    on the order of 10 seconds.
 
-4.2.  Response Semantics
+4.2.  Vouching vs. Vetting Response Patterns
+
+   CIDVV uses the same signaling prefixes for both operations but with
+   distinct expected behaviors.  The table below summarizes the
+   differences:
+
+    +========+======================+=====================+===========+
+    | Prefix | Vouching (live call) | Vetting (pre-shared | Notes     |
+    |        |                      | secret)             |           |
+    +========+======================+=====================+===========+
+    | 100    | Expect 486 Busy Here | Expect 404 Not      | Primary   |
+    |        | (cache hit)          | Found (cache token) | signal    |
+    +--------+----------------------+---------------------+-----------+
+    | 101    | Expect 404 Not Found | Expect 486 Busy     | Secondary |
+    |        |                      | Here (token match)  | / check   |
+    +--------+----------------------+---------------------+-----------+
+
+                                  Table 1
+
+   Implementations MUST distinguish context (vouching vs. vetting) by
+   whether a shared secret was pre-agreed for the Vouched Number.  A
+   CIDVV platform MUST NOT treat a 101→404 response as a successful
+   vouch when an active vetting procedure exists for that number.
+
+4.3.  Response Semantics
 
    CIDVV uses observed call behavior as a signaling mechanism between
    participating systems.  Because intermediate SIP and SS7/TDM networks
@@ -421,7 +446,7 @@ Table of Contents
    distinguishable across the signaling path.  Environments that cannot
    preserve this distinction may not support enhanced verification.
 
-4.2.1.  "100" Prefix (Primary Verification)
+4.3.1.  "100" Prefix (Primary Verification)
 
    A call using the "100" prefix is considered successful only if it
    results in an immediate rejection consistent with a "Busy"-class
@@ -435,7 +460,7 @@ Table of Contents
    confidence that the asserted Caller-ID is routable and under the
    control of the originating party.
 
-4.2.2.  "101" Prefix (Secondary Verification)
+4.3.2.  "101" Prefix (Secondary Verification)
 
    A call using the "101" prefix is used as an optional secondary
    validation signal.
@@ -447,7 +472,7 @@ Table of Contents
    verification alone MUST NOT be treated as evidence of a successful
    vouch.
 
-4.2.3.  Combined Verification
+4.3.3.  Combined Verification
 
    Implementations MAY perform both "100" and "101" verification calls
    to achieve a higher level of assurance.
@@ -465,7 +490,7 @@ Table of Contents
    Implementations MUST NOT require the two verification calls to occur
    in any specific order.
 
-4.2.4.  Failure Handling
+4.3.4.  Failure Handling
 
    If the expected behavior for a given prefix is not observed, the
    verification for that prefix MUST be treated as unsuccessful.
