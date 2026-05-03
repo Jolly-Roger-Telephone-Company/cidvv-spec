@@ -69,8 +69,7 @@ partial deployment and challenges in international interconnection.
 This document defines Caller-ID Vouching and Vetting (CIDVV), a
 mechanism that verifies caller identity through network reachability
 rather than asserted identity. CIDVV requires that a party claiming a
-Caller-ID be able to receive a return call at that number within a
-short time window.
+Caller-ID be able to receive a return call at that number within the validity window.
 
 CIDVV operates by encoding signaling information within the Calling
 Party Number and leveraging existing call routing behavior to perform
@@ -114,6 +113,7 @@ signaling field used to convey that identity.
 * **Successful Vouch**: A verification result indicating that a matching cache entry was found.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
 * **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
+* **Validity Window**: A short time interval during which CIDVV signaling state is considered valid for correlation purposes, typically on the order of 10 seconds.
 
 ## Motivation and Advantages
 
@@ -173,10 +173,12 @@ Calling Party Number limit commonly encountered in SS7 and ISDN
 networks. For this reason, CIDVV uses a three-digit prefix followed by a
 12-digit payload:
 
+~~~~
    CIDVV-CPN (CIDVV Calling Party Number) = Prefix || Payload
+~~~~
 
-where Prefix is "100" or "101", and Payload is the rightmost 12 digits
-of the relevant telephone number after normalization to digits only.
+where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
+"101", and Payload is the rightmost 12 digits...
 
 For vouching, the Payload is normally the rightmost 12 digits of the
 dialed number. For example, if Bob's number is +19495550199, the
@@ -294,7 +296,7 @@ In this case, a stronger validation result is obtained when:
 * The "100" verification produces the expected "Busy"-class behavior, AND
 * The "101" verification produces the expected "Not Found"-class behavior
 
-within a short time window.
+within the validity window.
 
 Implementations MUST NOT require the two verification calls to occur
 in any specific order.
@@ -351,7 +353,7 @@ look up the tuple:
 
    (Called Number, CIDVV Token)
 
-in its short-term cache.
+cached for the validity window.
 
 If a matching cache entry exists, the CIDVV platform MUST reject the
 verification call with SIP response 486 (Busy Here).
@@ -374,7 +376,7 @@ beginning with "101", it MUST route the call to the CIDVV platform.
 
 Upon receiving such a call, the CIDVV platform MUST reject the call
 with SIP response 404 (Not Found), unless the call corresponds to an
-active vetting procedure (see Section <xref target="protocol-overview"/>)
+active vetting procedure (see Section <xref target="vetting-procedure"/>).
 
 A "101" verification call does not require cache lookup for vouching
 purposes and MUST NOT be used as a standalone indicator of a
@@ -405,7 +407,7 @@ unsuccessful regardless of any "101" result.
 ## Correlation Model
 
 CIDVV vouching correlates calls using the asserted calling number,
-the called number, and a short time window. It does not attempt to
+the called number, and a validity window. It does not attempt to
 identify individual call legs across the PSTN.
 
 If multiple calls with the same asserted calling number and called
@@ -418,6 +420,7 @@ occurred during the validity window, rather than proving a
 one-to-one correspondence between specific call legs.
 
 ## Vetting Procedure
+{: #vetting-procedure }
 
 Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting Caller-ID, and a validity time window.
 
@@ -486,7 +489,7 @@ manipulation performed by CIDVV platforms and CIDVV-aware elements.
      `19495550199`, resulting in the token `10019495550199`.
    - Caches the call attempt using the tuple:
        `(Called: +12125550100, Token: 10019495550199)`
-     for a short period (≈10 seconds).
+     for the validity window.
    - Rejects the call with **486 Busy Here**.
 
 4. Alice's SBC receives the 486 and advances the original call toward
@@ -513,7 +516,7 @@ manipulation performed by CIDVV platforms and CIDVV-aware elements.
        `From: 10019495550199`
    - Looks up the tuple:
        `(Called: +12125550100, Token: 10019495550199)`
-     in its short-term cache.
+     cached for the validity window.
    - Finds a matching entry from step 3.
    - Considers this a successful primary verification and returns
      **486 Busy Here**.
@@ -592,7 +595,7 @@ call. The following steps describe the detailed behavior.
      `10019495550199`.
    - Caches the call attempt using the tuple:
        `(Called: +12125550100, Token: 10019495550199)`
-     for a short period (≈10 seconds).
+     for the validity window.
    - Rejects the call with **486 Busy Here**.
 
 4. Alice's SBC receives the 486 and advances the original call toward
@@ -612,8 +615,7 @@ call. The following steps describe the detailed behavior.
    - Routes the call to CIDVV_A for verification.
 
 9. **CIDVV_A**:
-   - Looks up `(Called: +12125550100, Token: 10019495550199)` in
-     its short-term cache.
+   - Looks up `(Called: +12125550100, Token: 10019495550199)` cached for the validity window
    - Finds a matching entry.
    - Returns **486 Busy Here**.
 
@@ -738,14 +740,9 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
      12 digits of the Caller-ID, consistent with CIDVV payload
      constraints.
    - Recognizes this as a pre-agreed Vetting Caller-ID
-   - Computes the SHA-256 digest over the UTF-8 string formed by concatenating:
-
-   normalized-calling-number || normalized-called-number || shared-secret
-
-where telephone numbers are represented as digit strings without
-separators or leading "+".
+   - Computes the SHA-256 digest over the UTF-8 string formed by concatenating `normalized-calling-number`, `normalized-called-number`, and `shared-secret`, where telephone numbers are represented as digit strings without separators or leading "+".
    - Takes the first 8 hexadecimal characters (`b0092191`), converts to decimal (`2953388433`), pads to 10 digits, and prepends `1`, yielding `12953388433`.
-   - Caches this value for a short period (≈10 seconds).
+   - Caches this value for the validity window.
    - Rejects the call with **404 Not Found**.
 
 6. CIDVV_A receives the 404 and performs the identical hash calculation to derive `12953388433`.
@@ -976,7 +973,7 @@ Vetting operations use shared secrets and derived tokens.
 Implementations MUST:
 - Use cryptographically secure hash functions (e.g., SHA-256)
 - Protect shared secrets from disclosure
-- Ensure tokens are valid only within a short time window
+- Ensure tokens are valid only within the validity window
 
 Implementations SHOULD:
 - Include sufficient entropy in derived tokens
