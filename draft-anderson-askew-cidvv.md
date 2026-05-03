@@ -5,9 +5,9 @@ category: info
 docname: draft-anderson-askew-cidvv-latest
 submissiontype: IETF
 ipr: trust200902
-date: 2026-04
+date: 2026-05
 consensus: false
-v: 3
+v: 4
 keyword: telephony, callerid, spoofing, PSTN
 
 venue:
@@ -69,7 +69,7 @@ partial deployment and challenges in international interconnection.
 This document defines Caller-ID Vouching and Vetting (CIDVV), a
 mechanism that verifies caller identity through network reachability
 rather than asserted identity. CIDVV requires that a party claiming a
-Caller-ID be able to receive a return call at that number within the validity window.
+Caller-ID be able to receive a return call at that number within the Validity Window.
 
 CIDVV operates by encoding signaling information within the Calling
 Party Number and leveraging existing call routing behavior to perform
@@ -106,7 +106,7 @@ signaling field used to convey that identity.
 * **TSP**: Terminating Service Provider.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
 * **CIDVV-aware Network Element**: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.
-* **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the asserted Caller-ID.
+* **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the Asserted Caller-ID.
 * **Vet** (or **Vetting**): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
 * **Vouching Call**: A short verification call used in the CIDVV protocol. CIDVV defines a primary vouching call ("100") and an optional secondary vouching call ("101").
 * **Successful Vouch**: A verification result indicating that a matching cache entry was found.
@@ -123,7 +123,7 @@ The CIDVV vouching and vetting mechanism is designed to operate with minimal new
 
 * **Leverages existing PSTN infrastructure**: The mechanism uses existing numbering plans and routing databases to direct calls without requiring additional infrastructure.
 
-* **Strong anti-spoofing protection**: A successful vouch provides strong evidence that the asserted Caller-ID is controlled by the legitimate owner, because only the real owner can generate the correct challenge-response sequence. Spoofed calls are typically rejected early, often resulting in failure responses such as 404 Not Found.
+* **Strong anti-spoofing protection**: A successful vouch provides strong evidence that the Asserted Caller-ID is controlled by the legitimate owner, because only the real owner can generate the correct challenge-response sequence. Spoofed calls are typically rejected early, often resulting in failure responses such as 404 Not Found.
 
 * **Visibility into spoofing activity**: Telephone number owners gain direct insight into how often (and from where) their numbers are being spoofed worldwide through logged vetting attempts.
 
@@ -187,19 +187,19 @@ shown in E.164 format for clarity, while CIDVV signaling values
 CIDVV signaling Calling Party Numbers MUST fit within the 15-digit
 Calling Party Number limit commonly encountered in SS7 and ISDN
 networks. For this reason, CIDVV uses a three-digit prefix followed by
-a payload derived from the asserted Caller-ID:
+a payload derived from the Asserted Caller-ID:
 
 ~~~~
    CIDVV-CPN (CIDVV Calling Party Number) = Prefix || Payload
 ~~~~
 
 where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
-"101", and Payload is the digit string of the asserted Caller-ID
+"101", and Payload is the digit string of the Asserted Caller-ID
 (normalized per Section <xref target="number-normalization"/>).
 
-In the common case where the asserted Caller-ID has 12 or fewer digits,
+In the common case where the Asserted Caller-ID has 12 or fewer digits,
 the Payload is used in full, so the CIDVV-CPN is simply the three-digit
-prefix directly concatenated with the full asserted Caller-ID digits.
+prefix directly concatenated with the full Asserted Caller-ID digits.
 
 If the resulting CIDVV-CPN would exceed 15 digits (i.e., the asserted
 Caller-ID has more than 12 digits), the leading digits of the asserted
@@ -213,7 +213,7 @@ this construction. A CIDVV platform MAY cache and compare the complete
 stripping the prefix before lookup.
 
 Because CIDVV correlation is also scoped by the called number and a
-short validity window, collisions among rightmost 12-digit payload values
+short Validity Window, collisions among rightmost 12-digit payload values
 are expected to be rare. Implementations SHOULD nevertheless treat
 ambiguous or colliding state as unsuccessful or indeterminate rather
 than risk false-positive validation.
@@ -260,7 +260,7 @@ Vetting procedures MAY use full telephone numbers or truncated
 forms as input to cryptographic operations, independent of the
 CIDVV Calling Party Number encoding.
 
-CIDVV operations rely on state within the validity window, typically on the order of
+CIDVV operations rely on state within the Validity Window, typically on the order of
 10 seconds.
 
 ## Vouching vs. Vetting Response Patterns
@@ -273,7 +273,7 @@ distinct expected behaviors. The table below summarizes the differences:
 | 100    | Expect 486 Busy Here (cache hit) | Expect 404 Not Found (cache token) | Primary signal |
 | 101    | Expect 404 Not Found          | Expect 486 Busy Here (token match) | Secondary / check |
 
-Implementations distinguish context (vouching vs. vetting) primarily by the presence of a pre-agreed vetting Caller-ID and shared secret for the asserted Caller-ID. Because vetting uses a specific Caller-ID designated for the procedure, overlap with ordinary vouching calls on the same number is expected to be rare. A CIDVV platform MUST treat calls using a known vetting Caller-ID according to the vetting response pattern (even if a live vouch cache entry exists) and MUST NOT treat a 101→404 response as a successful vouch when an active vetting procedure is in progress for that number.
+Implementations distinguish context (vouching vs. vetting) primarily by the presence of a pre-agreed vetting Caller-ID and shared secret for the Asserted Caller-ID. Because vetting uses a specific Caller-ID designated for the procedure, overlap with ordinary vouching calls on the same number is expected to be rare. A CIDVV platform MUST treat calls using a known vetting Caller-ID according to the vetting response pattern (even if a live vouch cache entry exists) and MUST NOT treat a 101→404 response as a successful vouch when an active vetting procedure is in progress for that number.
 
 ## Response Semantics
 
@@ -302,7 +302,7 @@ expected behavior — including ringing, call completion, timeout, or
 alternative error responses — as an unsuccessful verification.
 
 A successful "100" verification provides a baseline level of
-confidence that the asserted Caller-ID is routable and under the
+confidence that the Asserted Caller-ID is routable and under the
 control of the originating party.
 
 ### "101" Prefix (Secondary Verification)
@@ -327,7 +327,7 @@ In this case, a stronger validation result is obtained when:
 * The "100" verification produces the expected "Busy"-class behavior, AND
 * The "101" verification produces the expected "Not Found"-class behavior
 
-within the validity window.
+within the Validity Window.
 
 Implementations MUST NOT require the two verification calls to occur
 in any specific order.
@@ -358,7 +358,7 @@ The CIDVV platform MUST cache the call attempt using the tuple:
 
    (Called Number, CIDVV Token)
 
-for the validity window.
+for the Validity Window.
 
 The CIDVV platform then rejects the call with SIP response 486
 (Busy Here).
@@ -384,7 +384,7 @@ look up the tuple:
 
    (Called Number, CIDVV Token)
 
-cached for the validity window.
+cached for the Validity Window.
 
 If a matching cache entry exists, the CIDVV platform MUST reject the
 verification call with SIP response 486 (Busy Here).
@@ -393,7 +393,7 @@ If no matching cache entry exists, the CIDVV platform MUST reject the
 verification call with SIP response 404 (Not Found).
 
 A successful "100" verification (i.e., receipt of 486) indicates that
-the originating party can receive calls at the asserted Caller-ID
+the originating party can receive calls at the Asserted Caller-ID
 and constitutes a valid baseline vouch.
 
 ### Secondary Verification ("101")
@@ -427,7 +427,7 @@ obtained when:
    "100" → 486, and
    "101" → 404
 
-are both observed within the validity window.
+are both observed within the Validity Window.
 
 The two verification calls MAY occur in any order or in parallel.
 Implementations MUST NOT assume ordering.
@@ -437,17 +437,17 @@ unsuccessful regardless of any "101" result.
 
 ## Correlation Model
 
-CIDVV vouching correlates calls using the asserted calling number,
-the called number, and a validity window. It does not attempt to
+CIDVV vouching correlates calls using the Asserted Caller-ID,
+the called number, and a Validity Window. It does not attempt to
 identify individual call legs across the PSTN.
 
-If multiple calls with the same asserted calling number and called
+If multiple calls with the same Asserted Caller-ID and called
 number occur within the cache interval, implementations MAY treat
 them as a single aggregate vouching state or MAY maintain a count of
 pending attempts.
 
 A successful vouch indicates that at least one matching call attempt
-occurred during the validity window, rather than proving a
+occurred during the Validity Window, rather than proving a
 one-to-one correspondence between specific call legs.
 
 ## Hash Function for Vetting and State Storage
@@ -551,7 +551,7 @@ manipulation performed by CIDVV platforms and CIDVV-aware elements.
      `19495550199`, resulting in the token `10019495550199`.
    - Caches the call attempt using the tuple:
        `(Called: +12125550100, Token: 10019495550199)`
-     for the validity window.
+     for the Validity Window.
    - Rejects the call with **486 Busy Here**.
 
 4. Alice's SBC receives the 486 and advances the original call toward
@@ -578,7 +578,7 @@ manipulation performed by CIDVV platforms and CIDVV-aware elements.
        `From: 10019495550199`
    - Looks up the tuple:
        `(Called: +12125550100, Token: 10019495550199)`
-     cached for the validity window.
+     cached for the Validity Window.
    - Finds a matching entry from step 3.
    - Considers this a successful primary verification and returns
      **486 Busy Here**.
@@ -590,7 +590,7 @@ manipulation performed by CIDVV platforms and CIDVV-aware elements.
 11. Bob's telephone rings.
 
 This mechanism allows the originating CIDVV platform to confirm that
-the asserted Caller-ID is valid without completing the initial call.
+the Asserted Caller-ID is valid without completing the initial call.
 
 ## Successful Vouch Call Flow (Enhanced)
 
@@ -657,7 +657,7 @@ call. The following steps describe the detailed behavior.
      `10019495550199`.
    - Caches the call attempt using the tuple:
        `(Called: +12125550100, Token: 10019495550199)`
-     for the validity window.
+     for the Validity Window.
    - Rejects the call with **486 Busy Here**.
 
 4. Alice's SBC receives the 486 and advances the original call toward
@@ -677,7 +677,7 @@ call. The following steps describe the detailed behavior.
    - Routes the call to CIDVV_A for verification.
 
 9. **CIDVV_A**:
-   - Looks up `(Called: +12125550100, Token: 10019495550199)` cached for the validity window
+   - Looks up `(Called: +12125550100, Token: 10019495550199)` cached for the Validity Window
    - Finds a matching entry.
    - Returns **486 Busy Here**.
 
@@ -710,7 +710,7 @@ call. The following steps describe the detailed behavior.
 16. Having observed:
     - "100" → 486, and
     - "101" → 404
-    within the validity window,
+    within the Validity Window,
 
     Bob's SBC treats this as a higher-assurance successful vouch.
 
@@ -732,7 +732,7 @@ Specifically:
   of:
     - "100" → 486, and
     - "101" → 404
-  is not observed within the validity window, the vouch MUST be
+  is not observed within the Validity Window, the vouch MUST be
   treated as unsuccessful or indeterminate.
 
 * A "101" verification result alone MUST NOT be treated as evidence
@@ -790,7 +790,7 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 
 1. Alice and Bob agree on a shared secret (e.g. `hamburger`) and Alice’s vetting Caller-ID (`+12125550100`, or its rightmost 12 digits for matching purposes)
 
-2. Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional validity window (e.g. one week) into their respective CIDVV platforms.
+2. Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional Validity Window (e.g. one week) into their respective CIDVV platforms.
 
 3. Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `10012125550100` toward Bob’s number (`+19495550199`). The call traverses the PSTN.
 
@@ -804,7 +804,7 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
    - Recognizes this as a pre-agreed Vetting Caller-ID
    - Computes the SHA-256 digest over the UTF-8 string formed by concatenating `normalized-calling-number`, `normalized-called-number`, and `shared-secret`, where telephone numbers are represented as digit strings without separators or leading "+".
    - Takes the first 8 hexadecimal characters (`b0092191`), converts to decimal (`2953388433`), pads to 10 digits, and prepends `1`, yielding `12953388433`.
-   - Caches this value for the validity window.
+   - Caches this value for the Validity Window.
    - Rejects the call with **404 Not Found**.
 
 6. CIDVV_A receives the 404 and performs the identical hash calculation to derive `12953388433`.
@@ -822,7 +822,7 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 10. CIDVV_A receives the 486 Busy Here and reports a successful vet to Alice.
 
 Use of the rightmost 12 digits is sufficient because collisions
-within the validity window are expected to be rare.
+within the Validity Window are expected to be rare.
 
 #### Vetting Failure Cases
 
@@ -943,11 +943,11 @@ intended to complement, not replace, mechanisms such as
 STIR/SHAKEN.
 
 Its security properties derive from the inability of an attacker
-to receive calls at the asserted Caller-ID (the number being
+to receive calls at the Asserted Caller-ID (the number being
 vouched).
 
 CIDVV does not provide per-call correlation and instead validates
-reachability within the validity window. This may result in multiple
+reachability within the Validity Window. This may result in multiple
 calls being validated by a single successful vouch.
 
 The use of distinct response patterns across multiple verification
@@ -1045,7 +1045,7 @@ Vetting operations use shared secrets and derived tokens.
 Implementations MUST:
 - Use cryptographically secure hash functions (e.g., SHA-256)
 - Protect shared secrets from disclosure
-- Ensure tokens are valid only within the validity window
+- Ensure tokens are valid only within the Validity Window
 
 Implementations SHOULD:
 - Include sufficient entropy in derived tokens
