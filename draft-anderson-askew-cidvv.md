@@ -489,8 +489,8 @@ vetting Caller-ID, and a Validity Window.
 
 Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".
 
-When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. 
-Bob's platform MUST compute the vetting token using the algorithm defined in Section <xref target="hash-function"/>. Bob's platform converts that value to decimal form, extracts a 
+When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt.
+Bob's platform MUST compute the vetting token using the algorithm defined in Section <xref target="hash-function"/>. Bob's platform converts that value to decimal form, extracts a
 fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).
 
 Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.
