@@ -1411,46 +1411,43 @@ presented to users, while "Calling Party Number" refers to the
 signaling field used to convey that identity.<a href="#section-2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-2-2.1">
-          <p id="section-2-2.1.1"><strong>Alice</strong>: The calling party (originator of the call being vetted).<a href="#section-2-2.1.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.1.1"><strong>Alice</strong>: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob’s number.<a href="#section-2-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.2">
-          <p id="section-2-2.2.1"><strong>Bob</strong>: The called party (owner of the number being vetted).<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.2.1"><strong>Bob</strong>: The called party. In vetting flows Bob is the owner whose number is being vetted.* <strong>Mallory</strong>: An attacker attempting to spoof a Caller-ID.<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.3">
-          <p id="section-2-2.3.1"><strong>Mallory</strong>: An attacker attempting to spoof a Caller-ID.<a href="#section-2-2.3.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.3.1"><strong>OSP</strong>: Originating Service Provider.<a href="#section-2-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.4">
-          <p id="section-2-2.4.1"><strong>OSP</strong>: Originating Service Provider.<a href="#section-2-2.4.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.4.1"><strong>TSP</strong>: Terminating Service Provider.<a href="#section-2-2.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.5">
-          <p id="section-2-2.5.1"><strong>TSP</strong>: Terminating Service Provider.<a href="#section-2-2.5.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.5.1"><strong>CIDVV Platform</strong>: A system that implements the vouching and vetting procedures defined in this document.<a href="#section-2-2.5.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.6">
-          <p id="section-2-2.6.1"><strong>CIDVV Platform</strong>: A system that implements the vouching and vetting procedures defined in this document.<a href="#section-2-2.6.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.6.1"><strong>CIDVV-aware Network Element</strong>: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.<a href="#section-2-2.6.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.7">
-          <p id="section-2-2.7.1"><strong>CIDVV-aware Network Element</strong>: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.<a href="#section-2-2.7.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.7.1"><strong>Vouch</strong>: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the asserted Caller-ID.<a href="#section-2-2.7.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.8">
-          <p id="section-2-2.8.1"><strong>Vouch</strong>: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the asserted Caller-ID.<a href="#section-2-2.8.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.8.1"><strong>Vet</strong> (or <strong>Vetting</strong>): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.<a href="#section-2-2.8.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.9">
-          <p id="section-2-2.9.1"><strong>Vet</strong> (or <strong>Vetting</strong>): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.<a href="#section-2-2.9.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.9.1"><strong>Vouching Call</strong>: A short verification call used in the CIDVV protocol. CIDVV defines a primary vouching call ("100") and an optional secondary vouching call ("101").<a href="#section-2-2.9.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.10">
-          <p id="section-2-2.10.1"><strong>Vouching Call</strong>: A short verification call used in the CIDVV protocol. CIDVV defines a primary vouching call ("100") and an optional secondary vouching call ("101").<a href="#section-2-2.10.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.10.1"><strong>Successful Vouch</strong>: A verification result indicating that a matching cache entry was found.<a href="#section-2-2.10.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.11">
-          <p id="section-2-2.11.1"><strong>Successful Vouch</strong>: A verification result indicating that a matching cache entry was found.<a href="#section-2-2.11.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.11.1"><strong>Unsuccessful Vouch</strong>: A verification result indicating that no matching cache entry was found.<a href="#section-2-2.11.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.12">
-          <p id="section-2-2.12.1"><strong>Unsuccessful Vouch</strong>: A verification result indicating that no matching cache entry was found.<a href="#section-2-2.12.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.12.1"><strong>Verification Not Performed</strong>: A condition where verification could not be completed due to system or network conditions.<a href="#section-2-2.12.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.13">
-          <p id="section-2-2.13.1"><strong>Verification Not Performed</strong>: A condition where verification could not be completed due to system or network conditions.<a href="#section-2-2.13.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-2-2.14">
-          <p id="section-2-2.14.1"><strong>Validity Window</strong>: A short time interval during which CIDVV signaling state is considered valid for correlation purposes, typically on the order of 10 seconds.<a href="#section-2-2.14.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.13.1"><strong>Validity Window</strong>: A short time interval during which CIDVV signaling state is considered valid for correlation purposes, typically on the order of 10 seconds.<a href="#section-2-2.13.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <div id="motivation-and-advantages">
@@ -1723,7 +1720,7 @@ ambiguous, the vouch MUST be treated as unsuccessful or indeterminate.<a href="#
         </h3>
 <p id="section-5.1-1">Alice's CIDVV platform receives an attempted call from Alice to Bob.
 It MUST construct a CIDVV token as defined in Section <a href="#protocol-overview" class="auto internal xref">Section 4.1</a>
-by prefixing "100" to the rightmost 12 digits of the dialed number.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+by prefixing "100" to the dialed number.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
 <p id="section-5.1-2">The CIDVV platform MUST cache the call attempt using the tuple:<a href="#section-5.1-2" class="pilcrow">¶</a></p>
 <p id="section-5.1-3">(Called Number, CIDVV Token)<a href="#section-5.1-3" class="pilcrow">¶</a></p>
 <p id="section-5.1-4">for the validity window.<a href="#section-5.1-4" class="pilcrow">¶</a></p>
@@ -1819,13 +1816,20 @@ one-to-one correspondence between specific call legs.<a href="#section-5.2-3" cl
         <h3 id="name-vetting-procedure">
 <a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-vetting-procedure" class="section-name selfRef">Vetting Procedure</a>
         </h3>
-<p id="section-5.3-1">Before vetting begins, Alice and Bob agree on a shared secret, Alice's vetting Caller-ID, and a validity time window.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
-<p id="section-5.3-2">Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".<a href="#section-5.3-2" class="pilcrow">¶</a></p>
-<p id="section-5.3-3">When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform MUST compute a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).<a href="#section-5.3-3" class="pilcrow">¶</a></p>
-<p id="section-5.3-4">Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.<a href="#section-5.3-4" class="pilcrow">¶</a></p>
-<p id="section-5.3-5">When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.<a href="#section-5.3-5" class="pilcrow">¶</a></p>
-<p id="section-5.3-6">If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.<a href="#section-5.3-6" class="pilcrow">¶</a></p>
-<p id="section-5.3-7">Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as an unsuccessful vet.<a href="#section-5.3-7" class="pilcrow">¶</a></p>
+<p id="section-5.3-1">Vetting a remote number requires two separate calls (distinct SIP
+dialogs) using a pre-agreed shared key. The process confirms that
+the <strong>called party (Bob)</strong> controls the target telephone number and
+possesses the correct shared secret. In the examples below, Alice is
+the verifier who initiates the two calls to Bob’s number in order to
+vet Bob’s number.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<p id="section-5.3-2">Before vetting begins, Alice and Bob agree on a shared secret, Bob’s
+vetting Caller-ID, and a validity time window.<a href="#section-5.3-2" class="pilcrow">¶</a></p>
+<p id="section-5.3-3">Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".<a href="#section-5.3-3" class="pilcrow">¶</a></p>
+<p id="section-5.3-4">When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt. Bob's platform MUST compute a SHA-256 value over the called number followed by the shared secret. Bob's platform converts that value to decimal form, extracts a fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).<a href="#section-5.3-4" class="pilcrow">¶</a></p>
+<p id="section-5.3-5">Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.<a href="#section-5.3-5" class="pilcrow">¶</a></p>
+<p id="section-5.3-6">When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.<a href="#section-5.3-6" class="pilcrow">¶</a></p>
+<p id="section-5.3-7">If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.<a href="#section-5.3-7" class="pilcrow">¶</a></p>
+<p id="section-5.3-8">Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as an unsuccessful vet.<a href="#section-5.3-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2273,7 +2277,7 @@ separately, but together they constitute a single vetting operation.<a href="#se
           <h4 id="name-successful-caller-id-vettin">
 <a href="#section-6.4.3" class="section-number selfRef">6.4.3. </a><a href="#name-successful-caller-id-vettin" class="section-name selfRef">Successful Caller-ID Vetting Flow</a>
           </h4>
-<p id="section-6.4.3-1">Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party controls the target telephone number and possesses the correct shared secret.<a href="#section-6.4.3-1" class="pilcrow">¶</a></p>
+<p id="section-6.4.3-1">Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party (Bob) controls the target telephone number and possesses the correct shared secret.<a href="#section-6.4.3-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-6.4.3-2">
 <li id="section-6.4.3-2.1">
               <p id="section-6.4.3-2.1.1">Alice and Bob agree on a shared secret (e.g. <code>hamburger</code>) and Alice’s vetting Caller-ID (<code>+12125550100</code>, or its rightmost 12 digits for matching purposes)<a href="#section-6.4.3-2.1.1" class="pilcrow">¶</a></p>
