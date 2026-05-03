@@ -199,8 +199,8 @@ Table of Contents
       verified control of a telephone number through the challenge-
       response mechanism described in this document, which may consist
       of one or more verification calls.  A successful vouch provides
-      strong evidence that the calling party legitimately controls the
-      asserted Caller-ID.
+      strong evidence that the calling party controls the asserted
+      Caller-ID.
 
    *  *Vet* (or *Vetting*): The process by which a CIDVV platform
       confirms legitimate ownership of a telephone number via the two-
@@ -302,8 +302,9 @@ Table of Contents
    *  "101" prefix — Secondary Verification Call
 
    CIDVV Calling Party Numbers are numeric signaling values carried in
-   the Calling Party Number field.  They are not represented as E.164
-   numbers and are shown without a leading "+" in this document.
+   the Calling Party Number signaling field.  They are not represented
+   as E.164 numbers and are shown without a leading "+" in this
+   document.
 
    Ordinary subscriber telephone numbers (e.g., +12125550100) are shown
    in E.164 format for clarity, while CIDVV signaling values (e.g.,
@@ -319,10 +320,10 @@ Table of Contents
    where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
    "101", and Payload is the rightmost 12 digits...
 
-   For vouching, the Payload is normally the rightmost 12 digits of the
-   dialed number.  For example, if Bob's number is +19495550199, the
-   Payload is 19495550199 and the resulting CIDVV Calling Party Number
-   is 10019495550199.
+   For vouching, the payload is the rightmost 12 digits of the dialed
+   number.  For example, if Bob's number is +19495550199, the Payload is
+   19495550199 and the resulting CIDVV Calling Party Number is
+   10019495550199.
 
    A CIDVV-aware element generating a CIDVV verification call MUST
    truncate the payload, when necessary, to preserve the three-digit
@@ -333,10 +334,10 @@ Table of Contents
    prefix before lookup.
 
    Because CIDVV correlation is also scoped by the called number and a
-   short validity window, collisions among rightmost-12-digit payloads
-   are expected to be rare.  Implementations SHOULD nevertheless treat
-   ambiguous or colliding state as unsuccessful or indeterminate rather
-   than risk false-positive validation.
+   short validity window, collisions among rightmost 12-digit payload
+   values are expected to be rare.  Implementations SHOULD nevertheless
+   treat ambiguous or colliding state as unsuccessful or indeterminate
+   rather than risk false-positive validation.
 
    CIDVV verification consists of observing the behavior of one or more
    verification calls using distinct CIDVV prefixes.
@@ -381,8 +382,8 @@ Table of Contents
    as input to cryptographic operations, independent of the CIDVV
    Calling Party Number encoding.
 
-   CIDVV operations rely on short-lived state, typically on the order of
-   10 seconds, referred to in this document as the "validity window".
+   CIDVV operations rely on state within the validity window, typically
+   on the order of 10 seconds.
 
 3.2.  Response Semantics
 
@@ -965,7 +966,7 @@ Table of Contents
         to Alice.
 
    Use of the rightmost 12 digits is sufficient because collisions
-   within the short vetting validity window are expected to be rare.
+   within the validity window are expected to be rare.
 
 5.4.3.1.  Vetting Failure Cases
 
