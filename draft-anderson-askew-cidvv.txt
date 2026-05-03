@@ -83,51 +83,52 @@ Table of Contents
    2.  Terminology
      2.1.  Motivation and Advantages
    3.  Design Principles
-     3.1.  Protocol Overview
-     3.2.  Response Semantics
-       3.2.1.  "100" Prefix (Primary Verification)
-       3.2.2.  "101" Prefix (Secondary Verification)
-       3.2.3.  Combined Verification
-       3.2.4.  Failure Handling
-   4.  Protocol Operation
-     4.1.  Vouching Procedure
-       4.1.1.  Primary Verification ("100")
-       4.1.2.  Secondary Verification ("101")
-       4.1.3.  Combined Verification Behavior
-     4.2.  Correlation Model
-     4.3.  Vetting Procedure
-   5.  Examples
-     5.1.  Successful Vouch Call Flow (Baseline)
-       5.1.1.  Successful Vouch (Baseline) Step-by-step description
-     5.2.  Successful Vouch Call Flow (Enhanced)
-       5.2.1.  Enhanced Successful Vouch Step-by-step description
-     5.3.  Unsuccessful Vouch
-     5.4.  Vetting a Caller-ID Number
-       5.4.1.  First Vetting Call
-       5.4.2.  Second Vetting Call
-       5.4.3.  Successful Caller-ID Vetting Flow
-   6.  Deployment Considerations
-     6.1.  Behavior of Non-CIDVV Systems
-     6.2.  Handling of CIDVV Signaling Calls
-     6.3.  Response Variability
-   7.  Operational Considerations
-     7.1.  Protocol Operation - Vouching
-     7.2.  Failure and Restart Behavior
-     7.3.  Prefix Preservation
-     7.4.  Interaction with Call Analytics and Fraud Detection
-   8.  Security Considerations
-     8.1.  Trust Model
-     8.2.  Replay Attacks
-     8.3.  Spoofing Resistance
-     8.4.  Denial of Service
-     8.5.  Amplification and Reflection
-     8.6.  Response Code Manipulation
-     8.7.  Data Privacy
-     8.8.  Hash-Based Token Security (Vetting)
-     8.9.  Failure Modes
-     8.10. Interoperability Risks
-     8.11. Residual Risk
-   9.  IANA Considerations
+   4.  Number Normalization
+     4.1.  Protocol Overview
+     4.2.  Response Semantics
+       4.2.1.  "100" Prefix (Primary Verification)
+       4.2.2.  "101" Prefix (Secondary Verification)
+       4.2.3.  Combined Verification
+       4.2.4.  Failure Handling
+   5.  Protocol Operation
+     5.1.  Vouching Procedure
+       5.1.1.  Primary Verification ("100")
+       5.1.2.  Secondary Verification ("101")
+       5.1.3.  Combined Verification Behavior
+     5.2.  Correlation Model
+     5.3.  Vetting Procedure
+   6.  Examples
+     6.1.  Successful Vouch Call Flow (Baseline)
+       6.1.1.  Successful Vouch (Baseline) Step-by-step description
+     6.2.  Successful Vouch Call Flow (Enhanced)
+       6.2.1.  Enhanced Successful Vouch Step-by-step description
+     6.3.  Unsuccessful Vouch
+     6.4.  Vetting a Caller-ID Number
+       6.4.1.  First Vetting Call
+       6.4.2.  Second Vetting Call
+       6.4.3.  Successful Caller-ID Vetting Flow
+   7.  Deployment Considerations
+     7.1.  Behavior of Non-CIDVV Systems
+     7.2.  Handling of CIDVV Signaling Calls
+     7.3.  Response Variability
+   8.  Operational Considerations
+     8.1.  Protocol Operation - Vouching
+     8.2.  Failure and Restart Behavior
+     8.3.  Prefix Preservation
+     8.4.  Interaction with Call Analytics and Fraud Detection
+   9.  Security Considerations
+     9.1.  Trust Model
+     9.2.  Replay Attacks
+     9.3.  Spoofing Resistance
+     9.4.  Denial of Service
+     9.5.  Amplification and Reflection
+     9.6.  Response Code Manipulation
+     9.7.  Data Privacy
+     9.8.  Hash-Based Token Security (Vetting)
+     9.9.  Failure Modes
+     9.10. Interoperability Risks
+     9.11. Residual Risk
+   10. IANA Considerations
    Appendix A.  Acknowledgments
    Authors' Addresses
 
@@ -293,7 +294,21 @@ Table of Contents
    rejection behavior (e.g., "busy" vs. "not found"), rather than
    requiring specific numeric response codes to be preserved end-to-end.
 
-3.1.  Protocol Overview
+4.  Number Normalization
+
+   All telephone numbers used in CIDVV operations MUST be normalized to
+   a digit string as follows:
+
+   1.  Remove any leading "+" or other punctuation.
+
+   2.  Use the full E.164 representation (country code + national
+       significant number) as a plain digit string.
+
+   No padding is performed.  Truncation (when required for the 15-digit
+   limit) always removes leading digits of the telephone number,
+   preserving the rightmost digits.
+
+4.1.  Protocol Overview
 
    CIDVV uses special Caller-ID prefixes to signal protocol operations:
 
@@ -306,32 +321,36 @@ Table of Contents
    as E.164 numbers and are shown without a leading "+" in this
    document.
 
-   Ordinary subscriber telephone numbers (e.g., +12125550100) are shown
-   in E.164 format for clarity, while CIDVV signaling values (e.g.,
-   10019495550199) are shown as digit strings.
+   Ordinary subscriber telephone numbers (e.g., +1 212 555 0100) are
+   shown in E.164 format for clarity, while CIDVV signaling values
+   (e.g., 10019495550199) are shown as digit strings.
 
    CIDVV signaling Calling Party Numbers MUST fit within the 15-digit
    Calling Party Number limit commonly encountered in SS7 and ISDN
    networks.  For this reason, CIDVV uses a three-digit prefix followed
-   by a 12-digit payload:
+   by a payload derived from the asserted Caller-ID:
 
       CIDVV-CPN (CIDVV Calling Party Number) = Prefix || Payload
 
    where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
-   "101", and Payload is the rightmost 12 digits...
+   "101", and Payload is the digit string of the asserted Caller-ID
+   (normalized per Section Section 4).
 
-   For vouching, the payload is the rightmost 12 digits of the dialed
-   number.  For example, if Bob's number is +19495550199, the Payload is
-   19495550199 and the resulting CIDVV Calling Party Number is
-   10019495550199.
+   In the common case where the asserted Caller-ID has 12 or fewer
+   digits, the Payload is used in full, so the CIDVV-CPN is simply the
+   three-digit prefix directly concatenated with the full asserted
+   Caller-ID digits.
 
-   A CIDVV-aware element generating a CIDVV verification call MUST
-   truncate the payload, when necessary, to preserve the three-digit
-   prefix and the rightmost 12 digits.
+   If the resulting CIDVV-CPN would exceed 15 digits (i.e., the asserted
+   Caller-ID has more than 12 digits), the leading digits of the
+   asserted Caller-ID are removed until the total length is exactly 15
+   digits.  This truncation keeps the rightmost (least-significant)
+   digits of the telephone number.
 
-   A CIDVV platform MAY cache and compare the complete 15-digit CIDVV
-   Calling Party Number, including the prefix, rather than stripping the
-   prefix before lookup.
+   A CIDVV-aware element generating a CIDVV verification call MUST apply
+   this construction.  A CIDVV platform MAY cache and compare the
+   complete 15-digit CIDVV Calling Party Number (including the prefix)
+   rather than stripping the prefix before lookup.
 
    Because CIDVV correlation is also scoped by the called number and a
    short validity window, collisions among rightmost 12-digit payload
@@ -385,7 +404,7 @@ Table of Contents
    CIDVV operations rely on state within the validity window, typically
    on the order of 10 seconds.
 
-3.2.  Response Semantics
+4.2.  Response Semantics
 
    CIDVV uses observed call behavior as a signaling mechanism between
    participating systems.  Because intermediate SIP and SS7/TDM networks
@@ -401,7 +420,7 @@ Table of Contents
    distinguishable across the signaling path.  Environments that cannot
    preserve this distinction may not support enhanced verification.
 
-3.2.1.  "100" Prefix (Primary Verification)
+4.2.1.  "100" Prefix (Primary Verification)
 
    A call using the "100" prefix is considered successful only if it
    results in an immediate rejection consistent with a "Busy"-class
@@ -415,7 +434,7 @@ Table of Contents
    confidence that the asserted Caller-ID is routable and under the
    control of the originating party.
 
-3.2.2.  "101" Prefix (Secondary Verification)
+4.2.2.  "101" Prefix (Secondary Verification)
 
    A call using the "101" prefix is used as an optional secondary
    validation signal.
@@ -427,7 +446,7 @@ Table of Contents
    verification alone MUST NOT be treated as evidence of a successful
    vouch.
 
-3.2.3.  Combined Verification
+4.2.3.  Combined Verification
 
    Implementations MAY perform both "100" and "101" verification calls
    to achieve a higher level of assurance.
@@ -445,7 +464,7 @@ Table of Contents
    Implementations MUST NOT require the two verification calls to occur
    in any specific order.
 
-3.2.4.  Failure Handling
+4.2.4.  Failure Handling
 
    If the expected behavior for a given prefix is not observed, the
    verification for that prefix MUST be treated as unsuccessful.
@@ -460,12 +479,12 @@ Table of Contents
    ambiguous, the vouch MUST be treated as unsuccessful or
    indeterminate.
 
-4.  Protocol Operation
+5.  Protocol Operation
 
-4.1.  Vouching Procedure
+5.1.  Vouching Procedure
 
    Alice's CIDVV platform receives an attempted call from Alice to Bob.
-   It MUST construct a CIDVV token as defined in Section Section 3.1 by
+   It MUST construct a CIDVV token as defined in Section Section 4.1 by
    prefixing "100" to the rightmost 12 digits of the dialed number.
 
    The CIDVV platform MUST cache the call attempt using the tuple:
@@ -483,7 +502,7 @@ Table of Contents
    When Bob's system receives the call, a CIDVV-aware network element
    (e.g., SBC) initiates a verification call toward Alice.
 
-4.1.1.  Primary Verification ("100")
+5.1.1.  Primary Verification ("100")
 
    Bob's CIDVV-aware element constructs the CIDVV token using the same
    method (prefix "100" plus the rightmost 12 digits of the dialed
@@ -510,7 +529,7 @@ Table of Contents
    the originating party can receive calls at the asserted Caller-ID and
    constitutes a valid baseline vouch.
 
-4.1.2.  Secondary Verification ("101")
+5.1.2.  Secondary Verification ("101")
 
    Bob's CIDVV-aware element MAY initiate a second verification call
    using a CIDVV token constructed by prefixing "101" to the same
@@ -521,13 +540,13 @@ Table of Contents
 
    Upon receiving such a call, the CIDVV platform MUST reject the call
    with SIP response 404 (Not Found), unless the call corresponds to an
-   active vetting procedure (see Section Section 4.3).
+   active vetting procedure (see Section Section 5.3).
 
    A "101" verification call does not require cache lookup for vouching
    purposes and MUST NOT be used as a standalone indicator of a
    successful vouch.
 
-4.1.3.  Combined Verification Behavior
+5.1.3.  Combined Verification Behavior
 
    Implementations MAY perform only the primary ("100") verification or
    MAY perform both primary and secondary verification.
@@ -548,7 +567,7 @@ Table of Contents
    If the "100" verification fails, the vouch MUST be treated as
    unsuccessful regardless of any "101" result.
 
-4.2.  Correlation Model
+5.2.  Correlation Model
 
    CIDVV vouching correlates calls using the asserted calling number,
    the called number, and a validity window.  It does not attempt to
@@ -563,7 +582,7 @@ Table of Contents
    occurred during the validity window, rather than proving a one-to-one
    correspondence between specific call legs.
 
-4.3.  Vetting Procedure
+5.3.  Vetting Procedure
 
    Before vetting begins, Alice and Bob agree on a shared secret,
    Alice's vetting Caller-ID, and a validity time window.
@@ -595,9 +614,9 @@ Table of Contents
    Any other response, timeout, code mismatch, expired cache entry, or
    unexpected Caller-ID MUST be treated as an unsuccessful vet.
 
-5.  Examples
+6.  Examples
 
-5.1.  Successful Vouch Call Flow (Baseline)
+6.1.  Successful Vouch Call Flow (Baseline)
 
    The following diagram shows a baseline successful vouch using only
    the primary "100" verification call.  This provides a valid vouch
@@ -629,7 +648,7 @@ Table of Contents
    Party Number is the CIDVV token formed as "100" followed by the
    rightmost 12 digits of the dialed number.
 
-5.1.1.  Successful Vouch (Baseline) Step-by-step description
+6.1.1.  Successful Vouch (Baseline) Step-by-step description
 
    The diagram above shows the high-level message flow.  The following
    numbered steps provide the detailed behavior, including Caller-ID
@@ -695,7 +714,7 @@ Table of Contents
    This mechanism allows the originating CIDVV platform to confirm that
    the asserted Caller-ID is valid without completing the initial call.
 
-5.2.  Successful Vouch Call Flow (Enhanced)
+6.2.  Successful Vouch Call Flow (Enhanced)
 
    The following diagram shows a successful vouch (Enhanced) using both
    the primary "100" verification call and an optional secondary "101"
@@ -740,7 +759,7 @@ Table of Contents
    whose Calling Party Numbers are formed using the CIDVV token
    construction defined in Protocol Overview.
 
-5.2.1.  Enhanced Successful Vouch Step-by-step description
+6.2.1.  Enhanced Successful Vouch Step-by-step description
 
    The diagram above shows an enhanced vouch using both the primary
    "100" verification call and an optional secondary "101" verification
@@ -828,7 +847,7 @@ Table of Contents
 
    18.  Bob's telephone rings.
 
-5.3.  Unsuccessful Vouch
+6.3.  Unsuccessful Vouch
 
    A vouch attempt is considered unsuccessful or indeterminate if the
    expected verification behavior is not observed.
@@ -853,13 +872,13 @@ Table of Contents
    response, timeout, or call progression MUST result in an unsuccessful
    or indeterminate outcome.
 
-5.4.  Vetting a Caller-ID Number
+6.4.  Vetting a Caller-ID Number
 
    Vetting uses two independent verification calls that form a
    challenge-response sequence.  For clarity, the calls are shown
    separately, but together they constitute a single vetting operation.
 
-5.4.1.  First Vetting Call
+6.4.1.  First Vetting Call
 
       CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
          |             |             |             |             |
@@ -877,7 +896,7 @@ Table of Contents
        Figure 2: First vetting call with 100 - creates cache entry or
                                 receives 404
 
-5.4.2.  Second Vetting Call
+6.4.2.  Second Vetting Call
 
       CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
          |             |             |             |             |
@@ -895,7 +914,7 @@ Table of Contents
      Figure 3: Vetting token check call with 101 - confirms vouch with
                                486 Busy Here
 
-5.4.3.  Successful Caller-ID Vetting Flow
+6.4.3.  Successful Caller-ID Vetting Flow
 
    Vetting a remote number requires two separate calls (distinct SIP
    dialogs) using a pre-agreed shared key.  The process confirms that
@@ -968,7 +987,7 @@ Table of Contents
    Use of the rightmost 12 digits is sufficient because collisions
    within the validity window are expected to be rare.
 
-5.4.3.1.  Vetting Failure Cases
+6.4.3.1.  Vetting Failure Cases
 
    A vetting attempt may fail for the following reasons:
 
@@ -989,9 +1008,9 @@ Table of Contents
    confirmation that the remote number is both reachable via the PSTN
    and controlled by an entity that knows the shared secret.
 
-6.  Deployment Considerations
+7.  Deployment Considerations
 
-6.1.  Behavior of Non-CIDVV Systems
+7.1.  Behavior of Non-CIDVV Systems
 
    Systems that do not implement CIDVV are not expected to recognize
    CIDVV signaling prefixes.  Such systems will typically process CIDVV
@@ -1000,7 +1019,7 @@ Table of Contents
    CIDVV implementations MUST treat any response that does not match the
    expected protocol behavior as indicating a non-participating system.
 
-6.2.  Handling of CIDVV Signaling Calls
+7.2.  Handling of CIDVV Signaling Calls
 
    Networks that recognize CIDVV SHOULD NOT present calls with Calling
    Party Numbers beginning with "100" or "101" to end users.
@@ -1021,23 +1040,23 @@ Table of Contents
    SHOULD minimize call duration and signaling load and SHOULD avoid any
    media establishment.
 
-6.3.  Response Variability
+7.3.  Response Variability
 
    Implementations SHOULD interpret responses based on behavioral class
    (e.g., success vs. immediate rejection) rather than relying solely on
    exact numeric values, as intermediate networks may translate or
    modify response codes.
 
-7.  Operational Considerations
+8.  Operational Considerations
 
-7.1.  Protocol Operation - Vouching
+8.1.  Protocol Operation - Vouching
 
    If a vouching call results in a provisional response (e.g., 180
    Ringing) or a successful response (200 OK), the originating system
    SHOULD immediately cancel the call and treat the remote system as not
    implementing CIDVV.
 
-7.2.  Failure and Restart Behavior
+8.2.  Failure and Restart Behavior
 
    CIDVV platforms rely on short-lived state.  Upon restart or loss of
    state, implementations SHOULD continue accepting new call deposits
@@ -1051,7 +1070,7 @@ Table of Contents
    Implementations SHOULD fail closed (treating requests as unverified)
    rather than risk false-positive validation.
 
-7.3.  Prefix Preservation
+8.3.  Prefix Preservation
 
    SIP intermediaries and SBCs that support CIDVV SHOULD preserve the
    Calling Party Number digits used for CIDVV signaling, including the
@@ -1062,7 +1081,7 @@ Table of Contents
    that intermediate networks may normalize or reinterpret numbering
    format.
 
-7.4.  Interaction with Call Analytics and Fraud Detection
+8.4.  Interaction with Call Analytics and Fraud Detection
 
    CIDVV signaling calls use Calling Party Number values that may appear
    anomalous to call analytics, labeling, and fraud detection systems.
@@ -1078,7 +1097,7 @@ Table of Contents
    Failure to recognize CIDVV signaling may result in increased false
    positives or suppression of verification attempts.
 
-8.  Security Considerations
+9.  Security Considerations
 
    CIDVV verification is probabilistic and based on reachability.  It
    does not provide cryptographic identity guarantees and is intended to
@@ -1097,7 +1116,7 @@ Table of Contents
    calls (e.g., "100" → 486 and "101" → 404) increases resistance to
    false-positive validation arising from common network behaviors.
 
-8.1.  Trust Model
+9.1.  Trust Model
 
    CIDVV assumes that: - The PSTN routes calls to the correct
    terminating service provider for a given telephone number. - The
@@ -1109,7 +1128,7 @@ Table of Contents
    CIDVV does not assume that Caller-ID values are trustworthy; instead,
    it verifies control through network reachability.
 
-8.2.  Replay Attacks
+9.2.  Replay Attacks
 
    CIDVV uses short-lived state (typically on the order of seconds) to
    correlate signaling exchanges.  This limits the effectiveness of
@@ -1122,7 +1141,7 @@ Table of Contents
    Replay within the validity window remains theoretically possible but
    requires precise timing and routing alignment.
 
-8.3.  Spoofing Resistance
+9.3.  Spoofing Resistance
 
    CIDVV prevents spoofing by requiring the party asserting a Caller-ID
    to successfully receive and respond to a return call routed via the
@@ -1133,7 +1152,7 @@ Table of Contents
    controls the terminating endpoint for the number - The attacker has
    compromised the service provider infrastructure
 
-8.4.  Denial of Service
+9.4.  Denial of Service
 
    CIDVV introduces additional signaling traffic, which may be abused
    for denial-of-service (DoS) purposes.
@@ -1145,7 +1164,7 @@ Table of Contents
    Implementations SHOULD: - Apply per-source and per-destination limits
    - Monitor for anomalous traffic patterns
 
-8.5.  Amplification and Reflection
+9.5.  Amplification and Reflection
 
    CIDVV generates return calls as part of its operation.  Care MUST be
    taken to ensure that this behavior cannot be exploited for
@@ -1156,7 +1175,7 @@ Table of Contents
    calls - Avoid generating multiple responses for a single triggering
    event
 
-8.6.  Response Code Manipulation
+9.6.  Response Code Manipulation
 
    CIDVV does not require specific SIP response codes to be preserved
    end-to-end, but it does require that distinct rejection behaviors
@@ -1165,7 +1184,7 @@ Table of Contents
    Implementations MUST interpret responses based on expected behavior
    (success vs. failure) rather than exact numeric values.
 
-8.7.  Data Privacy
+9.7.  Data Privacy
 
    CIDVV exchanges inherently expose calling and called numbers within
    signaling messages.
@@ -1176,7 +1195,7 @@ Table of Contents
 
    Temporary state MUST be short-lived and automatically expired.
 
-8.8.  Hash-Based Token Security (Vetting)
+9.8.  Hash-Based Token Security (Vetting)
 
    Vetting operations use shared secrets and derived tokens.
 
@@ -1187,7 +1206,7 @@ Table of Contents
    Implementations SHOULD: - Include sufficient entropy in derived
    tokens - Avoid predictable or reusable values
 
-8.9.  Failure Modes
+9.9.  Failure Modes
 
    CIDVV implementations MUST fail closed.  If verification cannot be
    completed due to: - network errors - state loss - unexpected
@@ -1195,7 +1214,7 @@ Table of Contents
 
    the result MUST be treated as unverified.
 
-8.10.  Interoperability Risks
+9.10.  Interoperability Risks
 
    CIDVV operates across heterogeneous networks, including SIP and SS7/
    TDM environments.  Intermediate systems may: - modify Calling Party
@@ -1204,7 +1223,7 @@ Table of Contents
    These behaviors may cause verification to fail but MUST NOT result in
    false-positive validation.
 
-8.11.  Residual Risk
+9.11.  Residual Risk
 
    CIDVV improves resistance to Caller-ID spoofing but does not provide
    absolute identity assurance.  It should be considered a probabilistic
@@ -1214,7 +1233,7 @@ Table of Contents
    CIDVV provides probabilistic verification based on reachability and
    response behavior, not cryptographic identity binding.
 
-9.  IANA Considerations
+10.  IANA Considerations
 
    This document has no IANA actions.
 
