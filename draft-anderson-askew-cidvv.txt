@@ -98,6 +98,7 @@ Table of Contents
        5.1.3.  Combined Verification Behavior
      5.2.  Correlation Model
      5.3.  Hash Function for Vetting and State Storage
+       5.3.1.  Multi-Tenant Considerations
      5.4.  Vetting Procedure
    6.  Examples
      6.1.  Successful Vouch Call Flow (Baseline)
@@ -364,7 +365,7 @@ Table of Contents
    If the resulting CIDVV-CPN would exceed 15 digits (i.e., the asserted
    Caller-ID has more than 12 digits), the leading digits of the
    asserted Caller-ID are removed until the total length is exactly 15
-   digits.  This truncation keeps the rightmost (least-significant)
+   digits.  This truncation keeps the rightmost (most significant)
    digits of the telephone number.
 
    A CIDVV-aware element generating a CIDVV verification call MUST apply
@@ -661,6 +662,19 @@ Table of Contents
    concatenation order for both vetting calls and any Redis (or
    equivalent) cache lookups.  The token is valid only inside the
    Validity Window.
+
+5.3.1.  Multi-Tenant Considerations
+
+   CIDVV platforms that perform vouching on behalf of multiple
+   independent customers MUST ensure that correlation state is scoped
+   per customer.  This prevents unintended interaction between unrelated
+   vouching operations that may produce identical CIDVV payload values.
+
+   Implementations MAY use separate storage, partitioning, or customer-
+   specific identifiers to achieve this isolation.
+
+   This requirement does not apply to vetting operations, which are
+   already scoped by the shared secret.
 
 5.4.  Vetting Procedure
 
