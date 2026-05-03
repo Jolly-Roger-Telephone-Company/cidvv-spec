@@ -142,7 +142,7 @@ The CIDVV vouching and vetting mechanism is designed to operate with minimal new
 
 * **Enterprise and service-provider flexibility**:
   * Enterprises can deploy their own CIDVV platform using open-source tools such as Kamailio or Asterisk.
-  * Service providers or third-party vendors (e.g., Variphy, TransUnion, iconectiv, Somos, TNS, First Orion, or others) can operate cloud-based vouching and vetting services.
+  * Service providers or third-party vendors (e.g., TransUnion, TNS, First Orion, Hiya, Numeracle, Numhub, or others) can operate cloud-based vouching and vetting services.
   * Customers can easily switch between providers, fostering real competition and driving down costs.
 
 This design lowers the barrier to entry and encourages broad adoption while avoiding the single points of failure and high coordination costs associated with centralized solutions. These properties make the vouching mechanism particularly suitable for service providers, enterprises, and end users who need robust Caller-ID validation today, using only existing telephone infrastructure.
@@ -185,7 +185,7 @@ CIDVV Calling Party Numbers are numeric signaling values carried in
 the Calling Party Number field. They are not represented as
 E.164 numbers and are shown without a leading "+" in this document.
 
-Ordinary subscriber telephone numbers (e.g., +1 212 555 0100) are
+Ordinary subscriber telephone numbers (e.g., +12125550100) are
 shown in E.164 format for clarity, while CIDVV signaling values
 (e.g., 10019495550199) are shown as digit strings.
 
