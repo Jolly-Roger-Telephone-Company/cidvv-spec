@@ -152,6 +152,20 @@ CIDVV relies on the ability to distinguish between classes of
 call rejection behavior (e.g., "busy" vs. "not found"), rather than
 requiring specific numeric response codes to be preserved end-to-end.
 
+# Number Normalization
+{: #number-normalization }
+
+All telephone numbers used in CIDVV operations MUST be normalized to
+a digit string as follows:
+
+1. Remove any leading "+" or other punctuation.
+2. Use the full E.164 representation (country code + national significant
+   number) as a plain digit string.
+
+No padding is performed. Truncation (when required for the 15-digit
+limit) always removes leading digits of the telephone number, preserving
+the rightmost digits.
+
 ## Protocol Overview
 {: #protocol-overview }
 
@@ -161,37 +175,40 @@ CIDVV uses special Caller-ID prefixes to signal protocol operations:
 * "101" prefix — Secondary Verification Call
 
 CIDVV Calling Party Numbers are numeric signaling values carried in
-the Calling Party Number signaling field. They are not represented as E.164
-numbers and are shown without a leading "+" in this document.
+the Calling Party Number signaling field. They are not represented as
+E.164 numbers and are shown without a leading "+" in this document.
 
-Ordinary subscriber telephone numbers (e.g., +12125550100) are shown
-in E.164 format for clarity, while CIDVV signaling values (e.g.,
-10019495550199) are shown as digit strings.
+Ordinary subscriber telephone numbers (e.g., +1 212 555 0100) are
+shown in E.164 format for clarity, while CIDVV signaling values
+(e.g., 10019495550199) are shown as digit strings.
 
 CIDVV signaling Calling Party Numbers MUST fit within the 15-digit
 Calling Party Number limit commonly encountered in SS7 and ISDN
-networks. For this reason, CIDVV uses a three-digit prefix followed by a
-12-digit payload:
+networks. For this reason, CIDVV uses a three-digit prefix followed by
+a payload derived from the asserted Caller-ID:
 
 ~~~~
    CIDVV-CPN (CIDVV Calling Party Number) = Prefix || Payload
 ~~~~
 
 where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
-"101", and Payload is the rightmost 12 digits...
+"101", and Payload is the digit string of the asserted Caller-ID
+(normalized per Section <xref target="number-normalization"/>).
 
-For vouching, the payload is the rightmost 12 digits of the
-dialed number. For example, if Bob's number is +19495550199, the
-Payload is 19495550199 and the resulting CIDVV Calling Party Number
-is 10019495550199.
+In the common case where the asserted Caller-ID has 12 or fewer digits,
+the Payload is used in full, so the CIDVV-CPN is simply the three-digit
+prefix directly concatenated with the full asserted Caller-ID digits.
 
-A CIDVV-aware element generating a CIDVV verification call MUST
-truncate the payload, when necessary, to preserve the three-digit
-prefix and the rightmost 12 digits.
+If the resulting CIDVV-CPN would exceed 15 digits (i.e., the asserted
+Caller-ID has more than 12 digits), the leading digits of the asserted
+Caller-ID are removed until the total length is exactly 15 digits.
+This truncation keeps the rightmost (least-significant) digits of the
+telephone number.
 
-A CIDVV platform MAY cache and compare the complete 15-digit CIDVV
-Calling Party Number, including the prefix, rather than stripping the
-prefix before lookup.
+A CIDVV-aware element generating a CIDVV verification call MUST apply
+this construction. A CIDVV platform MAY cache and compare the complete
+15-digit CIDVV Calling Party Number (including the prefix) rather than
+stripping the prefix before lookup.
 
 Because CIDVV correlation is also scoped by the called number and a
 short validity window, collisions among rightmost 12-digit payload values
