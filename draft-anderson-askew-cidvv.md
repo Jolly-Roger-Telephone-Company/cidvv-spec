@@ -107,7 +107,7 @@ signaling field used to convey that identity.
 * **TSP**: Terminating Service Provider.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
 * **CIDVV-aware Network Element**: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.
-* **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party legitimately controls the asserted Caller-ID.
+* **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the asserted Caller-ID.
 * **Vet** (or **Vetting**): The process by which a CIDVV platform confirms legitimate ownership of a telephone number via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
 * **Vouching Call**: A short verification call used in the CIDVV protocol. CIDVV defines a primary vouching call ("100") and an optional secondary vouching call ("101").
 * **Successful Vouch**: A verification result indicating that a matching cache entry was found.
@@ -161,7 +161,7 @@ CIDVV uses special Caller-ID prefixes to signal protocol operations:
 * "101" prefix — Secondary Verification Call
 
 CIDVV Calling Party Numbers are numeric signaling values carried in
-the Calling Party Number field. They are not represented as E.164
+the Calling Party Number signaling field. They are not represented as E.164
 numbers and are shown without a leading "+" in this document.
 
 Ordinary subscriber telephone numbers (e.g., +12125550100) are shown
@@ -180,7 +180,7 @@ networks. For this reason, CIDVV uses a three-digit prefix followed by a
 where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
 "101", and Payload is the rightmost 12 digits...
 
-For vouching, the Payload is normally the rightmost 12 digits of the
+For vouching, the payload is the rightmost 12 digits of the
 dialed number. For example, if Bob's number is +19495550199, the
 Payload is 19495550199 and the resulting CIDVV Calling Party Number
 is 10019495550199.
@@ -194,7 +194,7 @@ Calling Party Number, including the prefix, rather than stripping the
 prefix before lookup.
 
 Because CIDVV correlation is also scoped by the called number and a
-short validity window, collisions among rightmost-12-digit payloads
+short validity window, collisions among rightmost 12-digit payload values
 are expected to be rare. Implementations SHOULD nevertheless treat
 ambiguous or colliding state as unsuccessful or indeterminate rather
 than risk false-positive validation.
@@ -241,8 +241,8 @@ Vetting procedures MAY use full telephone numbers or truncated
 forms as input to cryptographic operations, independent of the
 CIDVV Calling Party Number encoding.
 
-CIDVV operations rely on short-lived state, typically on the order of
-10 seconds, referred to in this document as the "validity window".
+CIDVV operations rely on state within the validity window, typically on the order of
+10 seconds.
 
 ## Response Semantics
 
@@ -760,7 +760,7 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 10. CIDVV_A receives the 486 Busy Here and reports a successful vet to Alice.
 
 Use of the rightmost 12 digits is sufficient because collisions
-within the short vetting validity window are expected to be rare.
+within the validity window are expected to be rare.
 
 #### Vetting Failure Cases
 
