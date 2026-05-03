@@ -270,7 +270,7 @@ distinct expected behaviors. The table below summarizes the differences:
 | 100    | Expect 486 Busy Here (cache hit) | Expect 404 Not Found (cache token) | Primary signal |
 | 101    | Expect 404 Not Found          | Expect 486 Busy Here (token match) | Secondary / check |
 
-Implementations MUST distinguish context (vouching vs. vetting) by whether a shared secret was pre-agreed for the Vouched Number. A CIDVV platform MUST NOT treat a 101→404 response as a successful vouch when an active vetting procedure exists for that number.
+Implementations distinguish context (vouching vs. vetting) primarily by the presence of a pre-agreed vetting Caller-ID and shared secret for that Vouched Number. Because vetting uses a specific Caller-ID designated for the procedure, overlap with ordinary vouching calls on the same number is expected to be rare. A CIDVV platform MUST treat calls using a known vetting Caller-ID according to the vetting response pattern (even if a live vouch cache entry exists) and MUST NOT treat a 101→404 response as a successful vouch when an active vetting procedure is in progress for that number.
 
 ## Response Semantics
 
@@ -446,6 +446,29 @@ pending attempts.
 A successful vouch indicates that at least one matching call attempt
 occurred during the validity window, rather than proving a
 one-to-one correspondence between specific call legs.
+
+## Hash Function for Vetting and State Storage
+{: #hash-function }
+
+The same deterministic algorithm MUST be used for:
+1. Vetting token computation.
+2. Any short-term cache (e.g., Redis) that stores vouching or vetting state.
+
+**Algorithm (normative)**
+
+1. Normalize both numbers: E.164 digit string, no leading "+", no punctuation (see Section <xref target="number-normalization"/>).
+2. Concatenate as UTF-8 bytes: `normalized-calling-number || "|" || normalized-called-number || "|" || shared-secret`
+3. Compute SHA-256 digest of the concatenated bytes.
+4. Take the first 8 hexadecimal characters of the digest.
+5. Convert that 8-hex string to a decimal integer.
+6. Left-pad with zeros to 10 digits if needed, then prepend '1' to produce an 11-digit token.
+
+Example (for illustration only):
+- calling = 12125550100, called = 19495550199, secret = "hamburger"
+- Concatenated: "12125550100|19495550199|hamburger"
+- SHA-256 first 8 hex → decimal → padded/prepended token = 12953388433 (or similar)
+
+Implementations MUST use the identical normalization and concatenation order for both vetting calls and any Redis (or equivalent) cache lookups. The token is valid only inside the Validity Window.
 
 ## Vetting Procedure
 {: #vetting-procedure }
@@ -819,7 +842,7 @@ CIDVV signaling prefixes. Such systems will typically process CIDVV
 calls as ordinary calls and may return a wide range of responses.
 
 CIDVV implementations MUST treat any response that does not match the
-expected protocol behavior as indicating a non-participating system.
+expected protocol behavior as indicating a non-participating system (see Section <xref target="vouching-vs-vetting"/> for response patterns).
 
 ## Handling of CIDVV Signaling Calls
 
@@ -836,7 +859,7 @@ recognize CIDVV signaling prefixes ("100" and "101") and treat such
 calls as protocol signaling rather than ordinary subscriber calls.
 
 CIDVV-aware elements SHOULD recognize and internally route CIDVV
-signaling calls without user presentation.
+signaling calls using the vouched number without user presentation.
 
 CIDVV signaling calls are not intended to complete. Implementations
 SHOULD minimize call duration and signaling load and SHOULD avoid any
@@ -848,6 +871,16 @@ Implementations SHOULD interpret responses based on behavioral class
 (e.g., success vs. immediate rejection) rather than relying solely on
 exact numeric values, as intermediate networks may translate or
 modify response codes.
+
+## Short-Term State Management
+
+CIDVV relies on short-lived state for the (Vouched-Number, CIDVV-Token)
+tuple, valid only for the Validity Window (typically on the order of
+10 seconds). Implementations MUST expire this state automatically and
+MUST fail closed: on restart or state loss, treat all verification
+requests as unsuccessful until fresh state has been deposited. The
+same hash algorithm defined in Section <xref target="hash-function"/>
+MUST be used for any vetting-related state.
 
 # Operational Considerations
 
