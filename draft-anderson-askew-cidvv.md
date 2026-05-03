@@ -41,7 +41,7 @@ identity frameworks may not be consistently applied.
 This document defines Caller-ID Vouching and Vetting (CIDVV), a
 lightweight verification mechanism that uses short-lived signaling
 exchanges encoded within the Calling Party Number to confirm that a
-calling party can receive calls at the asserted number.
+calling party can receive calls at the Asserted Caller-ID.
 
 CIDVV is designed to operate across heterogeneous SIP and SS7/TDM
 networks without requiring new protocol extensions or persistent
@@ -51,7 +51,7 @@ using failed call attempts as evidence of number control rather than
 successful call completion.
 
 The mechanism improves resistance to Caller-ID spoofing by requiring
-demonstrable control of the asserted number, while remaining
+demonstrable control of the Asserted Caller-ID, while remaining
 incrementally deployable and tolerant of intermediate network
 modification.
 
@@ -84,13 +84,13 @@ response behaviors to traverse the network path.
 
 CIDVV does not provide absolute identity assurance but significantly
 raises the cost of Caller-ID spoofing by requiring demonstrable
-control of the asserted number.
+control of the Asserted Caller-ID.
 
 CIDVV leverages two key elements of the existing telephone ecosystem:
 
 * Existing routing databases and numbering plans, which provide
   authoritative routing ownership for telephone numbers.
-* Digit sequences chosen to minimize conflict with valid numbering plans (e.g., "100" and "101")
+* Digit sequences chosen to minimize conflict with valid numbering plans (e.g., "100" and "101").
 
 The mechanism operates entirely within normal PSTN routing behavior and requires no media exchange.
 
@@ -176,7 +176,7 @@ CIDVV uses special Caller-ID prefixes to signal protocol operations:
 * "101" prefix — Secondary Verification Call
 
 CIDVV Calling Party Numbers are numeric signaling values carried in
-the Calling Party Number signaling field. They are not represented as
+the Calling Party Number field. They are not represented as
 E.164 numbers and are shown without a leading "+" in this document.
 
 Ordinary subscriber telephone numbers (e.g., +1 212 555 0100) are
@@ -193,7 +193,7 @@ a payload derived from the Asserted Caller-ID:
 ~~~~
 
 where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
-"101", and Payload is the digit string of the Asserted Caller-ID
+"101", and Payload is derived from the Asserted Caller-ID
 (normalized per Section <xref target="number-normalization"/>).
 
 For vouching operations, the payload is derived from the called
@@ -280,11 +280,10 @@ Implementations distinguish context (vouching vs. vetting) primarily by the pres
 
 ## Response Semantics
 
-CIDVV uses observed call behavior as a signaling mechanism between
-participating systems. Because intermediate SIP and SS7/TDM networks
-may translate, modify, or replace response codes, implementations
-Implementations MUST interpret responses based on behavioral class
-(e.g., "Busy"-class vs. "Not Found"-class) rather than exact numeric values.
+Because intermediate SIP and SS7/TDM networks may translate,
+modify, or replace response codes, implementations MUST interpret
+responses based on behavioral class (e.g., "Busy"-class vs.
+"Not Found"-class) rather than exact numeric values.
 
 Implementations SHOULD use SIP 486 (Busy Here) and 404 (Not Found)
 as the canonical representations of these behaviors where possible.
@@ -486,7 +485,7 @@ the verifier who initiates the two calls to Bob’s number in order to
 vet Bob’s number.
 
 Before vetting begins, Alice and Bob agree on a shared secret, Bob’s
-vetting Caller-ID, and a validity time window.
+vetting Caller-ID, and a Validity Window.
 
 Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".
 
@@ -683,7 +682,7 @@ call. The following steps describe the detailed behavior.
 9. **CIDVV_A**:
    - Looks up `(Called: +12125550100, Token: 10019495550199)` cached for the Validity Window
    - Finds a matching entry.
-   - Returns **486 Busy Here**.
+   - Rejects the call with SIP response **486 Busy Here**.
 
 10. Bob's SBC receives the 486 and recognizes a successful primary
     verification.
@@ -792,7 +791,7 @@ separately, but together they constitute a single vetting operation.
 
 Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party (Bob) controls the target telephone number and possesses the correct shared secret.
 
-1. Alice and Bob agree on a shared secret (e.g. `hamburger`) and Alice’s vetting Caller-ID (`+12125550100`, or its rightmost 12 digits for matching purposes)
+1. Alice and Bob agree on a shared secret (e.g., `hamburger`) and Alice’s vetting Caller-ID (`+12125550100`, or its rightmost 12 digits for matching purposes).
 
 2. Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional Validity Window (e.g. one week) into their respective CIDVV platforms.
 
@@ -1040,7 +1039,7 @@ Implementations SHOULD:
 - Use derived values (e.g., cryptographic hashes) for temporary state
 - Limit retention of any identifying data
 
-Temporary state MUST be short-lived and automatically expired.
+Temporary state MUST be short lived and automatically expired.
 
 ## Hash-Based Token Security (Vetting)
 
