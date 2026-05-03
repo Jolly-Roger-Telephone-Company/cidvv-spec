@@ -29,7 +29,7 @@ author:
 
 <!--
 Notes:
-Headings (starting with #) must be separated by a blank line. Can use this regex to find: ^#{1,6} .+\n[^\n]
+Headings (starting with #) must be separated by a blank line. Can use this regex to find: [ \t]$
 -->
 
 --- abstract
@@ -101,9 +101,8 @@ presented to users, while "Calling Party Number" refers to the
 signaling field used to convey that identity.
 
 * **Alice**: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob’s number.
-* **Bob**: The called party. In vetting flows Bob is the owner whose number is being vetted.* **Mallory**: An attacker attempting to spoof a Caller-ID.
-* **OSP**: Originating Service Provider.
-* **TSP**: Terminating Service Provider.
+* **Bob**: The called party. In vetting flows Bob is the owner whose number is being vetted.
+* **Mallory**: An attacker attempting to spoof a Caller-ID.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
 * **CIDVV-aware Network Element**: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the Asserted Caller-ID.
@@ -113,8 +112,8 @@ signaling field used to convey that identity.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
 * **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
 * **Validity Window**: A short time interval during which CIDVV signaling state is considered valid for correlation purposes, typically on the order of 10 seconds.
-* * **Asserted Caller-ID**: The Caller-ID value that is being vouched or vetted (i.e., the number whose control is being verified). This is the value used as the basis for the CIDVV Token payload and as the cache lookup key in the tuple (Asserted-Caller-ID, CIDVV-Token).
- 
+* **Asserted Caller-ID**: The Caller-ID value that is being vouched or vetted (i.e., the number whose control is being verified). This is the value used as the basis for the CIDVV Token payload and as the cache lookup key in the tuple (Asserted-Caller-ID, CIDVV-Token).
+
 Once successfully vouched, an Asserted Caller-ID may be referred to informally as a "vouched number," but the formal term used in this document is "Asserted Caller-ID."
 
 ## Motivation and Advantages
@@ -978,7 +977,7 @@ Implementations MUST:
 - Expire cached state quickly (e.g., within ~10 seconds)
 - Reject verification attempts that do not match recent state
 
-Replay within the Validity Window remains theoretically possible but requires 
+Replay within the Validity Window remains theoretically possible but requires
 precise timing and routing alignment (see Section <xref target="hash-function"/> for vetting tokens).
 
 ## Spoofing Resistance
