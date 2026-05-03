@@ -285,8 +285,8 @@ Table of Contents
       -  Enterprises can deploy their own CIDVV platform using open-
          source tools such as Kamailio or Asterisk.
 
-      -  Service providers or third-party vendors (e.g., Variphy,
-         TransUnion, iconectiv, Somos, TNS, First Orion, or others) can
+      -  Service providers or third-party vendors (e.g., TransUnion,
+         TNS, First Orion, Hiya, Numeracle, Numhub, or others) can
          operate cloud-based vouching and vetting services.
 
       -  Customers can easily switch between providers, fostering real
@@ -337,9 +337,9 @@ Table of Contents
    the Calling Party Number field.  They are not represented as E.164
    numbers and are shown without a leading "+" in this document.
 
-   Ordinary subscriber telephone numbers (e.g., +1 212 555 0100) are
-   shown in E.164 format for clarity, while CIDVV signaling values
-   (e.g., 10019495550199) are shown as digit strings.
+   Ordinary subscriber telephone numbers (e.g., +12125550100) are shown
+   in E.164 format for clarity, while CIDVV signaling values (e.g.,
+   10019495550199) are shown as digit strings.
 
    CIDVV signaling Calling Party Numbers MUST fit within the 15-digit
    Calling Party Number limit commonly encountered in SS7 and ISDN
