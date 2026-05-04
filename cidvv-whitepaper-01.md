@@ -14,14 +14,14 @@ Caller-ID spoofing continues to erode trust in telephony. Despite years of effor
 
 By using short-lived signaling exchanges encoded in the existing Calling Party Number field, CIDVV raises the cost of spoofing dramatically while creating new opportunities for verified calling services, branded numbers, and trust programs.
 
-Carriers, enterprises, and third-party vendors can deploy CIDVV today and begin offering high-assurance caller identity services that STIR/SHAKEN alone cannot deliver.
+Carriers, enterprises, Tier-1 vendors, and emerging Tier-2 providers can all benefit.
 
 ## The Problem
 
 - Robocalls and spoofing scams cost billions annually.
 - International and TDM calls often lack reliable identity.
-- STIR/SHAKEN provides strong attestation where fully deployed, but coverage remains incomplete.
-- Many legitimate callers (enterprises, banks, healthcare providers) struggle to reach customers because their numbers are blocked or labeled as spam due to widespread spoofing of those same numbers.
+- STIR/SHAKEN provides strong attestation where fully deployed, but coverage remains incomplete globally.
+- Many legitimate callers (enterprises, banks, healthcare providers) struggle to reach customers because their numbers are blocked or labeled as spam.
 
 Number owners currently have **no practical way** to prove control of their own number to the broader network in real time.
 
@@ -43,8 +43,6 @@ CIDVV is deliberately **not** a replacement for STIR/SHAKEN — it is a practica
 ### Core Mechanism (Vouching)
 When a call is placed, the originating CIDVV platform deposits a short-lived token. The terminating side performs a quick verification call back using the special prefix. The originating side responds with the expected behavior only if it controls the number.
 
-The entire exchange completes in seconds and adds minimal delay.
-
 [Insert Baseline Vouch Ladder Diagram Here]
 
 ### Higher-Assurance Mode
@@ -59,7 +57,6 @@ For branding programs, Google Business Profiles, or enterprise trust lists, a tw
 - Fully compatible with SIP and legacy SS7/TDM
 - No new headers or signaling extensions required
 - Survives intermediate network normalization and truncation
-- Uses existing routing databases — no central database needed
 - Short 10-second validity window limits replay risk
 
 ## Key Benefits
@@ -69,8 +66,7 @@ For branding programs, Google Business Profiles, or enterprise trust lists, a tw
 | **Carriers**      | Reduced robocalls, lower complaint volume, new revenue from verified calling tiers |
 | **Enterprises**   | Reliable delivery of customer-service calls, protected brand reputation |
 | **Number Owners** | Visibility into who is spoofing their number and the ability to prove legitimacy |
-| **Vendors**       | New service offerings (TransUnion, TNS, First Orion, Hiya, Numeracle, etc.) |
-| **Consumers**     | Fewer scam calls, higher trust in incoming numbers |
+| **Vendors**       | New service offerings and competitive differentiation |
 
 ## Deployment & Adoption Path
 
@@ -84,15 +80,34 @@ No “flag day” or universal adoption required.
 
 ## Business & Ecosystem Opportunities
 
-- **Verified Calling Services** – Carriers offer premium “Verified” branding.
-- **Trust Programs** – Trade associations, banks, and government agencies can run vetting programs.
-- **Analytics & Insights** – Number owners see real-time spoofing attempts.
-- **Competitive Differentiation** – Early adopters gain a clear advantage in call completion rates.
+### Tier-1 Vendors
+Large players such as TNS, TransUnion (Neustar), First Orion, and Hiya can quickly integrate CIDVV into their existing platforms and offer enhanced vouching and vetting as premium services.
+
+### Opportunities for Tier-2 and Emerging Vendors
+CIDVV is especially attractive to secondary and emerging vendors (such as Numeracle and other specialized reputation, KYC, and remediation providers) who are looking to catch up or create new revenue streams.  
+
+Because CIDVV has **low deployment barriers** and can be offered as a lightweight cloud service, Tier-2 companies can rapidly enter the market without massive infrastructure investment. They can differentiate by focusing on niche verticals (e.g., healthcare, finance, government) or by offering more flexible, lower-cost, or faster-to-deploy solutions than the dominant Tier-1 players. This levels the playing field and encourages real competition, ultimately driving innovation and lower costs for carriers and enterprises.
+
+### International Opportunities
+STIR/SHAKEN has seen very limited adoption outside North America. Most countries still rely on voluntary guidelines, CLI block lists, and operator-specific tools, leaving a significant gap in global caller-ID trust.
+
+CIDVV is uniquely positioned to fill this gap because it is:
+- Fully TDM/SS7 native
+- Works across borders without requiring new international PKI infrastructure
+- Incrementally deployable by individual operators or regional groups
+
+**High-potential regions and partners** include:
+- **Europe**: Vodafone Group, Orange, Deutsche Telekom, Telefónica, BT Group, and GSMA Fraud & Security Group (FASG)
+- **Canada**: Telus, Bell, Rogers
+- **India & Asia-Pacific**: Reliance Jio, Airtel, NTT Docomo, Singtel
+- **Latin America**: Telefónica (Movistar), América Móvil
+
+Carriers and vendors in these markets can offer “Verified International Calling” services and branded trust programs that are simply not possible with STIR/SHAKEN alone.
 
 ## Next Steps
 
 1. **Technical Evaluation** – Review the full specification (draft-anderson-askew-cidvv).
-2. **Pilot Program** – We are actively seeking 2–3 carrier or large enterprise partners for initial trials.
+2. **Pilot Program** – We are actively seeking carrier, enterprise, and vendor partners for initial trials (US and international).
 3. **Open Source** – Reference implementations and test tools will be published on GitHub.
 4. **Feedback** – We welcome comments from the industry.
 
@@ -103,6 +118,6 @@ Jolly Roger Telephone Company
 
 ---
 
-**We believe CIDVV can meaningfully reduce spoofing and restore trust in telephony — starting today.**
+**We believe CIDVV can meaningfully reduce spoofing and restore trust in telephony — starting today, both in the US and around the world.**
 
 ---
