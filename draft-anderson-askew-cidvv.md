@@ -779,10 +779,10 @@ separately, but together they constitute a single vetting operation.
 ~~~~
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
       |             |             |             |             |
-      |-- VFY100 -->|             |             |             |
-      |             |-- VFY100 -->|             |             |
-      |             |             |-- VFY100 -->|             |
-      |             |             |             |-- VFY100 -->|
+      |-- VFY101 -->|             |             |             |
+      |             |-- VFY101 -->|             |             |
+      |             |             |-- VFY101 -->|             |
+      |             |             |             |-- VFY101 -->|
       |             |             |             |             |
       |             |             |             |<--- 404 ----|
       |             |             |<--- 404 ----|             |
@@ -790,7 +790,7 @@ separately, but together they constitute a single vetting operation.
       |<--- 404 ----|             |             |             |
       |             |             |             |             |
 ~~~~
-{: title="First vetting call with 100 - creates cache entry or receives 404"}
+{: title="First vetting call with 101 - creates cache entry and responds with 404"}
 
 ### Second Vetting Call
 
@@ -818,12 +818,12 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 
 2. Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional Validity Window (e.g. one week) into their respective CIDVV platforms.
 
-3. Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `10012125550100` toward Bob’s number (`+19495550199`). The call traverses the PSTN.
+3. Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `10112125550100` toward Bob’s number (`+19495550199`). The call traverses the PSTN.
 
-4. Bob’s SBC recognizes the leading `100` prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).
+4. Bob’s SBC recognizes the leading `101` prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).
 
 5. **CIDVV_B**:
-   - Strips the leading `100`, recovering Alice’s Caller-ID.
+   - Strips the leading `101`, recovering Alice’s Caller-ID.
    - For matching purposes, CIDVV_B MAY use only the rightmost
      12 digits of the Caller-ID, consistent with CIDVV payload
      constraints.
@@ -840,7 +840,6 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 8. Bob’s SBC recognizes the `101` prefix on the Caller-ID and forwards the call to CIDVV_B.
 
 9. **CIDVV_B**:
-   - Recognizes the leading `101` as a Vetting Token Check call
    - Strips the leading `101`.
    - Observes that the remaining Caller-ID (`12953388433`) matches a recently cached vetting token.
    - Responds with **486 Busy Here** to signal a successful vet.
