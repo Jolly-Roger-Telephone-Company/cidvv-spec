@@ -2335,15 +2335,15 @@ separately, but together they constitute a single vetting operation.<a href="#se
           <h4 id="name-first-vetting-call">
 <a href="#section-6.4.1" class="section-number selfRef">6.4.1. </a><a href="#name-first-vetting-call" class="section-name selfRef">First Vetting Call</a>
           </h4>
-<span id="name-first-vetting-call-with-100"></span><figure id="figure-2">
+<span id="name-first-vetting-call-with-101"></span><figure id="figure-2">
             <div class="alignLeft art-text artwork" id="section-6.4.1-1.1">
 <pre>
    CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
       |             |             |             |             |
-      |-- VFY100 --&gt;|             |             |             |
-      |             |-- VFY100 --&gt;|             |             |
-      |             |             |-- VFY100 --&gt;|             |
-      |             |             |             |-- VFY100 --&gt;|
+      |-- VFY101 --&gt;|             |             |             |
+      |             |-- VFY101 --&gt;|             |             |
+      |             |             |-- VFY101 --&gt;|             |
+      |             |             |             |-- VFY101 --&gt;|
       |             |             |             |             |
       |             |             |             |&lt;--- 404 ----|
       |             |             |&lt;--- 404 ----|             |
@@ -2353,7 +2353,7 @@ separately, but together they constitute a single vetting operation.<a href="#se
 </pre>
 </div>
 <figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
-<a href="#name-first-vetting-call-with-100" class="selfRef">First vetting call with 100 - creates cache entry or receives 404</a>
+<a href="#name-first-vetting-call-with-101" class="selfRef">First vetting call with 101 - creates cache entry and responds with 404</a>
             </figcaption></figure>
 </section>
 </div>
@@ -2398,16 +2398,16 @@ separately, but together they constitute a single vetting operation.<a href="#se
               <p id="section-6.4.3-2.2.1">Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional Validity Window (e.g. one week) into their respective CIDVV platforms.<a href="#section-6.4.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.3">
-              <p id="section-6.4.3-2.3.1">Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID <code>10012125550100</code> toward Bob’s number (<code>+19495550199</code>). The call traverses the PSTN.<a href="#section-6.4.3-2.3.1" class="pilcrow">¶</a></p>
+              <p id="section-6.4.3-2.3.1">Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID <code>10112125550100</code> toward Bob’s number (<code>+19495550199</code>). The call traverses the PSTN.<a href="#section-6.4.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.4">
-              <p id="section-6.4.3-2.4.1">Bob’s SBC recognizes the leading <code>100</code> prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).<a href="#section-6.4.3-2.4.1" class="pilcrow">¶</a></p>
+              <p id="section-6.4.3-2.4.1">Bob’s SBC recognizes the leading <code>101</code> prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).<a href="#section-6.4.3-2.4.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.5">
               <p id="section-6.4.3-2.5.1"><strong>CIDVV_B</strong>:<a href="#section-6.4.3-2.5.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.4.3-2.5.2.1">
-                  <p id="section-6.4.3-2.5.2.1.1">Strips the leading <code>100</code>, recovering Alice’s Caller-ID.<a href="#section-6.4.3-2.5.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-6.4.3-2.5.2.1.1">Strips the leading <code>101</code>, recovering Alice’s Caller-ID.<a href="#section-6.4.3-2.5.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-6.4.3-2.5.2.2">
                   <p id="section-6.4.3-2.5.2.2.1">For matching purposes, CIDVV_B MAY use only the rightmost
@@ -2444,16 +2444,13 @@ constraints.<a href="#section-6.4.3-2.5.2.2.1" class="pilcrow">¶</a></p>
               <p id="section-6.4.3-2.9.1"><strong>CIDVV_B</strong>:<a href="#section-6.4.3-2.9.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.4.3-2.9.2.1">
-                  <p id="section-6.4.3-2.9.2.1.1">Recognizes the leading <code>101</code> as a Vetting Token Check call<a href="#section-6.4.3-2.9.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-6.4.3-2.9.2.1.1">Strips the leading <code>101</code>.<a href="#section-6.4.3-2.9.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-6.4.3-2.9.2.2">
-                  <p id="section-6.4.3-2.9.2.2.1">Strips the leading <code>101</code>.<a href="#section-6.4.3-2.9.2.2.1" class="pilcrow">¶</a></p>
+                  <p id="section-6.4.3-2.9.2.2.1">Observes that the remaining Caller-ID (<code>12953388433</code>) matches a recently cached vetting token.<a href="#section-6.4.3-2.9.2.2.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-6.4.3-2.9.2.3">
-                  <p id="section-6.4.3-2.9.2.3.1">Observes that the remaining Caller-ID (<code>12953388433</code>) matches a recently cached vetting token.<a href="#section-6.4.3-2.9.2.3.1" class="pilcrow">¶</a></p>
-</li>
-                <li class="normal" id="section-6.4.3-2.9.2.4">
-                  <p id="section-6.4.3-2.9.2.4.1">Responds with <strong>486 Busy Here</strong> to signal a successful vet.<a href="#section-6.4.3-2.9.2.4.1" class="pilcrow">¶</a></p>
+                  <p id="section-6.4.3-2.9.2.3.1">Responds with <strong>486 Busy Here</strong> to signal a successful vet.<a href="#section-6.4.3-2.9.2.3.1" class="pilcrow">¶</a></p>
 </li>
               </ul>
 </li>

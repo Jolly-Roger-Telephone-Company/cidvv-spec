@@ -987,10 +987,10 @@ Table of Contents
 
       CIDVV_A        SBC_A          PSTN         SBC_B        CIDVV_B
          |             |             |             |             |
-         |-- VFY100 -->|             |             |             |
-         |             |-- VFY100 -->|             |             |
-         |             |             |-- VFY100 -->|             |
-         |             |             |             |-- VFY100 -->|
+         |-- VFY101 -->|             |             |             |
+         |             |-- VFY101 -->|             |             |
+         |             |             |-- VFY101 -->|             |
+         |             |             |             |-- VFY101 -->|
          |             |             |             |             |
          |             |             |             |<--- 404 ----|
          |             |             |<--- 404 ----|             |
@@ -998,8 +998,8 @@ Table of Contents
          |<--- 404 ----|             |             |             |
          |             |             |             |             |
 
-       Figure 2: First vetting call with 100 - creates cache entry or
-                                receives 404
+      Figure 2: First vetting call with 101 - creates cache entry and
+                             responds with 404
 
 6.4.2.  Second Vetting Call
 
@@ -1035,16 +1035,16 @@ Table of Contents
         respective CIDVV platforms.
 
    3.   Alice’s CIDVV platform (CIDVV_A) initiates the first vetting
-        call with Caller-ID 10012125550100 toward Bob’s number
+        call with Caller-ID 10112125550100 toward Bob’s number
         (+19495550199).  The call traverses the PSTN.
 
-   4.   Bob’s SBC recognizes the leading 100 prefix on the incoming
+   4.   Bob’s SBC recognizes the leading 101 prefix on the incoming
         Caller-ID and forwards the call to Bob’s CIDVV platform
         (CIDVV_B).
 
    5.   *CIDVV_B*:
 
-        *  Strips the leading 100, recovering Alice’s Caller-ID.
+        *  Strips the leading 101, recovering Alice’s Caller-ID.
 
         *  For matching purposes, CIDVV_B MAY use only the rightmost 12
            digits of the Caller-ID, consistent with CIDVV payload
@@ -1076,8 +1076,6 @@ Table of Contents
         forwards the call to CIDVV_B.
 
    9.   *CIDVV_B*:
-
-        *  Recognizes the leading 101 as a Vetting Token Check call
 
         *  Strips the leading 101.
 
