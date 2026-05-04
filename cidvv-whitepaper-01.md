@@ -22,8 +22,8 @@ By using short-lived signaling exchanges encoded in the existing Calling Party N
 - Robocalls and spoofing scams cost billions annually.
 - International and TDM calls often lack reliable identity.
 - STIR/SHAKEN provides strong attestation where fully deployed, but coverage remains incomplete globally.
-- Legitimate callers struggle to reach customers because their numbers are frequently blocked or labeled as spam.
-
+- **Sophisticated scammers and robocallers frequently intentionally route calls through TDM/SS7 segments specifically to strip or downgrade STIR/SHAKEN attestation**, exploiting the fact that many networks still carry traffic over legacy infrastructure.
+- Legitimate callers (enterprises, banks, healthcare providers) struggle to reach customers because their numbers are frequently blocked or labeled as spam.
 ## The CIDVV Solution
 
 CIDVV is a lightweight challenge-response mechanism that verifies **reachability and control** of an asserted Caller-ID using the existing telephone network.
