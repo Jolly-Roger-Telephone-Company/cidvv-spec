@@ -179,7 +179,7 @@ the rightmost digits.
 CIDVV uses special Caller-ID prefixes to signal protocol operations:
 
 * "100" prefix — Primary Verification Call
-* "101" prefix — Secondary Verification Call
+* "101" prefix — Secondary Verification Call / Vetting Call
 
 CIDVV Calling Party Numbers are numeric signaling values carried in
 the Calling Party Number field. They are not represented as
@@ -212,9 +212,11 @@ prefix directly concatenated with the full Asserted Caller-ID digits.
 
 If the resulting CIDVV-CPN would exceed 15 digits (i.e., the asserted
 Caller-ID has more than 12 digits), the leading digits of the asserted
-Caller-ID are removed until the total length is exactly 15 digits.
-This truncation keeps the rightmost (most significant) digits of the
-telephone number.
+Caller-ID are removed until the total length is exactly 15 digits,
+consistent with SS7 and ISDN Calling Party Number constraints.
+This truncation preserves the rightmost digits of the telephone
+number, which typically provide greater distinguishing information
+between individual subscribers than leading digits.
 
 A CIDVV-aware element generating a CIDVV verification call MUST apply
 this construction. A CIDVV platform MAY cache and compare the complete
