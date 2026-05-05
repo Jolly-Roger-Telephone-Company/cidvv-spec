@@ -5,15 +5,14 @@ category: info
 docname: draft-anderson-askew-cidvv-latest
 submissiontype: IETF
 ipr: trust200902
-date: 2026-05
+date: 2026-05-5
 consensus: false
 v: 4
 keyword: telephony, callerid, spoofing, PSTN
 
 venue:
   github: "Jolly-Roger-Telephone-Company/cidvv-spec"
-  latest: "https://jolly-roger-telephone-company.github.io/cidvv-spec/draft-anderson-askew-cidvv.html"
-
+  latest: "https://cidvv.org/draft-anderson-askew-cidvv.html"
 author:
   -
     ins: R. Anderson
