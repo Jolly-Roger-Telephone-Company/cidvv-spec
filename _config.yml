@@ -1,15 +1,11 @@
 title: CIDVV - Caller-ID Vouching and Vetting
-description: Lightweight mechanism to reduce Caller-ID spoofing
+description: Lightweight mechanism to reduce Caller-ID spoofing using existing PSTN/SIP routing
 
 theme: jekyll-theme-primer
 
 exclude:
   - draft-anderson-askew-cidvv-latest.md
-  - "*.html"
-  - "*.txt"
-  - "*.pdf"
-  - "*.xml"
-  - draft/
+  - drafts/
   - .github
   - Gemfile
   - Gemfile.lock
