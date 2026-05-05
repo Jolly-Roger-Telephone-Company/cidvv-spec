@@ -3,9 +3,10 @@
 
 
 Network Working Group                                        R. Anderson
-Internet-Draft                             Jolly Roger Telephone Company
-Intended status: Informational                                  P. Askew
-Expires: 5 November 2026                                        May 2026
+Internet-Draft                                                S. Berkson
+Intended status: Informational             Jolly Roger Telephone Company
+Expires: 6 November 2026                                        P. Askew
+                                                                May 2026
 
 
                  Caller-ID Vouching and Vetting (CIDVV)
@@ -44,7 +45,7 @@ About This Document
    at https://datatracker.ietf.org/doc/draft-anderson-askew-cidvv/.
 
    Source for this draft and an issue tracker can be found at
-   https://github.com/jollyrogertelephone/draft-cidvv.
+   https://github.com/jollyrogertelephone/cidvv-spec.
 
 Status of This Memo
 
@@ -1365,6 +1366,12 @@ Authors' Addresses
    Jolly Roger Telephone Company
    United States of America
    Email: roger@jollyrogertelephone.com
+
+
+   Steven Berkson
+   Jolly Roger Telephone Company
+   United States of America
+   Email: steveb@jollyrogertelephone.com
 
 
    Phillip Askew
