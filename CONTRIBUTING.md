@@ -9,20 +9,20 @@ We aim to produce a high-quality, open, incrementally deployable standard that c
 ## How to Contribute
 
 ### 1. Small Changes & Fixes
-- Typos, grammar, clarifications
-- Broken links, formatting issues
-- Example improvements
+- Typos, grammar, clarifications  
+- Broken links, formatting issues  
+- Example improvements  
 
 → Just open a **Pull Request** directly.
 
 ### 2. Substantial Changes
-1. Open an **Issue** first to discuss the proposed change.
-2. Wait for feedback from maintainers (especially on protocol behavior).
-3. Submit a Pull Request with clear description and motivation.
+1. Open an **Issue** first to discuss the proposed change.  
+2. Wait for feedback from maintainers (especially on protocol behavior).  
+3. Submit a Pull Request with a clear description and motivation.
 
 ### 3. New Implementations
 We welcome new implementations (Asterisk, Kamailio, FreeSWITCH, etc.). Please:
-- Create a new repository under the Jolly-Roger-Telephone-Company organization (we can help)
+- Create a new repository under the Jolly-Roger-Telephone-Company organization (we can help transfer it)
 - Follow the same licensing and contribution rules
 
 ## Development Process
@@ -44,5 +44,19 @@ This means:
 We use the [Developer Certificate of Origin](https://developercertificate.org/).  
 When you submit a PR, please sign off your commits:
 
-```bash
+```
 git commit -s
+```
+
+This certifies that you wrote the contribution or have the right to submit it.
+
+## Code of Conduct
+
+We follow the [IETF Code of Conduct](https://www.ietf.org/about/participate/tao/#code-of-conduct).  
+Be kind, respectful, and constructive.
+
+## Questions?
+
+- Open an Issue
+- Email roger@jollyrogertelephone.com
+- (Future: CIDVV mailing list)
