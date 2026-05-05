@@ -1,7 +1,7 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-05-03T03:34:25.031120+00:00",
-  "repo": "jollyrogertelephone/draft-cidvv",
+  "timestamp": "2026-05-05T03:20:01.824033+00:00",
+  "repo": "jollyrogertelephone/cidvv-spec",
   "labels": [
     {
       "name": "bug",
@@ -55,7 +55,7 @@
       "number": 1,
       "id": "PR_kwDOSPg1nM7Wxs12",
       "title": "Update draft-anderson-askew-cidvv.md",
-      "url": "https://github.com/jollyrogertelephone/draft-cidvv/pull/1",
+      "url": "https://github.com/jollyrogertelephone/cidvv-spec/pull/1",
       "state": "MERGED",
       "author": "jollyrogertelephone",
       "authorAssociation": "OWNER",
@@ -64,10 +64,10 @@
       "body": "This written by chatgpt instead of grok",
       "createdAt": "2026-04-29T15:33:23Z",
       "updatedAt": "2026-04-29T17:31:24Z",
-      "baseRepository": "jollyrogertelephone/draft-cidvv",
+      "baseRepository": "jollyrogertelephone/cidvv-spec",
       "baseRefName": "main",
       "baseRefOid": "f560e23ad9a9ee19757a13228f05d2b215e88f35",
-      "headRepository": "jollyrogertelephone/draft-cidvv",
+      "headRepository": "jollyrogertelephone/cidvv-spec",
       "headRefName": "jollyrogertelephone-patch-1",
       "headRefOid": "c98b3bac246ad31d6cbe9bf25f6ce0f5f7fd9f09",
       "closedAt": "2026-04-29T17:31:24Z",
