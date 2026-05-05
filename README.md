@@ -1,89 +1,67 @@
 # Caller-ID Vouching and Vetting (CIDVV)
 
-**An incrementally deployable mechanism to reduce Caller-ID spoofing using existing PSTN/SIP routing behavior.**
+**A lightweight, incrementally deployable mechanism to strongly reduce Caller-ID spoofing**  
+using existing PSTN and SIP routing behavior — no new protocol extensions required.
 
-CIDVV provides a lightweight challenge-response verification method that proves control of an Asserted Caller-ID without requiring new protocol extensions, cryptographic infrastructure, or universal adoption. It works across SIP, SS7, and TDM networks.
+---
+
+## Current Specification (May 2026)
+
+**[View all drafts and generated files →](/drafts/)**
+
+- **[HTML Specification](/drafts/draft-anderson-askew-cidvv.html)** ← Recommended reading
+- **[PDF](/drafts/draft-anderson-askew-cidvv.pdf)**
+- **[TXT](/drafts/draft-anderson-askew-cidvv.txt)**
+- **[XML](/drafts/draft-anderson-askew-cidvv.xml)** (IETF submission format)
+
+**Working Draft**: [draft-anderson-askew-cidvv-latest.md](draft-anderson-askew-cidvv-latest.md)
+
+---
+
+## Supporting Documents
+
+- **[CIDVV Whitepaper v01](/drafts/cidvv-whitepaper-01.md)** — Motivation, use cases, and deployment guidance
+
+---
+
+## Why CIDVV?
+
+- Works across SIP, SS7/TDM, and international paths
+- Strong reachability-based anti-spoofing (proves control of the number)
+- Extremely low signaling overhead (short verification calls only)
+- Fully compatible with legacy networks
+- Complementary to (and independent of) STIR/SHAKEN
+- Easy to implement in Asterisk, Kamailio, FreeSWITCH, and other platforms
+
+---
+
+## Quick Links
+
+- [Call Flow Examples](/examples/)
+- [Reference Documents](/reference/)
+- [Contributing Guidelines](CONTRIBUTING.md)
+- [License (Apache 2.0)](LICENSE)
+- [GitHub Repository](https://github.com/Jolly-Roger-Telephone-Company/cidvv-spec)
+
+---
+
+## Get Involved
+
+We are actively seeking:
+- **Implementers** (Asterisk, Kamailio, FreeSWITCH, carrier labs)
+- **Sponsors and reference deployment partners**
+- **Feedback** from telcos, anti-fraud vendors, and the IETF community
+
+**Contact**: Roger Anderson — [roger@jollyrogertelephone.com](mailto:roger@jollyrogertelephone.com)
+
+---
+
+*Maintained as an open, community-driven standards effort by [Jolly Roger Telephone Company](https://jollyrogertelephone.com).*
 
 ---
 
 ## Status
 
-- **Current Version**: draft-anderson-askew-cidvv-latest (May 2026)
 - **Intended Status**: Informational (IETF)
-- **Repository**: https://github.com/Jolly-Roger-Telephone-Company/cidvv-spec
-- **Rendered Draft**: [HTML](https://jolly-roger-telephone-company.github.io/cidvv-spec/draft-anderson-askew-cidvv.html) (GitHub Pages – coming soon)
-- **Organization**: Jolly-Roger-Telephone-Company
-
-This is a **work in progress** Internet-Draft. Feedback and contributions are welcome.
-
----
-
-## Overview
-
-Caller-ID spoofing continues to plague telephony networks. While STIR/SHAKEN provides strong cryptographic attestation where fully deployed, many networks (especially international and TDM) still lack coverage.
-
-**CIDVV** offers a practical, complementary solution:
-- Uses short-lived signaling calls encoded in the Calling Party Number
-- Leverages existing call routing and distinct failure responses (e.g., 486 Busy Here vs 404 Not Found)
-- Requires no media, no new headers, and minimal infrastructure
-- Works with Asterisk, Kamailio, and other SIP platforms
-- Provides strong evidence of number control while remaining tolerant of intermediate network modifications
-
----
-
-## Repository Contents
-
-- `draft-anderson-askew-cidvv.md` – The main Internet-Draft (markdown format)
-- `examples/` – Call flow diagrams and test cases
-- `reference/` – Related RFCs and background material
-- `implementation/` – (planned) Reference scripts and modules
-
----
-
-## How to Contribute
-
-We welcome contributions from the telephony, SIP, and anti-spoofing communities.
-
-1. Fork this repository
-2. Create a new branch for your changes
-3. Submit a Pull Request with a clear description
-4. For major changes, please open an Issue first to discuss
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-**Note**: All contributions are under the [Apache 2.0 License](LICENSE) and subject to the IETF Note Well.
-
----
-
-## Implementation Repositories (Planned)
-
-- `cidvv-asterisk` – Asterisk modules and dialplan examples
-- `cidvv-kamailio` – Kamailio modules and Lua scripts
-- `cidvv-reference` – Lightweight reference server (Node.js / Go)
-
----
-
-## Related Resources
-
-- Domain: [cidvv.org](https://cidvv.org) (coming soon)
-- Jolly Roger Telephone Company – https://jollyrogertelephone.com
-- Authors:
-  - Roger Anderson ([roger@jollyrogertelephone.com](mailto:roger@jollyrogertelephone.com))
-  - Phillip Askew
-
----
-
-## License
-
-Copyright © 2025-2026 Roger Anderson, Phillip Askew, and contributors.
-
-This work is licensed under [Apache License 2.0](LICENSE).
-
----
-
-**We are actively seeking sponsors, implementers, and early testers.**  
-If your organization is interested in hosting a reference implementation, providing feedback, or supporting this work toward RFC status, please contact roger@jollyrogertelephone.com.
-
----
-
-*This repository is maintained by Jolly Roger Telephone Company as an open, community-driven standards effort.*
+- **Latest Draft**: May 2026
+- **Repository**: [Jolly-Roger-Telephone-Company/cidvv-spec](https://github.com/Jolly-Roger-Telephone-Company/cidvv-spec)
