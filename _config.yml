@@ -5,13 +5,13 @@ theme: jekyll-theme-primer
 
 exclude:
   - draft-anderson-askew-cidvv-latest.md
-  - draft-anderson-askew-cidvv.html
-  - draft-anderson-askew-cidvv.txt
-  - draft-anderson-askew-cidvv.pdf
-  - draft-anderson-askew-cidvv.xml
+  - "*.html"
+  - "*.txt"
+  - "*.pdf"
+  - "*.xml"
   - draft/
+  - .github
   - Gemfile
   - Gemfile.lock
-  - .github
 
 markdown: kramdown
