@@ -11,8 +11,8 @@ v: 4
 keyword: telephony, callerid, spoofing, PSTN
 
 venue:
-  github: "jollyrogertelephone/cidvv-spec"
-  latest: "https://jollyrogertelephone.github.io/draft-cidvv/draft-anderson-askew-cidvv.html"
+  github: "Jolly-Roger-Telephone-Company/cidvv-spec"
+  latest: "https://jolly-roger-telephone-company.github.io/cidvv-spec/draft-anderson-askew-cidvv.html"
 
 author:
   -
