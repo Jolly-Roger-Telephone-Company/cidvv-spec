@@ -1,0 +1,20 @@
+# _config.yml for CIDVV GitHub Pages
+
+# Use a minimal theme
+theme: jekyll-theme-primer
+
+# Exclude IETF draft files so Jekyll doesn't try to render them as pages
+exclude:
+  - draft-anderson-askew-cidvv.md
+  - draft-anderson-askew-cidvv-latest.md
+  - draft/
+  - reference/
+  - Gemfile
+  - Gemfile.lock
+
+# Optional: nicer title
+title: CIDVV - Caller-ID Vouching and Vetting
+description: An incrementally deployable mechanism to reduce Caller-ID spoofing
+
+# Make sure GitHub Pages uses the right markdown processor
+markdown: kramdown
