@@ -10,9 +10,9 @@ CIDVV provides a lightweight challenge-response verification method that proves 
 
 - **Current Version**: draft-anderson-askew-cidvv-latest (May 2026)
 - **Intended Status**: Informational (IETF)
-- **Repository**: https://github.com/JollyRogerTelephone/cidvv-spec
-- **Rendered Draft**: [HTML](https://jollyrogertelephone.github.io/cidvv-spec/draft-anderson-askew-cidvv.html) (GitHub Pages – coming soon)
-- **Latest PDF**: (will be generated automatically)
+- **Repository**: https://github.com/Jolly-Roger-Telephone-Company/cidvv-spec
+- **Rendered Draft**: [HTML](https://jolly-roger-telephone-company.github.io/cidvv-spec/draft-anderson-askew-cidvv.html) (GitHub Pages – coming soon)
+- **Organization**: Jolly-Roger-Telephone-Company
 
 This is a **work in progress** Internet-Draft. Feedback and contributions are welcome.
 
