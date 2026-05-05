@@ -13,13 +13,13 @@ CIDVV proves control of an Asserted Caller-ID through short-lived challenge-resp
 
 ## Current Specification
 
-**Latest Draft**: May 2026
+**Current Specification**
 
-- **[HTML](draft-anderson-askew-cidvv.html)** ← Recommended reading
-- **[TXT](draft-anderson-askew-cidvv.txt)**
-- **[PDF](draft-anderson-askew-cidvv.pdf)** (generated via xml2rfc)
-- **[Markdown Source](draft-anderson-askew-cidvv-latest.md)** (working copy)
-- **[XML](draft-anderson-askew-cidvv.xml)** (for IETF submission)
+- **[HTML](https://cidvv.org/draft-anderson-askew-cidvv.html)** ← Recommended
+- **[TXT](https://cidvv.org/draft-anderson-askew-cidvv.txt)**
+- **[PDF](https://cidvv.org/draft-anderson-askew-cidvv.pdf)**
+- **[XML](https://cidvv.org/draft-anderson-askew-cidvv.xml)**
+- **[Source (Markdown)](draft-anderson-askew-cidvv-latest.md)**
 
 **Repository**: [github.com/Jolly-Roger-Telephone-Company/cidvv-spec](https://github.com/Jolly-Roger-Telephone-Company/cidvv-spec)
 
