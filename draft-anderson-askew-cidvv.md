@@ -11,7 +11,7 @@ v: 4
 keyword: telephony, callerid, spoofing, PSTN
 
 venue:
-  github: "jollyrogertelephone/draft-cidvv"
+  github: "jollyrogertelephone/cidvv-spec"
   latest: "https://jollyrogertelephone.github.io/draft-cidvv/draft-anderson-askew-cidvv.html"
 
 author:
@@ -20,6 +20,12 @@ author:
     name: Roger Anderson
     organization: Jolly Roger Telephone Company
     email: roger@jollyrogertelephone.com
+    country: US
+  -
+    ins: S. Berkson
+    name: Steven Berkson
+    organization: Jolly Roger Telephone Company
+    email: steveb@jollyrogertelephone.com
     country: US
   -
     ins: P. Askew
