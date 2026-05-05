@@ -1402,8 +1402,8 @@ headers, protocol extensions, or changes to SS7 signaling, and is
 designed to function across mixed SIP and TDM networks.<a href="#section-1-3" class="pilcrow">¶</a></p>
 <p id="section-1-4">CIDVV is incrementally deployable and does not require universal
 adoption to provide benefit. It tolerates modification of signaling
-by intermediate networks and relies on the ability of signaling calls and distinct failure
-response behaviors to traverse the network path.<a href="#section-1-4" class="pilcrow">¶</a></p>
+by intermediate networks and relies on the ability of signaling calls and distinct
+failure-response behaviors to traverse the network path.<a href="#section-1-4" class="pilcrow">¶</a></p>
 <p id="section-1-5">CIDVV does not provide absolute identity assurance but significantly
 raises the cost of Caller-ID spoofing by requiring demonstrable
 control of the Asserted Caller-ID.<a href="#section-1-5" class="pilcrow">¶</a></p>
@@ -1587,11 +1587,10 @@ a payload derived from the Asserted Caller-ID:<a href="#section-4.1-5" class="pi
 </pre><a href="#section-4.1-6" class="pilcrow">¶</a>
 </div>
 <p id="section-4.1-7">where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
-"101", and Payload is derived from the Asserted Caller-ID
+"101", and the payload is derived from the Asserted Caller-ID
 (normalized per Section <a href="#number-normalization" class="auto internal xref">Section 4</a>).<a href="#section-4.1-7" class="pilcrow">¶</a></p>
-<p id="section-4.1-8">For vouching operations, the payload is derived from the called
-number. For vetting operations, the payload may be derived from
-computed token values.<a href="#section-4.1-8" class="pilcrow">¶</a></p>
+<p id="section-4.1-8">For vouching operations, the the payload is derived from the called number associated with the verification.
+For vetting operations, the payload may be derived from computed token values.<a href="#section-4.1-8" class="pilcrow">¶</a></p>
 <p id="section-4.1-9">In the common case where the Asserted Caller-ID has 12 or fewer digits,
 the Payload is used in full, so the CIDVV-CPN is simply the three-digit
 prefix directly concatenated with the full Asserted Caller-ID digits.<a href="#section-4.1-9" class="pilcrow">¶</a></p>
@@ -1629,8 +1628,8 @@ completion MUST be treated as an unsuccessful vouch.<a href="#section-4.1-17.1.1
 </li>
           <li class="normal" id="section-4.1-17.2">
             <p id="section-4.1-17.2.1">Calls using the "101" prefix are expected to result in SIP 404 Not Found.
-A matching 101/404 result MAY be used with a successful 100/486 result
-as a higher-assurance vouch.<a href="#section-4.1-17.2.1" class="pilcrow">¶</a></p>
+However, in the context of an active vetting procedure, a "101" call
+carrying a valid token MAY result in SIP 486 Busy Here.<a href="#section-4.1-17.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-4.1-18">A CIDVV-aware network element MUST NOT treat a single response as
@@ -1651,8 +1650,7 @@ SS7/TDM networks.<a href="#section-4.1-23" class="pilcrow">¶</a></p>
 <p id="section-4.1-24">Vetting procedures MAY use full telephone numbers or truncated
 forms as input to cryptographic operations, independent of the
 CIDVV Calling Party Number encoding.<a href="#section-4.1-24" class="pilcrow">¶</a></p>
-<p id="section-4.1-25">CIDVV operations rely on state within the Validity Window, typically on the order of
-10 seconds.<a href="#section-4.1-25" class="pilcrow">¶</a></p>
+<p id="section-4.1-25">CIDVV operations rely on state within the Validity Window.<a href="#section-4.1-25" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="vouching-vs-vetting-response-patterns">
@@ -1675,15 +1673,15 @@ distinct expected behaviors. The table below summarizes the differences:<a href=
           <tbody>
             <tr>
               <td class="text-left" rowspan="1" colspan="1">100</td>
-              <td class="text-left" rowspan="1" colspan="1">Expect 486 Busy Here (cache hit)</td>
-              <td class="text-left" rowspan="1" colspan="1">Expect 404 Not Found (cache token)</td>
-              <td class="text-left" rowspan="1" colspan="1">Primary signal</td>
+              <td class="text-left" rowspan="1" colspan="1">Expect 486 Busy Here</td>
+              <td class="text-left" rowspan="1" colspan="1">Not used</td>
+              <td class="text-left" rowspan="1" colspan="1">Primary vouch signal</td>
             </tr>
             <tr>
               <td class="text-left" rowspan="1" colspan="1">101</td>
               <td class="text-left" rowspan="1" colspan="1">Expect 404 Not Found</td>
-              <td class="text-left" rowspan="1" colspan="1">Expect 486 Busy Here (token match)</td>
-              <td class="text-left" rowspan="1" colspan="1">Secondary / check</td>
+              <td class="text-left" rowspan="1" colspan="1">First call: 404 (deposit), Second call: 486</td>
+              <td class="text-left" rowspan="1" colspan="1">Secondary / vetting</td>
             </tr>
           </tbody>
         </table>
@@ -1729,9 +1727,12 @@ control of the originating party.<a href="#section-4.3.1-3" class="pilcrow">¶</
 validation signal.<a href="#section-4.3.2-1" class="pilcrow">¶</a></p>
 <p id="section-4.3.2-2">The expected behavior is an immediate rejection consistent with a
 "Not Found"-class response (e.g., SIP 404 Not Found).<a href="#section-4.3.2-2" class="pilcrow">¶</a></p>
-<p id="section-4.3.2-3">Because such responses are relatively common in the PSTN, a "101"
+<p id="section-4.3.2-3">In the context of an active vetting procedure, a "101" call carrying a
+valid vetting token MAY instead result in a "Busy"-class response
+(e.g., SIP 486 Busy Here).<a href="#section-4.3.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.3.2-4">Because such responses are relatively common in the PSTN, a "101"
 verification alone MUST NOT be treated as evidence of a successful
-vouch.<a href="#section-4.3.2-3" class="pilcrow">¶</a></p>
+vouch.<a href="#section-4.3.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="combined-verification">
@@ -1764,8 +1765,8 @@ in any specific order.<a href="#section-4.3.3-5" class="pilcrow">¶</a></p>
 verification for that prefix MUST be treated as unsuccessful.<a href="#section-4.3.4-1" class="pilcrow">¶</a></p>
 <p id="section-4.3.4-2">If only the "100" verification succeeds, the result MAY be treated as
 a valid but lower-assurance vouch.<a href="#section-4.3.4-2" class="pilcrow">¶</a></p>
-<p id="section-4.3.4-3">If both "100" and "101" verifications succeed, the result MAY be
-treated as a higher-assurance vouch.<a href="#section-4.3.4-3" class="pilcrow">¶</a></p>
+<p id="section-4.3.4-3">If both "100" and "101" verifications succeed (i.e., "100" → 486 and
+"101" → 404), the result MAY be treated as a higher-assurance vouch.<a href="#section-4.3.4-3" class="pilcrow">¶</a></p>
 <p id="section-4.3.4-4">If neither verification succeeds, or if results are inconsistent or
 ambiguous, the vouch MUST be treated as unsuccessful or indeterminate.<a href="#section-4.3.4-4" class="pilcrow">¶</a></p>
 </section>
@@ -1941,14 +1942,18 @@ the verifier who initiates the two calls to Bob’s number in order to
 vet Bob’s number.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
 <p id="section-5.4-2">Before vetting begins, Alice and Bob agree on a shared secret, Bob’s
 vetting Caller-ID, and a Validity Window.<a href="#section-5.4-2" class="pilcrow">¶</a></p>
-<p id="section-5.4-3">Alice places a vetting call to Bob using a Caller-ID beginning with the digits "100".<a href="#section-5.4-3" class="pilcrow">¶</a></p>
-<p id="section-5.4-4">When Bob's CIDVV platform receives the first vetting call, it removes the "100" prefix and verifies that the resulting Caller-ID is expected for the current vetting attempt.
-Bob's platform MUST compute the vetting token using the algorithm defined in Section <a href="#hash-function" class="auto internal xref">Section 5.3</a>. Bob's platform converts that value to decimal form, extracts a
-fixed-length numeric code, stores the code briefly, and rejects the call with SIP response 404 (Not Found).<a href="#section-5.4-4" class="pilcrow">¶</a></p>
-<p id="section-5.4-5">Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.<a href="#section-5.4-5" class="pilcrow">¶</a></p>
-<p id="section-5.4-6">When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.<a href="#section-5.4-6" class="pilcrow">¶</a></p>
-<p id="section-5.4-7">If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.<a href="#section-5.4-7" class="pilcrow">¶</a></p>
-<p id="section-5.4-8">Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as an unsuccessful vet.<a href="#section-5.4-8" class="pilcrow">¶</a></p>
+<p id="section-5.4-3">Alice places a vetting call to Bob using a Caller-ID beginning with the digits "101".<a href="#section-5.4-3" class="pilcrow">¶</a></p>
+<p id="section-5.4-4">When Bob's CIDVV platform receives the first vetting call, it removes
+the "101" prefix and verifies that the resulting Caller-ID is expected
+for the current vetting attempt.<a href="#section-5.4-4" class="pilcrow">¶</a></p>
+<p id="section-5.4-5">Bob's platform MUST compute the vetting token using the algorithm
+defined in Section <a href="#hash-function" class="auto internal xref">Section 5.3</a> and store the
+resulting token for the Validity Window. It then rejects the call with
+SIP response 404 (Not Found).<a href="#section-5.4-5" class="pilcrow">¶</a></p>
+<p id="section-5.4-6">Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.<a href="#section-5.4-6" class="pilcrow">¶</a></p>
+<p id="section-5.4-7">When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.<a href="#section-5.4-7" class="pilcrow">¶</a></p>
+<p id="section-5.4-8">If the numeric code matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful vet.<a href="#section-5.4-8" class="pilcrow">¶</a></p>
+<p id="section-5.4-9">Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as an unsuccessful vet.<a href="#section-5.4-9" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2402,7 +2407,7 @@ separately, but together they constitute a single vetting operation.<a href="#se
               <p id="section-6.4.3-2.1.1">Alice and Bob agree on a shared secret (e.g., <code>hamburger</code>) and Alice’s vetting Caller-ID (<code>+12125550100</code>, or its rightmost 12 digits for matching purposes).<a href="#section-6.4.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.2">
-              <p id="section-6.4.3-2.2.1">Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional Validity Window (e.g. one week) into their respective CIDVV platforms.<a href="#section-6.4.3-2.2.1" class="pilcrow">¶</a></p>
+              <p id="section-6.4.3-2.2.1">Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional Validity Window (e.g., one week) into their respective CIDVV platforms.<a href="#section-6.4.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.3">
               <p id="section-6.4.3-2.3.1">Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID <code>10112125550100</code> toward Bob’s number (<code>+19495550199</code>). The call traverses the PSTN.<a href="#section-6.4.3-2.3.1" class="pilcrow">¶</a></p>
@@ -2549,8 +2554,7 @@ modify response codes.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
 <a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-short-term-state-management" class="section-name selfRef">Short-Term State Management</a>
         </h3>
 <p id="section-7.4-1">CIDVV relies on short-lived state for the (Asserted Caller-ID, CIDVV-Token)
-tuple, valid only for the Validity Window (typically on the order of
-10 seconds). Implementations MUST expire this state automatically and
+tuple, valid only for the Validity Window. Implementations MUST expire this state automatically and
 MUST fail closed: on restart or state loss, treat all verification
 requests as unsuccessful until fresh state has been deposited. The
 same hash algorithm defined in Section <a href="#hash-function" class="auto internal xref">Section 5.3</a>
