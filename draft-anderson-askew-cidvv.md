@@ -33,7 +33,6 @@ author:
 ---
 
 <!--
-Notes:
 Headings (starting with #) must be separated by a blank line. Can use this regex to find: [ \t]$
 -->
 
