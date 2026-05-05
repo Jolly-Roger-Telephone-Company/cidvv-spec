@@ -1,17 +1,48 @@
-# Contributing
+# Contributing to CIDVV
 
-This repository relates to activities in the Internet Engineering Task Force
-([IETF](https://www.ietf.org/)). All material in this repository is considered
-Contributions to the IETF Standards Process, as defined in the intellectual
-property policies of IETF currently designated as
-[BCP 78](https://www.rfc-editor.org/info/bcp78),
-[BCP 79](https://www.rfc-editor.org/info/bcp79) and the
-[IETF Trust Legal Provisions (TLP) Relating to IETF Documents](http://trustee.ietf.org/trust-legal-provisions.html).
+Thank you for your interest in contributing to the Caller-ID Vouching and Vetting (CIDVV) project!
 
-Any edit, commit, pull request, issue, comment or other change made to this
-repository constitutes Contributions to the IETF Standards Process
-(https://www.ietf.org/).
+## Our Goals
 
-You agree to comply with all applicable IETF policies and procedures, including,
-BCP 78, 79, the TLP, and the TLP rules regarding code components (e.g. being
-subject to a Simplified BSD License) in Contributions.
+We aim to produce a high-quality, open, incrementally deployable standard that can become an IETF Informational RFC while remaining practical for real-world telephony deployments.
+
+## How to Contribute
+
+### 1. Small Changes & Fixes
+- Typos, grammar, clarifications
+- Broken links, formatting issues
+- Example improvements
+
+→ Just open a **Pull Request** directly.
+
+### 2. Substantial Changes
+1. Open an **Issue** first to discuss the proposed change.
+2. Wait for feedback from maintainers (especially on protocol behavior).
+3. Submit a Pull Request with clear description and motivation.
+
+### 3. New Implementations
+We welcome new implementations (Asterisk, Kamailio, FreeSWITCH, etc.). Please:
+- Create a new repository under the Jolly-Roger-Telephone-Company organization (we can help)
+- Follow the same licensing and contribution rules
+
+## Development Process
+
+- The canonical specification lives in `draft-anderson-askew-cidvv-latest.md`
+- Numbered drafts (`draft-00`, `draft-01`, …) are created for IETF submission
+- All changes should be discussed in Issues or on the mailing list (coming soon)
+
+## IETF Note Well
+
+By contributing to this project you agree to the [IETF Note Well](https://www.ietf.org/about/note-well/).
+
+This means:
+- Contributions are subject to the IETF's IPR rules
+- You must disclose any known IPR that may apply to your contribution
+
+## Developer Certificate of Origin (DCO)
+
+We use the [Developer Certificate of Origin](https://developercertificate.org/).  
+When you submit a PR, please sign off your commits:
+
+```bash
+git commit -s
