@@ -5,9 +5,11 @@ theme: jekyll-theme-primer
 
 exclude:
   - draft-anderson-askew-cidvv-latest.md
-  - drafts/
-  - .github
   - Gemfile
   - Gemfile.lock
+  - .github
+
+# Important: Do NOT exclude drafts/ anymore
+# Jekyll needs to see index.md files inside folders
 
 markdown: kramdown
