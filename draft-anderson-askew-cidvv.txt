@@ -39,13 +39,13 @@ About This Document
 
    This note is to be removed before publishing as an RFC.
 
-   The latest revision of this draft can be found at
-   https://jollyrogertelephone.github.io/draft-cidvv/draft-anderson-
-   askew-cidvv.html.  Status information for this document may be found
-   at https://datatracker.ietf.org/doc/draft-anderson-askew-cidvv/.
+   The latest revision of this draft can be found at https://jolly-
+   roger-telephone-company.github.io/cidvv-spec/draft-anderson-askew-
+   cidvv.html.  Status information for this document may be found at
+   https://datatracker.ietf.org/doc/draft-anderson-askew-cidvv/.
 
    Source for this draft and an issue tracker can be found at
-   https://github.com/jollyrogertelephone/cidvv-spec.
+   https://github.com/Jolly-Roger-Telephone-Company/cidvv-spec.
 
 Status of This Memo
 
