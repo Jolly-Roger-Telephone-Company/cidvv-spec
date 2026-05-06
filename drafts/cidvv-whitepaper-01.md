@@ -6,9 +6,9 @@
 
 **Sponsored by Jolly Roger Telephone Company**
 
-**Roger Anderson** – Jolly Roger Telephone Company
-**Steven Berkson** – Jolly Roger Telephone Company
-**Phillip Askew** – Jolly Roger Telephone Company
+**Roger Anderson** – Jolly Roger Telephone Company  
+**Steven Berkson** – Jolly Roger Telephone Company  
+**Phillip Askew** – Jolly Roger Telephone Company  
 
 ## Executive Summary
 
