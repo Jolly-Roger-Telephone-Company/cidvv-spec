@@ -37,8 +37,40 @@ endorsed the call by responding to a verification signal.
 CIDVV does not replace STIR/SHAKEN, but complements it by providing
 verification where attestation is unavailable, unreliable, or
 intentionally circumvented.
+<!--
+sequenceDiagram
+    participant Alice
+    participant CIDVV_A
+    participant SBC_A
+    participant PSTN
+    participant SBC_B
+    participant Bob
 
-[Insert Baseline Vouch Ladder Diagram Here]
+    Alice->>SBC_A: INVITE
+    SBC_A->>CIDVV_A: INVITE
+    CIDVV_A-->>SBC_A: 486 Busy Here
+    SBC_A->>PSTN: INVITE
+    PSTN->>SBC_B: INVITE
+
+    SBC_B->>PSTN: VFY100
+    PSTN->>SBC_A: VFY100
+    SBC_A->>CIDVV_A: VFY100
+    CIDVV_A-->>SBC_A: 486 Busy Here
+    SBC_A-->>PSTN: 486 Busy Here
+    PSTN-->>SBC_B: 486 Busy Here
+
+    SBC_B->>PSTN: VFY101
+    PSTN->>SBC_A: VFY101
+    SBC_A->>CIDVV_A: VFY101
+    CIDVV_A-->>SBC_A: 404 Not Found
+    SBC_A-->>PSTN: 404 Not Found
+    PSTN-->>SBC_B: 404 Not Found
+
+    SBC_B->>Bob: INVITE
+-->
+![CIDVV Baseline Vouching Call Flow](enhanced-vouching-call-flow.png)
+
+*Figure 1: Enhanced successful vouch using the dual "100/101" verification call.*
 
 [Insert Vetting Flow Diagrams Here]
 
