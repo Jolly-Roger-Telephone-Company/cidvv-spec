@@ -35,8 +35,8 @@ the owner of the asserted Caller-ID is reachable and has effectively
 endorsed the call by responding to a verification signal.
 
 CIDVV does not replace STIR/SHAKEN, but complements it by providing
-verification in environments where attestation is unavailable or
-unreliable.
+verification where attestation is unavailable, unreliable, or
+intentionally circumvented.
 
 [Insert Baseline Vouch Ladder Diagram Here]
 
