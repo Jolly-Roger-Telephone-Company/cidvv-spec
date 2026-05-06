@@ -66,11 +66,17 @@ sequenceDiagram
     SBC_B->>Bob: INVITE
 {% endcomment %}
 
-![CIDVV Baseline Vouching Call Flow](enhanced-vouching-call-flow.png)
+![CIDVV Baseline Vouching Call Flow](enhanced-vouch-01.png)
 
-*Figure 1: Enhanced successful vouch using the dual "100/101" verification call.*
+*Figure 1: Enhanced successful vouch using dual "100/101" verification calls to receive 486/404 combination (success).*
 
-[Insert Vetting Flow Diagrams Here]
+![CIDVV First Vetting Call Flow](vet-first-call-00.png)
+
+*Figure 2: First Vetting Call using 101 prefix to create token and return 404 (success).*
+
+![CIDVV Second Vetting Call Flow](vet-second-call-00.png)
+
+*Figure 3: Second Vetting Call using 101 prefix to confirm token with 486 (success).*
 
 ### Technical Highlights
 - Fully compatible with SIP and legacy SS7/TDM
