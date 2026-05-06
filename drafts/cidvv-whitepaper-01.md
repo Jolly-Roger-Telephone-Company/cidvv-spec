@@ -68,15 +68,46 @@ sequenceDiagram
 
 ![CIDVV Baseline Vouching Call Flow](enhanced-vouch-01.png)
 
-*Figure 1: Enhanced successful vouch using dual "100/101" verification calls to receive 486/404 combination (success).*
+*Figure 1: Enhanced vouching using dual "100/101" verification calls, producing a 486/404 response combination that signals success.*
+
+In this flow, the called party initiates verification by placing
+two short-lived validation calls using the "100" and "101" prefixes.
+The originating CIDVV platform responds with distinct failure
+signals (486 and 404), confirming that the asserted Caller-ID is
+reachable and actively participating in the exchange.
+
+The combination of these responses provides a strong signal that
+the calling party controls the presented number and is able to
+vouch for the call without requiring call completion.
 
 ![CIDVV First Vetting Call Flow](vet-first-call-00.png)
 
 *Figure 2: First Vetting Call using 101 prefix to create token and return 404 (success).*
 
+The first vetting call uses the "101" prefix and is recognized as
+the start of a vetting procedure. Upon receipt, the called party's
+CIDVV platform derives a token based on the shared secret and
+call parameters, stores it for the Validity Window, and returns a
+404 Not Found response.
+
+This step establishes a temporary verification state without
+revealing the shared secret or requiring persistent identity
+infrastructure.
+
 ![CIDVV Second Vetting Call Flow](vet-second-call-00.png)
 
 *Figure 3: Second Vetting Call using 101 prefix to confirm token with 486 (success).*
+
+The second vetting call also uses the "101" prefix, but includes
+the expected token derived from the shared secret. The called
+party's CIDVV platform compares this value against recently stored
+state and, upon a match, returns a 486 Busy Here response.
+
+This confirms that both parties possess the shared secret and that
+the asserted Caller-ID corresponds to the expected number. It
+provides strong evidence that the intended party controls that
+number, as a third party cannot successfully complete the exchange
+without knowledge of the shared secret.
 
 ### Technical Highlights
 - Fully compatible with SIP and legacy SS7/TDM
