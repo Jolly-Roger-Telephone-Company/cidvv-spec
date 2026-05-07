@@ -10,9 +10,6 @@ title: CIDVV Drafts Archive
 - **[PDF](draft-anderson-askew-cidvv.pdf)**
 - **[XML](draft-anderson-askew-cidvv.xml)**
 
-### Working Copy
-- **[draft-anderson-askew-cidvv-latest.md](../draft-anderson-askew-cidvv-latest.md)**
-
 ### Supporting Documents
 - **[CIDVV Whitepaper v01](cidvv-whitepaper-01.md)**
 
