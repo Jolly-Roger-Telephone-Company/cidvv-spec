@@ -5,8 +5,8 @@
 Network Working Group                                        R. Anderson
 Internet-Draft                                                S. Berkson
 Intended status: Informational             Jolly Roger Telephone Company
-Expires: 6 November 2026                                        P. Askew
-                                                              5 May 2026
+Expires: 8 November 2026                                        P. Askew
+                                                              7 May 2026
 
 
                  Caller-ID Vouching and Vetting (CIDVV)
@@ -62,7 +62,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 6 November 2026.
+   This Internet-Draft will expire on 8 November 2026.
 
 Copyright Notice
 
@@ -148,7 +148,7 @@ Table of Contents
 
    This document defines Caller-ID Vouching and Vetting (CIDVV), a
    mechanism that verifies caller identity through network reachability
-   rather than asserted identity.  CIDVV requires that a party claiming
+   rather than asserted identity.  CIDVV requires that a party asserting
    a Caller-ID be able to receive a return call at that number within
    the Validity Window.
 
@@ -160,12 +160,14 @@ Table of Contents
 
    CIDVV is incrementally deployable and does not require universal
    adoption to provide benefit.  It tolerates modification of signaling
-   by intermediate networks and relies on the ability of signaling calls
-   and distinct failure-response behaviors to traverse the network path.
+   by intermediate networks and relies on signaling calls and distinct
+   failure-response behaviors traversing the network path.
 
-   CIDVV does not provide absolute identity assurance but significantly
-   raises the cost of Caller-ID spoofing by requiring demonstrable
-   control of the Asserted Caller-ID.
+   CIDVV provides strong, real-time evidence of Caller-ID validity by
+   requiring that a party asserting a Caller-ID be able to receive and
+   respond to a return call at that number within the Validity Window.
+   While it does not provide absolute identity assurance, it offers a
+   practical and robust signal of trust in the presented identity.
 
    CIDVV leverages two key elements of the existing telephone ecosystem:
 
@@ -175,7 +177,7 @@ Table of Contents
    *  Digit sequences chosen to minimize conflict with valid numbering
       plans (e.g., "100" and "101").
 
-   The mechanism operates entirely within normal PSTN routing behavior
+   The mechanism operates entirely within standard PSTN routing behavior
    and requires no media exchange.
 
 2.  Terminology
@@ -207,11 +209,11 @@ Table of Contents
       Caller-ID.
 
    *  *Vet* (or *Vetting*): The process by which a CIDVV platform
-      confirms the calling party controls the Asserted Caller-ID via the
-      two-call challenge-response sequence.  Vetting may be performed by
-      the number owner directly or on behalf of third parties such as
-      Caller-ID branding services, Google Business Profiles, trade
-      organizations, or enterprise trust programs.
+      confirms the relevant party controls the Asserted Caller-ID via
+      the two-call challenge-response sequence.  Vetting may be
+      performed by the number owner directly or on behalf of third
+      parties such as Caller-ID branding services, Google Business
+      Profiles, trade organizations, or enterprise trust programs.
 
    *  *Vouching Call*: A short verification call used in the CIDVV
       protocol.  CIDVV defines a primary vouching call ("100") and an
@@ -354,7 +356,7 @@ Table of Contents
    "101", and the payload is derived from the Asserted Caller-ID
    (normalized per Section Section 4).
 
-   For vouching operations, the the payload is derived from the called
+   For vouching operations, the payload is derived from the called
    number associated with the verification.  For vetting operations, the
    payload may be derived from computed token values.
 
@@ -1347,12 +1349,10 @@ Table of Contents
 9.11.  Residual Risk
 
    CIDVV improves resistance to Caller-ID spoofing but does not provide
-   absolute identity assurance.  It should be considered a probabilistic
-   verification mechanism that significantly raises the cost of spoofing
-   attacks rather than eliminating them entirely.
-
-   CIDVV provides probabilistic verification based on reachability and
-   response behavior, not cryptographic identity binding.
+   absolute identity assurance.  It reduces the effectiveness of
+   spoofing attacks rather than eliminating them and relies on
+   probabilistic verification based on reachability and response
+   behavior, not cryptographic identity binding.
 
 10.  IANA Considerations
 
