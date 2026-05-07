@@ -18,18 +18,18 @@ author:
     ins: R. Anderson
     name: Roger Anderson
     organization: Jolly Roger Telephone Company
-    email: cidvv@jollyrogertelephone.com
+    email: roger@jollyrogertelephone.com
     country: US
   -
     ins: S. Berkson
     name: Steven Berkson
     organization: Jolly Roger Telephone Company
-    email: cidvv@jollyrogertelephone.com
+    email: steveb@jollyrogertelephone.com
     country: US
   -
     ins: P. Askew
     name: Phillip Askew
-    email: cidvv@jollyrogertelephone.com
+    email: phillip.askew
     country: US
 ---
 
