@@ -1025,12 +1025,9 @@ precise timing and routing alignment (see Section <xref target="hash-function"/>
 
 CIDVV prevents spoofing by requiring the party asserting a Caller-ID
 to successfully receive and respond to a return call routed via the
-PSTN. An attacker that cannot receive calls to the claimed number
-cannot complete the vouching process.
-
-However, CIDVV does not prevent attacks where:
-- The attacker controls the terminating endpoint for the number
-- The attacker has compromised the service provider infrastructure
+PSTN. An attacker (Mallory) who does not control the corresponding
+number cannot receive the verification call and therefore cannot
+complete the vouching process.
 
 ## Denial of Service
 
