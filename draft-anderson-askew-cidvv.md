@@ -2,7 +2,7 @@
 title: Caller-ID Vouching and Vetting (CIDVV)
 abbrev: CIDVV
 category: info
-docname: draft-anderson-askew-cidvv-latest
+docname: draft-anderson-askew-cidvv-00
 submissiontype: IETF
 ipr: trust200902
 date: 2026-05-07
