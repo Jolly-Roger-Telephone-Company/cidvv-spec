@@ -14,7 +14,7 @@
 
 Caller-ID spoofing continues to erode trust in telephony. Despite years of effort and significant investment in STIR/SHAKEN, spoofed calls remain common — especially across international borders and legacy TDM networks.
 
-**CIDVV (Caller-ID Vouching and Vetting)** offers a simple, immediately deployable complement that that verifies reachability and control of the presented number. It requires **no new protocol extensions**, works on both SIP and SS7/TDM networks, and can be rolled out incrementally.
+**CIDVV (Caller-ID Vouching and Vetting)** offers a simple, immediately deployable complement that that verifies reachability (vouching) and pre-established trust (vetting). It requires **no new protocol extensions**, works on both SIP and SS7/TDM networks, and can be rolled out incrementally.
 
 By using short-lived signaling exchanges encoded in the existing Calling Party Number field, CIDVV raises the cost of spoofing dramatically while creating new opportunities for verified calling services, branded numbers, and trust programs.
 
@@ -33,6 +33,19 @@ CIDVV is a lightweight network-native challenge-response mechanism that verifies
 In CIDVV, “vouching” means that the called party can confirm that
 the owner of the asserted Caller-ID is reachable and has effectively
 endorsed the call by responding to a verification signal.
+
+In CIDVV, “vetting” is a pre-arranged verification process between
+two parties that share a secret. Unlike vouching, which confirms
+reachability during a live call, vetting establishes in advance
+that a specific telephone number is controlled by a trusted party.
+
+Vetting is performed using a shared hashing algorithm. Both parties
+compute a short-lived numeric token derived from a shared secret and
+call-specific information (such as the calling and called numbers).
+The first vetting call causes the called party to generate and store
+this token for a brief period. The second call presents the expected
+token, allowing the called party to confirm that both sides possess
+the shared secret without transmitting it directly.
 
 CIDVV does not replace STIR/SHAKEN, but complements it by providing
 verification where attestation is unavailable, unreliable, or
