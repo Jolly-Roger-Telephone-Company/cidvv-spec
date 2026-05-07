@@ -107,7 +107,7 @@ In this document, the term "Caller-ID" refers to the identity
 presented to users, while "Calling Party Number" refers to the
 signaling field used to convey that identity.
 
-* **Alice**: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob’s number.
+* **Alice**: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob's number.
 * **Bob**: The called party. In vetting flows Bob is the owner whose number is being vetted.
 * **Mallory**: An attacker attempting to spoof a Caller-ID.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
@@ -185,8 +185,8 @@ the rightmost digits.
 
 CIDVV uses special Caller-ID prefixes to signal protocol operations:
 
-* "100" prefix — Primary Verification Call
-* "101" prefix — Secondary Verification Call / Vetting Call
+* "100" prefix - Primary Verification Call
+* "101" prefix - Secondary Verification Call / Vetting Call
 
 CIDVV Calling Party Numbers are numeric signaling values carried in
 the Calling Party Number field. They are not represented as
@@ -293,7 +293,7 @@ distinct expected behaviors. The table below summarizes the differences:
 | 100    | Expect 486 Busy Here         | Not used                                       | Primary vouch signal |
 | 101    | Expect 404 Not Found         | First call: 404 (deposit), Second call: 486     | Secondary / vetting |
 
-Implementations distinguish context (vouching vs. vetting) primarily by the presence of a pre-agreed vetting Caller-ID and shared secret for the Asserted Caller-ID. Because vetting uses a specific Caller-ID designated for the procedure, overlap with ordinary vouching calls on the same number is expected to be rare. A CIDVV platform MUST treat calls using a known vetting Caller-ID according to the vetting response pattern (even if a live vouch cache entry exists) and MUST NOT treat a 101→404 response as a successful vouch when an active vetting procedure is in progress for that number.
+Implementations distinguish context (vouching vs. vetting) primarily by the presence of a pre-agreed vetting Caller-ID and shared secret for the Asserted Caller-ID. Because vetting uses a specific Caller-ID designated for the procedure, overlap with ordinary vouching calls on the same number is expected to be rare. A CIDVV platform MUST treat calls using a known vetting Caller-ID according to the vetting response pattern (even if a live vouch cache entry exists) and MUST NOT treat a 101->404 response as a successful vouch when an active vetting procedure is in progress for that number.
 
 ## Response Semantics
 
@@ -316,8 +316,8 @@ results in an immediate rejection consistent with a "Busy"-class
 response (e.g., SIP 486 Busy Here).
 
 A CIDVV implementation MUST treat any response other than this
-expected behavior — including ringing, call completion, timeout, or
-alternative error responses — as an unsuccessful verification.
+expected behavior - including ringing, call completion, timeout, or
+alternative error responses - as an unsuccessful verification.
 
 A successful "100" verification provides a baseline level of
 confidence that the Asserted Caller-ID is routable and under the
@@ -362,8 +362,8 @@ verification for that prefix MUST be treated as unsuccessful.
 If only the "100" verification succeeds, the result MAY be treated as
 a valid but lower-assurance vouch.
 
-If both "100" and "101" verifications succeed (i.e., "100" → 486 and
-"101" → 404), the result MAY be treated as a higher-assurance vouch.
+If both "100" and "101" verifications succeed (i.e., "100" -> 486 and
+"101" -> 404), the result MAY be treated as a higher-assurance vouch.
 
 If neither verification succeeds, or if results are inconsistent or
 ambiguous, the vouch MUST be treated as unsuccessful or indeterminate.
@@ -446,8 +446,8 @@ baseline assurance.
 If both verification calls are performed, a higher-assurance vouch is
 obtained when:
 
-   "100" → 486, and
-   "101" → 404
+   "100" -> 486, and
+   "101" -> 404
 
 are both observed within the Validity Window.
 
@@ -491,7 +491,7 @@ The same deterministic algorithm MUST be used for:
 Example (for illustration only):
 - calling = 12125550100, called = 19495550199, secret = "hamburger"
 - Concatenated: "12125550100|19495550199|hamburger"
-- SHA-256 first 8 hex → decimal → padded/prepended token = 12953388433 (or similar)
+- SHA-256 first 8 hex -> decimal -> padded/prepended token = 12953388433 (or similar)
 
 Implementations MUST use the identical normalization and concatenation order for both vetting calls and any Redis (or equivalent) cache lookups. The token is valid only inside the Validity Window.
 
@@ -515,10 +515,10 @@ Vetting a remote number requires two separate calls (distinct SIP
 dialogs) using a pre-agreed shared key. The process confirms that
 the **called party (Bob)** controls the target telephone number and
 possesses the correct shared secret. In the examples below, Alice is
-the verifier who initiates the two calls to Bob’s number in order to
-vet Bob’s number.
+the verifier who initiates the two calls to Bob's number in order to
+vet Bob's number.
 
-Before vetting begins, Alice and Bob agree on a shared secret, Bob’s
+Before vetting begins, Alice and Bob agree on a shared secret, Bob's
 vetting Caller-ID, and a Validity Window.
 
 Alice places a vetting call to Bob using a Caller-ID beginning with the digits "101".
@@ -750,8 +750,8 @@ call. The following steps describe the detailed behavior.
     verification behavior.
 
 16. Having observed:
-    - "100" → 486, and
-    - "101" → 404
+    - "100" -> 486, and
+    - "101" -> 404
     within the Validity Window,
 
     Bob's SBC treats this as a higher-assurance successful vouch.
@@ -772,8 +772,8 @@ Specifically:
 
 * If both verification calls are performed, and the expected pattern
   of:
-    - "100" → 486, and
-    - "101" → 404
+    - "100" -> 486, and
+    - "101" -> 404
   is not observed within the Validity Window, the vouch MUST be
   treated as unsuccessful or indeterminate.
 
@@ -830,16 +830,16 @@ separately, but together they constitute a single vetting operation.
 
 Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party (Bob) controls the target telephone number and possesses the correct shared secret.
 
-1. Alice and Bob agree on a shared secret (e.g., `hamburger`) and Alice’s vetting Caller-ID (`+12125550100`, or its rightmost 12 digits for matching purposes).
+1. Alice and Bob agree on a shared secret (e.g., `hamburger`) and Alice's vetting Caller-ID (`+12125550100`, or its rightmost 12 digits for matching purposes).
 
-2. Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional Validity Window (e.g., one week) into their respective CIDVV platforms.
+2. Both parties enter the shared secret, Alice's vetting Caller-ID, and an optional Validity Window (e.g., one week) into their respective CIDVV platforms.
 
-3. Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `10112125550100` toward Bob’s number (`+19495550199`). The call traverses the PSTN.
+3. Alice's CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID `10112125550100` toward Bob's number (`+19495550199`). The call traverses the PSTN.
 
-4. Bob’s SBC recognizes the leading `101` prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).
+4. Bob's SBC recognizes the leading `101` prefix on the incoming Caller-ID and forwards the call to Bob's CIDVV platform (CIDVV_B).
 
 5. **CIDVV_B**:
-   - Strips the leading `101`, recovering Alice’s Caller-ID.
+   - Strips the leading `101`, recovering Alice's Caller-ID.
    - For matching purposes, CIDVV_B MAY use only the rightmost
      12 digits of the Caller-ID, consistent with CIDVV payload
      constraints.
@@ -853,7 +853,7 @@ Vetting a remote number requires two separate calls (distinct SIP dialogs) using
 
 7. CIDVV_A immediately places a second vetting call to `+19495550199` using the Vetting Token Check Caller-ID `10112953388433`.
 
-8. Bob’s SBC recognizes the `101` prefix on the Caller-ID and forwards the call to CIDVV_B.
+8. Bob's SBC recognizes the `101` prefix on the Caller-ID and forwards the call to CIDVV_B.
 
 9. **CIDVV_B**:
    - Strips the leading `101`.
@@ -869,8 +869,8 @@ within the Validity Window are expected to be rare.
 
 A vetting attempt may fail for the following reasons:
 
-* Bob does not have a participating CIDVV platform — the first call will not return 404, or the second call will not return 486.
-* The shared secret, Alice’s vetting Caller-ID, or time window does not match — the two calls will not produce the expected 404 + 486 sequence.
+* Bob does not have a participating CIDVV platform - the first call will not return 404, or the second call will not return 486.
+* The shared secret, Alice's vetting Caller-ID, or time window does not match - the two calls will not produce the expected 404 + 486 sequence.
 * Network or policy restrictions prevent one or both calls from reaching the remote CIDVV platform.
 
 In all such cases, the vetting attempt MUST be treated as unsuccessful.
@@ -991,7 +991,7 @@ reachability within the Validity Window. This may result in multiple
 calls being validated by a single successful vouch.
 
 The use of distinct response patterns across multiple verification
-calls (e.g., "100" → 486 and "101" → 404) increases resistance to
+calls (e.g., "100" -> 486 and "101" -> 404) increases resistance to
 false-positive validation arising from common network behaviors.
 
 ## Trust Model
