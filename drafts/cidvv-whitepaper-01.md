@@ -14,7 +14,7 @@
 
 Caller-ID spoofing continues to erode trust in telephony. Despite years of effort and significant investment in STIR/SHAKEN, spoofed calls remain common — especially across international borders and legacy TDM networks.
 
-**CIDVV (Caller-ID Vouching and Vetting)** offers a simple, immediately deployable complement that that verifies reachability (vouching) and pre-established trust (vetting). It requires **no new protocol extensions**, works on both SIP and SS7/TDM networks, and can be rolled out incrementally.
+**CIDVV (Caller-ID Vouching and Vetting)** offers a simple, immediately deployable complement that verifies reachability (vouching) and pre-established trust (vetting). It requires **no new protocol extensions**, works on both SIP and SS7/TDM networks, and can be rolled out incrementally.
 
 By using short-lived signaling exchanges encoded in the existing Calling Party Number field, CIDVV raises the cost of spoofing dramatically while creating new opportunities for verified calling services, branded numbers, and trust programs.
 
