@@ -5,7 +5,7 @@ category: info
 docname: draft-anderson-askew-cidvv-latest
 submissiontype: IETF
 ipr: trust200902
-date: 2026-05-5
+date: 2026-05-07
 consensus: false
 v: 4
 keyword: telephony, callerid, spoofing, PSTN
@@ -73,7 +73,7 @@ partial deployment and challenges in international interconnection.
 
 This document defines Caller-ID Vouching and Vetting (CIDVV), a
 mechanism that verifies caller identity through network reachability
-rather than asserted identity. CIDVV requires that a party claiming a
+rather than asserted identity. CIDVV requires that a party asserting a
 Caller-ID be able to receive a return call at that number within the Validity Window.
 
 CIDVV operates by encoding signaling information within the Calling
@@ -84,12 +84,14 @@ designed to function across mixed SIP and TDM networks.
 
 CIDVV is incrementally deployable and does not require universal
 adoption to provide benefit. It tolerates modification of signaling
-by intermediate networks and relies on the ability of signaling calls and distinct
-failure-response behaviors to traverse the network path.
+by intermediate networks and relies on signaling calls and distinct
+failure-response behaviors traversing the network path.
 
-CIDVV does not provide absolute identity assurance but significantly
-raises the cost of Caller-ID spoofing by requiring demonstrable
-control of the Asserted Caller-ID.
+CIDVV provides strong, real-time evidence of Caller-ID validity by
+requiring that a party asserting a Caller-ID be able to receive and
+respond to a return call at that number within the Validity Window.
+While it does not provide absolute identity assurance, it offers a
+practical and robust signal of trust in the presented identity.
 
 CIDVV leverages two key elements of the existing telephone ecosystem:
 
@@ -97,7 +99,7 @@ CIDVV leverages two key elements of the existing telephone ecosystem:
   authoritative routing ownership for telephone numbers.
 * Digit sequences chosen to minimize conflict with valid numbering plans (e.g., "100" and "101").
 
-The mechanism operates entirely within normal PSTN routing behavior and requires no media exchange.
+The mechanism operates entirely within standard PSTN routing behavior and requires no media exchange.
 
 # Terminology
 
@@ -111,7 +113,7 @@ signaling field used to convey that identity.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
 * **CIDVV-aware Network Element**: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the Asserted Caller-ID.
-* **Vet** (or **Vetting**): The process by which a CIDVV platform confirms the calling party controls the Asserted Caller-ID via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
+* **Vet** (or **Vetting**): The process by which a CIDVV platform confirms the relevant party controls the Asserted Caller-ID via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
 * **Vouching Call**: A short verification call used in the CIDVV protocol. CIDVV defines a primary vouching call ("100") and an optional secondary vouching call ("101").
 * **Successful Vouch**: A verification result indicating that a matching cache entry was found.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
@@ -207,7 +209,7 @@ where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
 "101", and the payload is derived from the Asserted Caller-ID
 (normalized per Section <xref target="number-normalization"/>).
 
-For vouching operations, the the payload is derived from the called number associated with the verification.
+For vouching operations, the payload is derived from the called number associated with the verification.
 For vetting operations, the payload may be derived from computed token values.
 
 In the common case where the Asserted Caller-ID has 12 or fewer digits,
@@ -1113,12 +1115,10 @@ false-positive validation.
 ## Residual Risk
 
 CIDVV improves resistance to Caller-ID spoofing but does not provide
-absolute identity assurance. It should be considered a probabilistic
-verification mechanism that significantly raises the cost of
-spoofing attacks rather than eliminating them entirely.
-
-CIDVV provides probabilistic verification based on reachability and
-response behavior, not cryptographic identity binding.
+absolute identity assurance. It reduces the effectiveness of spoofing
+attacks rather than eliminating them and relies on probabilistic
+verification based on reachability and response behavior, not
+cryptographic identity binding.
 
 # IANA Considerations
 
