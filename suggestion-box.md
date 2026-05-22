@@ -2,3 +2,5 @@ if bob has a cidvv platform, can he just send all his calls to it? The cidvv pla
 
 Carriers should CAC cidvv calls
 
+Carriers should not play zip tones on cidvv calls
+
