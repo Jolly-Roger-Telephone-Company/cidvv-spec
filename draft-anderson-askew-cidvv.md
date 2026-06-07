@@ -241,39 +241,16 @@ CIDVV platform and treated as a single correlation event. As a result,
 a successful verification may apply to more than one call attempt
 within the Validity Window.
 
-CIDVV verification consists of observing the behavior of one or more
-verification calls using distinct CIDVV prefixes.
-
 CIDVV verification consists of observing the behavior of **Phase 1** and **Phase 2** verification calls using the distinct CIDVV prefixes.
 
-A successful vouch **requires** that **both**:
-- Phase 1 ("100" prefix) produces the expected Busy-class response, **and**
-- Phase 2 ("101" prefix) produces the expected Not-Found-class response
-
-within the Validity Window. The two phases MAY be sent in any order or in parallel. Implementations MUST NOT assume ordering.
+A successful vouch **requires both** Phase 1 and Phase 2 to complete with their expected responses within the Validity Window. The two phases MAY be performed in any order or in parallel. Implementations MUST NOT assume a specific ordering.
 
 The expected behavior is:
 
-* Calls using the "100" prefix MUST result in SIP 486 Busy Here.
-  Any other response, timeout, call progression, or successful call
-  completion MUST be treated as an unsuccessful vouch.
-* Calls using the "101" prefix are expected to result in SIP 404 Not Found.
-  However, in the context of an active vetting procedure, a "101" call
-  carrying a valid token MAY result in SIP 486 Busy Here.
+* **Phase 1** ("100" prefix) MUST result in a Busy-class response (e.g., SIP 486 Busy Here or 600 Busy Everywhere). Any other response, timeout, call progression, or successful completion MUST be treated as unsuccessful.
+* **Phase 2** ("101" prefix) MUST result in a Not-Found-class response (e.g., SIP 404 Not Found or 608 Rejected) for vouching. In the context of an active vetting procedure, Phase 2 carries a valid token and MUST result in a Busy-class response.
 
-A CIDVV-aware network element MUST NOT treat a single response as
-sufficient evidence of a successful vouch unless it corresponds to
-the expected behavior for the "100" prefix.
-
-Additional verification calls (e.g., using the "101" prefix) MAY be
-used to increase assurance but are not required for a valid vouch.
-
-The two verification calls MAY be sent in any order or in parallel.
-Implementations MUST NOT assume ordering.
-
-If either expected response is missing, altered, delayed, replaced by
-call progression, or inconsistent with the expected pattern, the
-result MUST be treated as unsuccessful or indeterminate.
+If either Phase 1 or Phase 2 fails to produce the expected response (or is missing, delayed beyond the Validity Window, altered, or inconsistent), the entire vouch MUST be treated as unsuccessful or indeterminate.
 
 CIDVV exchanges occur using short signaling dialogs and do not require
 media establishment.
