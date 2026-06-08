@@ -2,12 +2,12 @@
 title: Caller-ID Vouching and Vetting (CIDVV)
 abbrev: CIDVV
 category: info
-docname: draft-anderson-askew-cidvv-00
+docname: draft-anderson-askew-cidvv-latest
 submissiontype: IETF
 ipr: trust200902
 date: 2026-05-07
 consensus: false
-v: 4
+v: 3
 keyword: telephony, callerid, spoofing, PSTN
 
 venue:
