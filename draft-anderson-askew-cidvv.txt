@@ -88,15 +88,15 @@ Table of Contents
      4.1.  Protocol Overview
      4.2.  Vouching vs. Vetting Response Patterns
      4.3.  Response Semantics
-       4.3.1.  "100" Prefix (Primary Verification)
-       4.3.2.  "101" Prefix (Secondary Verification)
-       4.3.3.  Combined Verification
+       4.3.1.  Phase 1 Verification ("100" Prefix)
+       4.3.2.  Phase 2 Verification ("101" Prefix)
+       4.3.3.  Combined Phase Behavior (Required for Success)
        4.3.4.  Failure Handling
    5.  Protocol Operation
      5.1.  Vouching Procedure
-       5.1.1.  Primary Verification ("100")
-       5.1.2.  Secondary Verification ("101")
-       5.1.3.  Combined Verification Behavior
+       5.1.1.  Phase 1 Verification ("100")
+       5.1.2.  Phase 2 Verification ("101")
+       5.1.3.  Combined Phase Behavior (Required for Success)
      5.2.  Correlation Model
      5.3.  Hash Function for Vetting and State Storage
        5.3.1.  Multi-Tenant Considerations
@@ -187,7 +187,7 @@ Table of Contents
    signaling field used to convey that identity.
 
    *  *Alice*: The calling party and verifier.  In vouching flows Alice
-      asserts a number; in vetting flows Alice verifies Bob’s number.
+      asserts a number; in vetting flows Alice verifies Bob's number.
 
    *  *Bob*: The called party.  In vetting flows Bob is the owner whose
       number is being vetted.
@@ -215,12 +215,22 @@ Table of Contents
       parties such as Caller-ID branding services, Google Business
       Profiles, trade organizations, or enterprise trust programs.
 
-   *  *Vouching Call*: A short verification call used in the CIDVV
-      protocol.  CIDVV defines a primary vouching call ("100") and an
-      optional secondary vouching call ("101").
+   *  *Vouching Call*: A short signaling call used in the CIDVV
+      protocol.  CIDVV defines *Phase 1* ("100" prefix) and *Phase 2*
+      ("101" prefix) verification calls.
 
-   *  *Successful Vouch*: A verification result indicating that a
-      matching cache entry was found.
+   *  *Phase 1 Verification* ("100" prefix): The initial busy-class
+      verification step.  Expected response behavior is a "Busy"-class
+      rejection (e.g., SIP 486 Busy Here).
+
+   *  *Phase 2 Verification* ("101" prefix): The secondary not-found /
+      rejection-class verification step.  Expected response behavior is
+      a "Not Found"-class rejection (e.g., SIP 404 Not Found) for
+      vouching, or busy-class for token confirmation in vetting.
+
+   *  *Successful Vouch* / *Successful Vet*: Requires *both Phase 1 and
+      Phase 2* to complete with the expected behaviors within the
+      Validity Window.
 
    *  *Unsuccessful Vouch*: A verification result indicating that no
       matching cache entry was found.
@@ -333,9 +343,9 @@ Table of Contents
 
    CIDVV uses special Caller-ID prefixes to signal protocol operations:
 
-   *  "100" prefix — Primary Verification Call
+   *  "100" prefix - Phase 1 Verification Call
 
-   *  "101" prefix — Secondary Verification Call / Vetting Call
+   *  "101" prefix - Phase 2 Verification Call / Vetting Call
 
    CIDVV Calling Party Numbers are numeric signaling values carried in
    the Calling Party Number field.  They are not represented as E.164
@@ -388,37 +398,30 @@ Table of Contents
    result, a successful verification may apply to more than one call
    attempt within the Validity Window.
 
-   CIDVV verification consists of observing the behavior of one or more
-   verification calls using distinct CIDVV prefixes.
+   CIDVV verification consists of observing the behavior of *Phase 1*
+   and *Phase 2* verification calls using the distinct CIDVV prefixes.
 
-   A successful vouch requires that a verification call using the "100"
-   prefix produce the expected response behavior.  Additional
-   verification calls (e.g., using the "101" prefix) MAY be used to
-   achieve higher assurance.
+   A successful vouch *requires both* Phase 1 and Phase 2 to complete
+   with their expected responses within the Validity Window.  The two
+   phases MAY be performed in any order or in parallel.  Implementations
+   MUST NOT assume a specific ordering.
 
    The expected behavior is:
 
-   *  Calls using the "100" prefix MUST result in SIP 486 Busy Here.
-      Any other response, timeout, call progression, or successful call
-      completion MUST be treated as an unsuccessful vouch.
+   *  *Phase 1* ("100" prefix) MUST result in a Busy-class response
+      (e.g., SIP 486 Busy Here or 600 Busy Everywhere).  Any other
+      response, timeout, call progression, or successful completion MUST
+      be treated as unsuccessful.
 
-   *  Calls using the "101" prefix are expected to result in SIP 404 Not
-      Found.  However, in the context of an active vetting procedure, a
-      "101" call carrying a valid token MAY result in SIP 486 Busy Here.
+   *  *Phase 2* ("101" prefix) MUST result in a Not-Found-class response
+      (e.g., SIP 404 Not Found or 608 Rejected) for vouching.  In the
+      context of an active vetting procedure, Phase 2 carries a valid
+      token and MUST result in a Busy-class response.
 
-   A CIDVV-aware network element MUST NOT treat a single response as
-   sufficient evidence of a successful vouch unless it corresponds to
-   the expected behavior for the "100" prefix.
-
-   Additional verification calls (e.g., using the "101" prefix) MAY be
-   used to increase assurance but are not required for a valid vouch.
-
-   The two verification calls MAY be sent in any order or in parallel.
-   Implementations MUST NOT assume ordering.
-
-   If either expected response is missing, altered, delayed, replaced by
-   call progression, or inconsistent with the expected pattern, the
-   result MUST be treated as unsuccessful or indeterminate.
+   If either Phase 1 or Phase 2 fails to produce the expected response
+   (or is missing, delayed beyond the Validity Window, altered, or
+   inconsistent), the entire vouch MUST be treated as unsuccessful or
+   indeterminate.
 
    CIDVV exchanges occur using short signaling dialogs and do not
    require media establishment.
@@ -459,7 +462,7 @@ Table of Contents
    on the same number is expected to be rare.  A CIDVV platform MUST
    treat calls using a known vetting Caller-ID according to the vetting
    response pattern (even if a live vouch cache entry exists) and MUST
-   NOT treat a 101→404 response as a successful vouch when an active
+   NOT treat a 101->404 response as a successful vouch when an active
    vetting procedure is in progress for that number.
 
 4.3.  Response Semantics
@@ -476,53 +479,29 @@ Table of Contents
    distinguishable across the signaling path.  Environments that cannot
    preserve this distinction may not support enhanced verification.
 
-4.3.1.  "100" Prefix (Primary Verification)
+4.3.1.  Phase 1 Verification ("100" Prefix)
 
-   A call using the "100" prefix is considered successful only if it
-   results in an immediate rejection consistent with a "Busy"-class
-   response (e.g., SIP 486 Busy Here).
+   A call using the "100" prefix is the *Phase 1* verification.  It is
+   considered successful only if it results in an immediate rejection
+   consistent with a "Busy"-class response (e.g., SIP 486 Busy Here).
 
-   A CIDVV implementation MUST treat any response other than this
-   expected behavior — including ringing, call completion, timeout, or
-   alternative error responses — as an unsuccessful verification.
+4.3.2.  Phase 2 Verification ("101" Prefix)
 
-   A successful "100" verification provides a baseline level of
-   confidence that the Asserted Caller-ID is routable and under the
-   control of the originating party.
+   A call using the "101" prefix is the *Phase 2* verification.  For
+   standard vouching, it is expected to result in a "Not Found"-class
+   response (e.g., SIP 404 Not Found).  In the context of an active
+   vetting procedure, a valid token check results in a "Busy"-class
+   response.
 
-4.3.2.  "101" Prefix (Secondary Verification)
+4.3.3.  Combined Phase Behavior (Required for Success)
 
-   A call using the "101" prefix is used as an optional secondary
-   validation signal.
+   A successful vouch or successful vet *requires both Phase 1 and Phase
+   2* to complete with their expected behaviors within the Validity
+   Window.
 
-   The expected behavior is an immediate rejection consistent with a
-   "Not Found"-class response (e.g., SIP 404 Not Found).
-
-   In the context of an active vetting procedure, a "101" call carrying
-   a valid vetting token MAY instead result in a "Busy"-class response
-   (e.g., SIP 486 Busy Here).
-
-   Because such responses are relatively common in the PSTN, a "101"
-   verification alone MUST NOT be treated as evidence of a successful
-   vouch.
-
-4.3.3.  Combined Verification
-
-   Implementations MAY perform both "100" and "101" verification calls
-   to achieve a higher level of assurance.
-
-   In this case, a stronger validation result is obtained when:
-
-   *  The "100" verification produces the expected "Busy"-class
-      behavior, AND
-
-   *  The "101" verification produces the expected "Not Found"-class
-      behavior
-
-   within the Validity Window.
-
-   Implementations MUST NOT require the two verification calls to occur
-   in any specific order.
+   Implementations MUST NOT treat a single phase as sufficient.  If
+   either phase fails, is missing, altered, delayed, or inconsistent,
+   the result MUST be treated as unsuccessful or indeterminate.
 
 4.3.4.  Failure Handling
 
@@ -532,8 +511,8 @@ Table of Contents
    If only the "100" verification succeeds, the result MAY be treated as
    a valid but lower-assurance vouch.
 
-   If both "100" and "101" verifications succeed (i.e., "100" → 486 and
-   "101" → 404), the result MAY be treated as a higher-assurance vouch.
+   If both "100" and "101" verifications succeed (i.e., "100" -> 486 and
+   "101" -> 404), the result MAY be treated as a higher-assurance vouch.
 
    If neither verification succeeds, or if results are inconsistent or
    ambiguous, the vouch MUST be treated as unsuccessful or
@@ -562,7 +541,7 @@ Table of Contents
    When Bob's system receives the call, a CIDVV-aware network element
    (e.g., SBC) initiates a verification call toward Alice.
 
-5.1.1.  Primary Verification ("100")
+5.1.1.  Phase 1 Verification ("100")
 
    Bob's CIDVV-aware element constructs the CIDVV token using the same
    method (prefix "100" plus the rightmost 12 digits of the dialed
@@ -589,7 +568,7 @@ Table of Contents
    the originating party can receive calls at the Asserted Caller-ID and
    constitutes a valid baseline vouch.
 
-5.1.2.  Secondary Verification ("101")
+5.1.2.  Phase 2 Verification ("101")
 
    Bob's CIDVV-aware element MAY initiate a second verification call
    using a CIDVV token constructed by prefixing "101" to the same
@@ -606,26 +585,28 @@ Table of Contents
    purposes and MUST NOT be used as a standalone indicator of a
    successful vouch.
 
-5.1.3.  Combined Verification Behavior
+5.1.3.  Combined Phase Behavior (Required for Success)
 
-   Implementations MAY perform only the primary ("100") verification or
-   MAY perform both primary and secondary verification.
+   A successful CIDVV vouch *requires both* Phase 1 and Phase 2
+   verification calls to complete with their expected responses within
+   the Validity Window.
 
-   A successful "100" verification alone provides a valid vouch with
-   baseline assurance.
+   *  *Phase 1* ("100" prefix) MUST return a Busy-class response (e.g.,
+      SIP 486 Busy Here or 600 Busy Everywhere).
 
-   If both verification calls are performed, a higher-assurance vouch is
-   obtained when:
+   *  *Phase 2* ("101" prefix) MUST return a Not-Found-class response
+      (e.g., SIP 404 Not Found or 608 Rejected).
 
-   "100" → 486, and "101" → 404
+   The two verification calls MAY be performed in any order or in
+   parallel.  Implementations MUST NOT assume a specific ordering.
 
-   are both observed within the Validity Window.
+   If either Phase 1 or Phase 2 fails to produce the expected response
+   (or is missing, delayed beyond the Validity Window, or altered), the
+   entire vouch MUST be treated as unsuccessful or indeterminate.
 
-   The two verification calls MAY occur in any order or in parallel.
-   Implementations MUST NOT assume ordering.
-
-   If the "100" verification fails, the vouch MUST be treated as
-   unsuccessful regardless of any "101" result.
+   The same combined Phase 1 + Phase 2 requirement applies to successful
+   vetting, with Phase 2 semantics adjusted for token confirmation (see
+   Vetting Procedure).
 
 5.2.  Correlation Model
 
@@ -667,8 +648,8 @@ Table of Contents
 
    Example (for illustration only): - calling = 12125550100, called =
    19495550199, secret = "hamburger" - Concatenated:
-   "12125550100|19495550199|hamburger" - SHA-256 first 8 hex → decimal →
-   padded/prepended token = 12953388433 (or similar)
+   "12125550100|19495550199|hamburger" - SHA-256 first 8 hex -> decimal
+   -> padded/prepended token = 12953388433 (or similar)
 
    Implementations MUST use the identical normalization and
    concatenation order for both vetting calls and any Redis (or
@@ -694,10 +675,10 @@ Table of Contents
    dialogs) using a pre-agreed shared key.  The process confirms that
    the *called party (Bob)* controls the target telephone number and
    possesses the correct shared secret.  In the examples below, Alice is
-   the verifier who initiates the two calls to Bob’s number in order to
-   vet Bob’s number.
+   the verifier who initiates the two calls to Bob's number in order to
+   vet Bob's number.
 
-   Before vetting begins, Alice and Bob agree on a shared secret, Bob’s
+   Before vetting begins, Alice and Bob agree on a shared secret, Bob's
    vetting Caller-ID, and a Validity Window.
 
    Alice places a vetting call to Bob using a Caller-ID beginning with
@@ -816,11 +797,11 @@ Table of Contents
 
         *  Finds a matching entry from step 3.
 
-        *  Considers this a successful primary verification and returns
+        *  Considers this a successful Phase 1 Verification and returns
            *486 Busy Here*.
 
    10.  Bob's SBC receives the 486 via the PSTN, recognizes it as a
-        successful primary verification, and advances the original call
+        successful Phase 1 Verification, and advances the original call
         to Bob's User Agent.
 
    11.  Bob's telephone rings.
@@ -905,10 +886,10 @@ Table of Contents
 
         *  Constructs the CIDVV token 10019495550199.
 
-        *  Initiates a primary verification call toward Alice's number
+        *  Initiates a Phase 1 Verification call toward Alice's number
            (+12125550100) using the Caller-ID 10019495550199.
 
-   7.   The primary verification call arrives at Alice's SBC via the
+   7.   The Phase 1 Verification call arrives at Alice's SBC via the
         PSTN.
 
    8.   *Alice's SBC*:
@@ -929,13 +910,12 @@ Table of Contents
    10.  Bob's SBC receives the 486 and recognizes a successful primary
         verification.
 
-   11.  *Bob's SBC (optional secondary verification)*: - Constructs a
-        second CIDVV token by prefixing "101" to the same 12-digit
-        payload, resulting in 10119495550199.  - Initiates a secondary
-        verification call toward Alice's number using the Caller-ID
-        10119495550199.
+   11.  *Bob's SBC (Phase 2 Verification)*: - Constructs a second CIDVV
+        token by prefixing "101" to the same 12-digit payload, resulting
+        in 10119495550199.  - Initiates a Phase 2 Verification call
+        toward Alice's number using the Caller-ID 10119495550199.
 
-   12.  The secondary verification call arrives at Alice's SBC via the
+   12.  The Phase 2 Verification call arrives at Alice's SBC via the
         PSTN.
 
    13.  *Alice's SBC*: - Detects the leading "101" prefix.  - Routes the
@@ -951,9 +931,9 @@ Table of Contents
 
    16.  Having observed:
 
-        *  "100" → 486, and
+        *  "100" -> 486, and
 
-        *  "101" → 404 within the Validity Window,
+        *  "101" -> 404 within the Validity Window,
 
         Bob's SBC treats this as a higher-assurance successful vouch.
 
@@ -974,9 +954,9 @@ Table of Contents
    *  If both verification calls are performed, and the expected pattern
       of:
 
-      -  "100" → 486, and
+      -  "100" -> 486, and
 
-      -  "101" → 404 is not observed within the Validity Window, the
+      -  "101" -> 404 is not observed within the Validity Window, the
          vouch MUST be treated as unsuccessful or indeterminate.
 
    *  A "101" verification result alone MUST NOT be treated as evidence
@@ -1036,24 +1016,24 @@ Table of Contents
    possesses the correct shared secret.
 
    1.   Alice and Bob agree on a shared secret (e.g., hamburger) and
-        Alice’s vetting Caller-ID (+12125550100, or its rightmost 12
+        Alice's vetting Caller-ID (+12125550100, or its rightmost 12
         digits for matching purposes).
 
-   2.   Both parties enter the shared secret, Alice’s vetting Caller-ID,
+   2.   Both parties enter the shared secret, Alice's vetting Caller-ID,
         and an optional Validity Window (e.g., one week) into their
         respective CIDVV platforms.
 
-   3.   Alice’s CIDVV platform (CIDVV_A) initiates the first vetting
-        call with Caller-ID 10112125550100 toward Bob’s number
+   3.   Alice's CIDVV platform (CIDVV_A) initiates the first vetting
+        call with Caller-ID 10112125550100 toward Bob's number
         (+19495550199).  The call traverses the PSTN.
 
-   4.   Bob’s SBC recognizes the leading 101 prefix on the incoming
-        Caller-ID and forwards the call to Bob’s CIDVV platform
+   4.   Bob's SBC recognizes the leading 101 prefix on the incoming
+        Caller-ID and forwards the call to Bob's CIDVV platform
         (CIDVV_B).
 
    5.   *CIDVV_B*:
 
-        *  Strips the leading 101, recovering Alice’s Caller-ID.
+        *  Strips the leading 101, recovering Alice's Caller-ID.
 
         *  For matching purposes, CIDVV_B MAY use only the rightmost 12
            digits of the Caller-ID, consistent with CIDVV payload
@@ -1081,7 +1061,7 @@ Table of Contents
    7.   CIDVV_A immediately places a second vetting call to +19495550199
         using the Vetting Token Check Caller-ID 10112953388433.
 
-   8.   Bob’s SBC recognizes the 101 prefix on the Caller-ID and
+   8.   Bob's SBC recognizes the 101 prefix on the Caller-ID and
         forwards the call to CIDVV_B.
 
    9.   *CIDVV_B*:
@@ -1103,11 +1083,11 @@ Table of Contents
 
    A vetting attempt may fail for the following reasons:
 
-   *  Bob does not have a participating CIDVV platform — the first call
+   *  Bob does not have a participating CIDVV platform - the first call
       will not return 404, or the second call will not return 486.
 
-   *  The shared secret, Alice’s vetting Caller-ID, or time window does
-      not match — the two calls will not produce the expected 404 + 486
+   *  The shared secret, Alice's vetting Caller-ID, or time window does
+      not match - the two calls will not produce the expected 404 + 486
       sequence.
 
    *  Network or policy restrictions prevent one or both calls from
@@ -1234,7 +1214,7 @@ Table of Contents
    calls being validated by a single successful vouch.
 
    The use of distinct response patterns across multiple verification
-   calls (e.g., "100" → 486 and "101" → 404) increases resistance to
+   calls (e.g., "100" -> 486 and "101" -> 404) increases resistance to
    false-positive validation arising from common network behaviors.
 
 9.1.  Trust Model
@@ -1365,15 +1345,15 @@ Authors' Addresses
    Roger Anderson
    Jolly Roger Telephone Company
    United States of America
-   Email: cidvv@jollyrogertelephone.com
+   Email: roger@jollyrogertelephone.com
 
 
    Steven Berkson
    Jolly Roger Telephone Company
    United States of America
-   Email: cidvv@jollyrogertelephone.com
+   Email: steveb@jollyrogertelephone.com
 
 
    Phillip Askew
    United States of America
-   Email: cidvv@jollyrogertelephone.com
+   Email: phillip.askew@theaskewcrew.com

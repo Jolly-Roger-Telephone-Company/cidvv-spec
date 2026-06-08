@@ -309,16 +309,19 @@ h1, h2, h3, h4, h5, h6 {
   font-size-adjust: 0.5;
   color: var(--title-color);
 }
-h1#title {
-  font-size: 32px;
-  line-height: 40px;
-  clear: both;
-}
-h1#title, h1#rfcnum {
-  margin: 1.5em 0 0.2em;
-}
-h1#rfcnum + h1#title {
-  margin: 0.2em 0;
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
 }
 
 h1, h2, h3 {
@@ -338,10 +341,10 @@ h4, h5, h6 {
 #abstract+p {
   font-size: 18px;
   line-height: 24px;
-}
-#abstract+p code, #abstract+p samp, #abstract+p tt {
-  font-size: 16px;
-  line-height: 0;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
 }
 
 p {
@@ -352,59 +355,59 @@ p {
 div {
   margin: 0;
 }
-.alignRight.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
-  border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
-}
-.alignRight.art-text pre {
-  padding: 0;
-  width: auto;
-}
 .alignRight {
   margin: 1em 0;
-}
-.alignRight > *:first-child {
-  border: none;
-  margin: 0;
-  float: right;
-  clear: both;
-}
-.alignRight > *:nth-child(2) {
-  clear: both;
-  display: block;
-  border: none;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
 }
 svg {
   display: block;
-}
-/* font-family isn't space-separated, but =~ will have to do */
-svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
-  font-family: var(--font-mono);
-}
-.alignCenter.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
-  border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
-}
-.alignCenter.art-text pre {
-  padding: 0;
-  width: auto;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
 }
 .alignCenter {
   margin: 1em 0;
-}
-.alignCenter > *:first-child {
-  border: none;
-  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
-     support flexbox yet.
-  */
-  display: table;
-  margin: 0 auto;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
 }
 
 /* lists */
@@ -442,26 +445,25 @@ dl {
     --indent: 5ch;
     & > dt {
       min-width: calc(var(--indent) - 2ch);
+      float: none;
     }
-  }
-  &.olPercent > dt {
-    float: none;
   }
 
   dl > dd > & {
     margin-top: 0.5em;
     margin-bottom: 0;
   }
-}
-dl:not(.dlNewline) > dt {
-  float: left;
-  margin-right: 2ch;
-  min-width: 8ch;
-}
-dl > dd {
-  margin-bottom: .8em;
-  margin-left: var(--indent) !important; /* stupid element overrides */
-  min-height: 2ex;
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
 }
 :is(dl.compact, .dlCompact) > dd {
   margin-bottom: 0;
@@ -477,20 +479,22 @@ dl > dd {
 }
 
 /* links */
-a, a[href].selfRef:hover {
+a {
   text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
 }
-a[href] {
-  color: var(--link-color);
-}
-a[href].selfRef, .iref + a[href].internal {
+.iref + a[href].internal {
   color: var(--text-color);
-}
-a[href]:hover {
-  text-decoration: underline;
-}
-a[href].selfRef:hover {
-  background-color: var(--highlight-color);
 }
 a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
   white-space: nowrap;
@@ -526,9 +530,9 @@ img {
 figure {
   margin: 0.5em 0;
   padding: 0;
-}
-figure blockquote {
-  margin: 0.8em 0.4em 0.4em;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
 }
 figcaption, caption {
   font-style: italic;
@@ -538,17 +542,19 @@ figcaption, caption {
 }
 @media screen {
   /* Auto-collapse boilerplate. */
-  :is(#status-of-memo, #copyright) p {
-    margin: -2px 0;
-    max-height: 0;
-    transition: max-height 2s ease, margin 0.5s ease 0.5s;
-    overflow: hidden;
-  }
-  :is(#status-of-memo, #copyright):hover p,
-  :is(#status-of-memo, #copyright) h2:target ~ p {
-    margin: 0.5em 0;
-    max-height: 500px;
-    overflow: auto;
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
   }
   pre, svg {
     display: inline-block;
@@ -598,25 +604,17 @@ table {
   max-width: 100%;
   margin: 0 0 1em;
   border-collapse: collapse;
-}
-table.right {
-  margin-left: auto;
-}
-table.center {
-  margin-left: auto;
-  margin-right: auto;
-}
-table.left {
-  margin-right: auto;
-}
-table .text-left {
-  text-align: left;
-}
-table .text-center {
-  text-align: center;
-}
-table .text-right {
-  text-align: right;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
 }
 
 thead, tbody {
@@ -636,13 +634,6 @@ th {
 :is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
   background-color: var(--highlight-color);
 }
-table caption {
-  margin: 0;
-  padding: 3px 0 3px 1em;
-}
-table p {
-  margin: 0;
-}
 
 /* pilcrow */
 a.pilcrow {
@@ -653,18 +644,16 @@ a.pilcrow {
     color: var(--pilcrow-weak);
     &:hover { text-decoration: none; }
   }
-}
-@media not print {
-  :hover > a.pilcrow, a.pilcrow:focus {
-    opacity: 1;
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
   }
-  a.pilcrow[href]:hover {
-    color: var(--pilcrow-strong);
-    background-color: transparent;
-  }
-}
-@media print {
-  a.pilcrow {
+  @media print {
     display: none;
   }
 }
@@ -723,9 +712,9 @@ sub, sup {
   font-size: 0.9em;
   font-style: italic;
   margin-top: 2em;
-}
-.docInfo .prepared {
-  float: right;
+  & .prepared {
+    float: right;
+  }
 }
 
 /* table of contents */
@@ -815,23 +804,27 @@ hr.addr {
   max-width: calc(100% - 16px);
 }
 @media (min-width: 500px) {
-  #authors-addresses > section {
-    column-count: 2;
-    column-gap: 20px;
-  }
-  #authors-addresses > section > h2 {
-    column-span: all;
-  }
-  /* hack for break-inside: avoid-column */
-  #authors-addresses address {
-    display: inline-block;
-    break-inside: avoid-column;
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
   }
 }
 
 /* Comments */
-.rfcEditorRemove p:first-of-type {
-  font-style: italic;
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
 }
 .cref {
   background-color: rgba(249, 232, 105, 0.3);
@@ -842,19 +835,21 @@ hr.addr {
 }
 
 @media screen {
-  #toc nav {
-    font-family: var(--font-title);
-    font-weight: 360;
-    & > ul { margin-bottom: 2em; }
-    & ul {
-      margin: 0 0 0 4px;
-      & :is(p, li) {
-        margin: 2px 0;
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
       }
     }
-  }
-  #toc a.toplink {
-    float: right;
+    & a.toplink {
+      float: right;
+    }
   }
 }
 @media not screen {
@@ -875,54 +870,54 @@ hr.addr {
     margin: 0;
     border-bottom: 1px solid #ccc;
     opacity: 0.6;
-  }
-  #toc h2 {
-    margin: 0;
-    padding: 2px 0 2px 6px;
-    padding-right: 1em;
-    font-size: 18px;
-    line-height: 24px;
-    min-width: 190px;
-    text-align: right;
-    background-color: #444;
-    color: white;
-    cursor: pointer;
-    &::before { /* css hamburger */
-      float: right;
-      position: relative;
-      width: 1em;
-      height: 1px;
-      left: -164px;
-      margin: 8px 0 0 0;
-      background: white none repeat scroll 0 0;
-      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
-      content: "";
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
     }
-  }
-  #toc nav {
-    display: none;
-    background-color: var(--background-color);
-    padding: 0.5em 1em 1em;
-    overflow: auto;
-    overscroll-behavior: contain;
-    height: calc(100vh - 48px);
-    border-left: 1px solid #ddd;
-  }
-  #toc.active {
-    opacity: 1;
-    & nav { display: block; }
-  }
-  /* Make the collapsed ToC header render white on gray also when it's a link */
-  #toc h2 a,
-  #toc h2 a:is(:link, :focus, :hover),
-  #toc a.toplink,
-  #toc a.toplink:hover {
-    color: white;
-    background-color: #444;
-    text-decoration: none;
-  }
-  #toc a.toplink {
-    margin: 2px 0.5em 0;
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
   }
 }
 
@@ -941,26 +936,26 @@ hr.addr {
     margin: 0;
     padding: 0;
     z-index: 1;
-  }
-  #toc h2 {
-    margin: 0;
-    padding: 0.25em 1em 1em 0;
-  }
-  #toc nav {
-    display: block;
-    height: calc(90vh - 84px);
-    bottom: 0;
-    padding: 0.5em 0 2em;
-    overflow: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
   }
   img { /* future proofing */
     max-width: 100%;
     height: auto;
-  }
-  #toc a.toplink {
-    margin: 8px 0.5em 0;
   }
 }
 
@@ -976,12 +971,13 @@ hr.addr {
   #n-copyright-notice {
     border-bottom: none;
   }
-  #toc, #n-introduction {
-    page-break-before: always;
-  }
   #toc {
+    page-break-before: always;
     border-top: none;
     padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
   }
   figure, pre, .vcard {
     page-break-inside: avoid;
@@ -1043,17 +1039,19 @@ hr.addr {
 }
 
 /* SVG Trick: a prefix match works because only black and white are allowed */
-svg :is([stroke="black"], [stroke^="#000"]) {
-  stroke: var(--text-color);
-}
-svg :is([stroke="white"], [stroke^="#fff"]) {
-  stroke: var(--background-color);
-}
-svg :is([fill="black"], [fill^="#000"], :not([fill])) {
-  fill: var(--text-color);
-}
-svg :is([fill="white"], [fill^="#fff"]) {
-  fill: var(--background-color);
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
 }
 </style>
 
@@ -1209,13 +1207,13 @@ modification.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
                 <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-response-semantics" class="internal xref">Response Semantics</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3.2.1">
-                    <p id="section-toc.1-1.4.2.3.2.1.1"><a href="#section-4.3.1" class="auto internal xref">4.3.1</a>.  <a href="#name-100-prefix-primary-verifica" class="internal xref">"100" Prefix (Primary Verification)</a></p>
+                    <p id="section-toc.1-1.4.2.3.2.1.1"><a href="#section-4.3.1" class="auto internal xref">4.3.1</a>.  <a href="#name-phase-1-verification-100-pr" class="internal xref">Phase 1 Verification ("100" Prefix)</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3.2.2">
-                    <p id="section-toc.1-1.4.2.3.2.2.1"><a href="#section-4.3.2" class="auto internal xref">4.3.2</a>.  <a href="#name-101-prefix-secondary-verifi" class="internal xref">"101" Prefix (Secondary Verification)</a></p>
+                    <p id="section-toc.1-1.4.2.3.2.2.1"><a href="#section-4.3.2" class="auto internal xref">4.3.2</a>.  <a href="#name-phase-2-verification-101-pr" class="internal xref">Phase 2 Verification ("101" Prefix)</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3.2.3">
-                    <p id="section-toc.1-1.4.2.3.2.3.1"><a href="#section-4.3.3" class="auto internal xref">4.3.3</a>.  <a href="#name-combined-verification" class="internal xref">Combined Verification</a></p>
+                    <p id="section-toc.1-1.4.2.3.2.3.1"><a href="#section-4.3.3" class="auto internal xref">4.3.3</a>.  <a href="#name-combined-phase-behavior-req" class="internal xref">Combined Phase Behavior (Required for Success)</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3.2.4">
                     <p id="section-toc.1-1.4.2.3.2.4.1"><a href="#section-4.3.4" class="auto internal xref">4.3.4</a>.  <a href="#name-failure-handling" class="internal xref">Failure Handling</a></p>
@@ -1231,13 +1229,13 @@ modification.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
                 <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-vouching-procedure" class="internal xref">Vouching Procedure</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1.2.1">
-                    <p id="section-toc.1-1.5.2.1.2.1.1"><a href="#section-5.1.1" class="auto internal xref">5.1.1</a>.  <a href="#name-primary-verification-100" class="internal xref">Primary Verification ("100")</a></p>
+                    <p id="section-toc.1-1.5.2.1.2.1.1"><a href="#section-5.1.1" class="auto internal xref">5.1.1</a>.  <a href="#name-phase-1-verification-100" class="internal xref">Phase 1 Verification ("100")</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1.2.2">
-                    <p id="section-toc.1-1.5.2.1.2.2.1"><a href="#section-5.1.2" class="auto internal xref">5.1.2</a>.  <a href="#name-secondary-verification-101" class="internal xref">Secondary Verification ("101")</a></p>
+                    <p id="section-toc.1-1.5.2.1.2.2.1"><a href="#section-5.1.2" class="auto internal xref">5.1.2</a>.  <a href="#name-phase-2-verification-101" class="internal xref">Phase 2 Verification ("101")</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1.2.3">
-                    <p id="section-toc.1-1.5.2.1.2.3.1"><a href="#section-5.1.3" class="auto internal xref">5.1.3</a>.  <a href="#name-combined-verification-behav" class="internal xref">Combined Verification Behavior</a></p>
+                    <p id="section-toc.1-1.5.2.1.2.3.1"><a href="#section-5.1.3" class="auto internal xref">5.1.3</a>.  <a href="#name-combined-phase-behavior-requ" class="internal xref">Combined Phase Behavior (Required for Success)</a></p>
 </li>
                 </ul>
 </li>
@@ -1432,7 +1430,7 @@ presented to users, while "Calling Party Number" refers to the
 signaling field used to convey that identity.<a href="#section-2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-2-2.1">
-          <p id="section-2-2.1.1"><strong>Alice</strong>: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob’s number.<a href="#section-2-2.1.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.1.1"><strong>Alice</strong>: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob's number.<a href="#section-2-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.2">
           <p id="section-2-2.2.1"><strong>Bob</strong>: The called party. In vetting flows Bob is the owner whose number is being vetted.<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
@@ -1453,22 +1451,28 @@ signaling field used to convey that identity.<a href="#section-2-1" class="pilcr
           <p id="section-2-2.7.1"><strong>Vet</strong> (or <strong>Vetting</strong>): The process by which a CIDVV platform confirms the relevant party controls the Asserted Caller-ID via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.<a href="#section-2-2.7.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.8">
-          <p id="section-2-2.8.1"><strong>Vouching Call</strong>: A short verification call used in the CIDVV protocol. CIDVV defines a primary vouching call ("100") and an optional secondary vouching call ("101").<a href="#section-2-2.8.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.8.1"><strong>Vouching Call</strong>: A short signaling call used in the CIDVV protocol. CIDVV defines <strong>Phase 1</strong> ("100" prefix) and <strong>Phase 2</strong> ("101" prefix) verification calls.<a href="#section-2-2.8.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.9">
-          <p id="section-2-2.9.1"><strong>Successful Vouch</strong>: A verification result indicating that a matching cache entry was found.<a href="#section-2-2.9.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.9.1"><strong>Phase 1 Verification</strong> ("100" prefix): The initial busy-class verification step. Expected response behavior is a "Busy"-class rejection (e.g., SIP 486 Busy Here).<a href="#section-2-2.9.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.10">
-          <p id="section-2-2.10.1"><strong>Unsuccessful Vouch</strong>: A verification result indicating that no matching cache entry was found.<a href="#section-2-2.10.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.10.1"><strong>Phase 2 Verification</strong> ("101" prefix): The secondary not-found / rejection-class verification step. Expected response behavior is a "Not Found"-class rejection (e.g., SIP 404 Not Found) for vouching, or busy-class for token confirmation in vetting.<a href="#section-2-2.10.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.11">
-          <p id="section-2-2.11.1"><strong>Verification Not Performed</strong>: A condition where verification could not be completed due to system or network conditions.<a href="#section-2-2.11.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.11.1"><strong>Successful Vouch</strong> / <strong>Successful Vet</strong>: Requires <strong>both Phase 1 and Phase 2</strong> to complete with the expected behaviors within the Validity Window.<a href="#section-2-2.11.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.12">
-          <p id="section-2-2.12.1"><strong>Validity Window</strong>: A short time interval during which CIDVV signaling state is considered valid for correlation purposes, typically on the order of 10 seconds.<a href="#section-2-2.12.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.12.1"><strong>Unsuccessful Vouch</strong>: A verification result indicating that no matching cache entry was found.<a href="#section-2-2.12.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-2.13">
-          <p id="section-2-2.13.1"><strong>Asserted Caller-ID</strong>: The Caller-ID value that is being vouched or vetted (i.e., the number whose control is being verified). This is the value used as the basis for the CIDVV Token payload and as the cache lookup key in the tuple (Asserted-Caller-ID, CIDVV-Token).<a href="#section-2-2.13.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.13.1"><strong>Verification Not Performed</strong>: A condition where verification could not be completed due to system or network conditions.<a href="#section-2-2.13.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-2.14">
+          <p id="section-2-2.14.1"><strong>Validity Window</strong>: A short time interval during which CIDVV signaling state is considered valid for correlation purposes, typically on the order of 10 seconds.<a href="#section-2-2.14.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-2.15">
+          <p id="section-2-2.15.1"><strong>Asserted Caller-ID</strong>: The Caller-ID value that is being vouched or vetted (i.e., the number whose control is being verified). This is the value used as the basis for the CIDVV Token payload and as the cache lookup key in the tuple (Asserted-Caller-ID, CIDVV-Token).<a href="#section-2-2.15.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-2-3">Once successfully vouched, an Asserted Caller-ID may be referred to informally as a "vouched number," but the formal term used in this document is "Asserted Caller-ID."<a href="#section-2-3" class="pilcrow">¶</a></p>
@@ -1567,10 +1571,10 @@ the rightmost digits.<a href="#section-4-3" class="pilcrow">¶</a></p>
 <p id="section-4.1-1">CIDVV uses special Caller-ID prefixes to signal protocol operations:<a href="#section-4.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-4.1-2.1">
-            <p id="section-4.1-2.1.1">"100" prefix — Primary Verification Call<a href="#section-4.1-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-2.1.1">"100" prefix - Phase 1 Verification Call<a href="#section-4.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-4.1-2.2">
-            <p id="section-4.1-2.2.1">"101" prefix — Secondary Verification Call / Vetting Call<a href="#section-4.1-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-2.2.1">"101" prefix - Phase 2 Verification Call / Vetting Call<a href="#section-4.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-4.1-3">CIDVV Calling Party Numbers are numeric signaling values carried in
@@ -1615,44 +1619,27 @@ called number and the Validity Window.<a href="#section-4.1-12" class="pilcrow">
 CIDVV platform and treated as a single correlation event. As a result,
 a successful verification may apply to more than one call attempt
 within the Validity Window.<a href="#section-4.1-13" class="pilcrow">¶</a></p>
-<p id="section-4.1-14">CIDVV verification consists of observing the behavior of one or more
-verification calls using distinct CIDVV prefixes.<a href="#section-4.1-14" class="pilcrow">¶</a></p>
-<p id="section-4.1-15">A successful vouch requires that a verification call using the "100"
-prefix produce the expected response behavior. Additional
-verification calls (e.g., using the "101" prefix) MAY be used to
-achieve higher assurance.<a href="#section-4.1-15" class="pilcrow">¶</a></p>
+<p id="section-4.1-14">CIDVV verification consists of observing the behavior of <strong>Phase 1</strong> and <strong>Phase 2</strong> verification calls using the distinct CIDVV prefixes.<a href="#section-4.1-14" class="pilcrow">¶</a></p>
+<p id="section-4.1-15">A successful vouch <strong>requires both</strong> Phase 1 and Phase 2 to complete with their expected responses within the Validity Window. The two phases MAY be performed in any order or in parallel. Implementations MUST NOT assume a specific ordering.<a href="#section-4.1-15" class="pilcrow">¶</a></p>
 <p id="section-4.1-16">The expected behavior is:<a href="#section-4.1-16" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-4.1-17.1">
-            <p id="section-4.1-17.1.1">Calls using the "100" prefix MUST result in SIP 486 Busy Here.
-Any other response, timeout, call progression, or successful call
-completion MUST be treated as an unsuccessful vouch.<a href="#section-4.1-17.1.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-17.1.1"><strong>Phase 1</strong> ("100" prefix) MUST result in a Busy-class response (e.g., SIP 486 Busy Here or 600 Busy Everywhere). Any other response, timeout, call progression, or successful completion MUST be treated as unsuccessful.<a href="#section-4.1-17.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-4.1-17.2">
-            <p id="section-4.1-17.2.1">Calls using the "101" prefix are expected to result in SIP 404 Not Found.
-However, in the context of an active vetting procedure, a "101" call
-carrying a valid token MAY result in SIP 486 Busy Here.<a href="#section-4.1-17.2.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-17.2.1"><strong>Phase 2</strong> ("101" prefix) MUST result in a Not-Found-class response (e.g., SIP 404 Not Found or 608 Rejected) for vouching. In the context of an active vetting procedure, Phase 2 carries a valid token and MUST result in a Busy-class response.<a href="#section-4.1-17.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-4.1-18">A CIDVV-aware network element MUST NOT treat a single response as
-sufficient evidence of a successful vouch unless it corresponds to
-the expected behavior for the "100" prefix.<a href="#section-4.1-18" class="pilcrow">¶</a></p>
-<p id="section-4.1-19">Additional verification calls (e.g., using the "101" prefix) MAY be
-used to increase assurance but are not required for a valid vouch.<a href="#section-4.1-19" class="pilcrow">¶</a></p>
-<p id="section-4.1-20">The two verification calls MAY be sent in any order or in parallel.
-Implementations MUST NOT assume ordering.<a href="#section-4.1-20" class="pilcrow">¶</a></p>
-<p id="section-4.1-21">If either expected response is missing, altered, delayed, replaced by
-call progression, or inconsistent with the expected pattern, the
-result MUST be treated as unsuccessful or indeterminate.<a href="#section-4.1-21" class="pilcrow">¶</a></p>
-<p id="section-4.1-22">CIDVV exchanges occur using short signaling dialogs and do not require
-media establishment.<a href="#section-4.1-22" class="pilcrow">¶</a></p>
-<p id="section-4.1-23">CIDVV signaling is encoded entirely within numeric Calling Party
+<p id="section-4.1-18">If either Phase 1 or Phase 2 fails to produce the expected response (or is missing, delayed beyond the Validity Window, altered, or inconsistent), the entire vouch MUST be treated as unsuccessful or indeterminate.<a href="#section-4.1-18" class="pilcrow">¶</a></p>
+<p id="section-4.1-19">CIDVV exchanges occur using short signaling dialogs and do not require
+media establishment.<a href="#section-4.1-19" class="pilcrow">¶</a></p>
+<p id="section-4.1-20">CIDVV signaling is encoded entirely within numeric Calling Party
 Number values to maximize survivability across heterogeneous SIP and
-SS7/TDM networks.<a href="#section-4.1-23" class="pilcrow">¶</a></p>
-<p id="section-4.1-24">Vetting procedures MAY use full telephone numbers or truncated
+SS7/TDM networks.<a href="#section-4.1-20" class="pilcrow">¶</a></p>
+<p id="section-4.1-21">Vetting procedures MAY use full telephone numbers or truncated
 forms as input to cryptographic operations, independent of the
-CIDVV Calling Party Number encoding.<a href="#section-4.1-24" class="pilcrow">¶</a></p>
-<p id="section-4.1-25">CIDVV operations rely on state within the Validity Window.<a href="#section-4.1-25" class="pilcrow">¶</a></p>
+CIDVV Calling Party Number encoding.<a href="#section-4.1-21" class="pilcrow">¶</a></p>
+<p id="section-4.1-22">CIDVV operations rely on state within the Validity Window.<a href="#section-4.1-22" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="vouching-vs-vetting-response-patterns">
@@ -1687,7 +1674,7 @@ distinct expected behaviors. The table below summarizes the differences:<a href=
             </tr>
           </tbody>
         </table>
-<p id="section-4.2-3">Implementations distinguish context (vouching vs. vetting) primarily by the presence of a pre-agreed vetting Caller-ID and shared secret for the Asserted Caller-ID. Because vetting uses a specific Caller-ID designated for the procedure, overlap with ordinary vouching calls on the same number is expected to be rare. A CIDVV platform MUST treat calls using a known vetting Caller-ID according to the vetting response pattern (even if a live vouch cache entry exists) and MUST NOT treat a 101→404 response as a successful vouch when an active vetting procedure is in progress for that number.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.2-3">Implementations distinguish context (vouching vs. vetting) primarily by the presence of a pre-agreed vetting Caller-ID and shared secret for the Asserted Caller-ID. Because vetting uses a specific Caller-ID designated for the procedure, overlap with ordinary vouching calls on the same number is expected to be rare. A CIDVV platform MUST treat calls using a known vetting Caller-ID according to the vetting response pattern (even if a live vouch cache entry exists) and MUST NOT treat a 101-&gt;404 response as a successful vouch when an active vetting procedure is in progress for that number.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="response-semantics">
@@ -1704,58 +1691,29 @@ as the canonical representations of these behaviors where possible.<a href="#sec
 <p id="section-4.3-3">CIDVV requires that these two rejection behaviors remain
 distinguishable across the signaling path. Environments that cannot
 preserve this distinction may not support enhanced verification.<a href="#section-4.3-3" class="pilcrow">¶</a></p>
-<div id="prefix-primary-verification">
+<div id="phase-1-verification-100-prefix">
 <section id="section-4.3.1">
-          <h4 id="name-100-prefix-primary-verifica">
-<a href="#section-4.3.1" class="section-number selfRef">4.3.1. </a><a href="#name-100-prefix-primary-verifica" class="section-name selfRef">"100" Prefix (Primary Verification)</a>
+          <h4 id="name-phase-1-verification-100-pr">
+<a href="#section-4.3.1" class="section-number selfRef">4.3.1. </a><a href="#name-phase-1-verification-100-pr" class="section-name selfRef">Phase 1 Verification ("100" Prefix)</a>
           </h4>
-<p id="section-4.3.1-1">A call using the "100" prefix is considered successful only if it
-results in an immediate rejection consistent with a "Busy"-class
-response (e.g., SIP 486 Busy Here).<a href="#section-4.3.1-1" class="pilcrow">¶</a></p>
-<p id="section-4.3.1-2">A CIDVV implementation MUST treat any response other than this
-expected behavior — including ringing, call completion, timeout, or
-alternative error responses — as an unsuccessful verification.<a href="#section-4.3.1-2" class="pilcrow">¶</a></p>
-<p id="section-4.3.1-3">A successful "100" verification provides a baseline level of
-confidence that the Asserted Caller-ID is routable and under the
-control of the originating party.<a href="#section-4.3.1-3" class="pilcrow">¶</a></p>
+<p id="section-4.3.1-1">A call using the "100" prefix is the <strong>Phase 1</strong> verification. It is considered successful only if it results in an immediate rejection consistent with a "Busy"-class response (e.g., SIP 486 Busy Here).<a href="#section-4.3.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="prefix-secondary-verification">
+<div id="phase-2-verification-101-prefix">
 <section id="section-4.3.2">
-          <h4 id="name-101-prefix-secondary-verifi">
-<a href="#section-4.3.2" class="section-number selfRef">4.3.2. </a><a href="#name-101-prefix-secondary-verifi" class="section-name selfRef">"101" Prefix (Secondary Verification)</a>
+          <h4 id="name-phase-2-verification-101-pr">
+<a href="#section-4.3.2" class="section-number selfRef">4.3.2. </a><a href="#name-phase-2-verification-101-pr" class="section-name selfRef">Phase 2 Verification ("101" Prefix)</a>
           </h4>
-<p id="section-4.3.2-1">A call using the "101" prefix is used as an optional secondary
-validation signal.<a href="#section-4.3.2-1" class="pilcrow">¶</a></p>
-<p id="section-4.3.2-2">The expected behavior is an immediate rejection consistent with a
-"Not Found"-class response (e.g., SIP 404 Not Found).<a href="#section-4.3.2-2" class="pilcrow">¶</a></p>
-<p id="section-4.3.2-3">In the context of an active vetting procedure, a "101" call carrying a
-valid vetting token MAY instead result in a "Busy"-class response
-(e.g., SIP 486 Busy Here).<a href="#section-4.3.2-3" class="pilcrow">¶</a></p>
-<p id="section-4.3.2-4">Because such responses are relatively common in the PSTN, a "101"
-verification alone MUST NOT be treated as evidence of a successful
-vouch.<a href="#section-4.3.2-4" class="pilcrow">¶</a></p>
+<p id="section-4.3.2-1">A call using the "101" prefix is the <strong>Phase 2</strong> verification. For standard vouching, it is expected to result in a "Not Found"-class response (e.g., SIP 404 Not Found). In the context of an active vetting procedure, a valid token check results in a "Busy"-class response.<a href="#section-4.3.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="combined-verification">
+<div id="combined-phase-behavior-required-for-success">
 <section id="section-4.3.3">
-          <h4 id="name-combined-verification">
-<a href="#section-4.3.3" class="section-number selfRef">4.3.3. </a><a href="#name-combined-verification" class="section-name selfRef">Combined Verification</a>
+          <h4 id="name-combined-phase-behavior-req">
+<a href="#section-4.3.3" class="section-number selfRef">4.3.3. </a><a href="#name-combined-phase-behavior-req" class="section-name selfRef">Combined Phase Behavior (Required for Success)</a>
           </h4>
-<p id="section-4.3.3-1">Implementations MAY perform both "100" and "101" verification calls
-to achieve a higher level of assurance.<a href="#section-4.3.3-1" class="pilcrow">¶</a></p>
-<p id="section-4.3.3-2">In this case, a stronger validation result is obtained when:<a href="#section-4.3.3-2" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-4.3.3-3.1">
-              <p id="section-4.3.3-3.1.1">The "100" verification produces the expected "Busy"-class behavior, AND<a href="#section-4.3.3-3.1.1" class="pilcrow">¶</a></p>
-</li>
-            <li class="normal" id="section-4.3.3-3.2">
-              <p id="section-4.3.3-3.2.1">The "101" verification produces the expected "Not Found"-class behavior<a href="#section-4.3.3-3.2.1" class="pilcrow">¶</a></p>
-</li>
-          </ul>
-<p id="section-4.3.3-4">within the Validity Window.<a href="#section-4.3.3-4" class="pilcrow">¶</a></p>
-<p id="section-4.3.3-5">Implementations MUST NOT require the two verification calls to occur
-in any specific order.<a href="#section-4.3.3-5" class="pilcrow">¶</a></p>
+<p id="section-4.3.3-1">A successful vouch or successful vet <strong>requires both Phase 1 and Phase 2</strong> to complete with their expected behaviors within the Validity Window.<a href="#section-4.3.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3.3-2">Implementations MUST NOT treat a single phase as sufficient. If either phase fails, is missing, altered, delayed, or inconsistent, the result MUST be treated as unsuccessful or indeterminate.<a href="#section-4.3.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="failure-handling">
@@ -1767,8 +1725,8 @@ in any specific order.<a href="#section-4.3.3-5" class="pilcrow">¶</a></p>
 verification for that prefix MUST be treated as unsuccessful.<a href="#section-4.3.4-1" class="pilcrow">¶</a></p>
 <p id="section-4.3.4-2">If only the "100" verification succeeds, the result MAY be treated as
 a valid but lower-assurance vouch.<a href="#section-4.3.4-2" class="pilcrow">¶</a></p>
-<p id="section-4.3.4-3">If both "100" and "101" verifications succeed (i.e., "100" → 486 and
-"101" → 404), the result MAY be treated as a higher-assurance vouch.<a href="#section-4.3.4-3" class="pilcrow">¶</a></p>
+<p id="section-4.3.4-3">If both "100" and "101" verifications succeed (i.e., "100" -&gt; 486 and
+"101" -&gt; 404), the result MAY be treated as a higher-assurance vouch.<a href="#section-4.3.4-3" class="pilcrow">¶</a></p>
 <p id="section-4.3.4-4">If neither verification succeeds, or if results are inconsistent or
 ambiguous, the vouch MUST be treated as unsuccessful or indeterminate.<a href="#section-4.3.4-4" class="pilcrow">¶</a></p>
 </section>
@@ -1799,10 +1757,10 @@ by prefixing "100" to the dialed number.<a href="#section-5.1-1" class="pilcrow"
 the PSTN toward Bob using the original Caller-ID.<a href="#section-5.1-6" class="pilcrow">¶</a></p>
 <p id="section-5.1-7">When Bob's system receives the call, a CIDVV-aware network element
 (e.g., SBC) initiates a verification call toward Alice.<a href="#section-5.1-7" class="pilcrow">¶</a></p>
-<div id="primary-verification-100">
+<div id="phase-1-verification-100">
 <section id="section-5.1.1">
-          <h4 id="name-primary-verification-100">
-<a href="#section-5.1.1" class="section-number selfRef">5.1.1. </a><a href="#name-primary-verification-100" class="section-name selfRef">Primary Verification ("100")</a>
+          <h4 id="name-phase-1-verification-100">
+<a href="#section-5.1.1" class="section-number selfRef">5.1.1. </a><a href="#name-phase-1-verification-100" class="section-name selfRef">Phase 1 Verification ("100")</a>
           </h4>
 <p id="section-5.1.1-1">Bob's CIDVV-aware element constructs the CIDVV token using the same
 method (prefix "100" plus the rightmost 12 digits of the dialed
@@ -1823,10 +1781,10 @@ the originating party can receive calls at the Asserted Caller-ID
 and constitutes a valid baseline vouch.<a href="#section-5.1.1-8" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="secondary-verification-101">
+<div id="phase-2-verification-101">
 <section id="section-5.1.2">
-          <h4 id="name-secondary-verification-101">
-<a href="#section-5.1.2" class="section-number selfRef">5.1.2. </a><a href="#name-secondary-verification-101" class="section-name selfRef">Secondary Verification ("101")</a>
+          <h4 id="name-phase-2-verification-101">
+<a href="#section-5.1.2" class="section-number selfRef">5.1.2. </a><a href="#name-phase-2-verification-101" class="section-name selfRef">Phase 2 Verification ("101")</a>
           </h4>
 <p id="section-5.1.2-1">Bob's CIDVV-aware element MAY initiate a second verification call
 using a CIDVV token constructed by prefixing "101" to the same
@@ -1841,24 +1799,23 @@ purposes and MUST NOT be used as a standalone indicator of a
 successful vouch.<a href="#section-5.1.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="combined-verification-behavior">
+<div id="combined-phase-behavior-required-for-success-1">
 <section id="section-5.1.3">
-          <h4 id="name-combined-verification-behav">
-<a href="#section-5.1.3" class="section-number selfRef">5.1.3. </a><a href="#name-combined-verification-behav" class="section-name selfRef">Combined Verification Behavior</a>
+          <h4 id="name-combined-phase-behavior-requ">
+<a href="#section-5.1.3" class="section-number selfRef">5.1.3. </a><a href="#name-combined-phase-behavior-requ" class="section-name selfRef">Combined Phase Behavior (Required for Success)</a>
           </h4>
-<p id="section-5.1.3-1">Implementations MAY perform only the primary ("100") verification or
-MAY perform both primary and secondary verification.<a href="#section-5.1.3-1" class="pilcrow">¶</a></p>
-<p id="section-5.1.3-2">A successful "100" verification alone provides a valid vouch with
-baseline assurance.<a href="#section-5.1.3-2" class="pilcrow">¶</a></p>
-<p id="section-5.1.3-3">If both verification calls are performed, a higher-assurance vouch is
-obtained when:<a href="#section-5.1.3-3" class="pilcrow">¶</a></p>
-<p id="section-5.1.3-4">"100" → 486, and
-   "101" → 404<a href="#section-5.1.3-4" class="pilcrow">¶</a></p>
-<p id="section-5.1.3-5">are both observed within the Validity Window.<a href="#section-5.1.3-5" class="pilcrow">¶</a></p>
-<p id="section-5.1.3-6">The two verification calls MAY occur in any order or in parallel.
-Implementations MUST NOT assume ordering.<a href="#section-5.1.3-6" class="pilcrow">¶</a></p>
-<p id="section-5.1.3-7">If the "100" verification fails, the vouch MUST be treated as
-unsuccessful regardless of any "101" result.<a href="#section-5.1.3-7" class="pilcrow">¶</a></p>
+<p id="section-5.1.3-1">A successful CIDVV vouch <strong>requires both</strong> Phase 1 and Phase 2 verification calls to complete with their expected responses within the Validity Window.<a href="#section-5.1.3-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.1.3-2.1">
+              <p id="section-5.1.3-2.1.1"><strong>Phase 1</strong> ("100" prefix) MUST return a Busy-class response (e.g., SIP 486 Busy Here or 600 Busy Everywhere).<a href="#section-5.1.3-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-5.1.3-2.2">
+              <p id="section-5.1.3-2.2.1"><strong>Phase 2</strong> ("101" prefix) MUST return a Not-Found-class response (e.g., SIP 404 Not Found or 608 Rejected).<a href="#section-5.1.3-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-5.1.3-3">The two verification calls MAY be performed in any order or in parallel. Implementations MUST NOT assume a specific ordering.<a href="#section-5.1.3-3" class="pilcrow">¶</a></p>
+<p id="section-5.1.3-4">If either Phase 1 or Phase 2 fails to produce the expected response (or is missing, delayed beyond the Validity Window, or altered), the entire vouch MUST be treated as unsuccessful or indeterminate.<a href="#section-5.1.3-4" class="pilcrow">¶</a></p>
+<p id="section-5.1.3-5">The same combined Phase 1 + Phase 2 requirement applies to successful vetting, with Phase 2 semantics adjusted for token confirmation (see Vetting Procedure).<a href="#section-5.1.3-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1912,7 +1869,7 @@ one-to-one correspondence between specific call legs.<a href="#section-5.2-3" cl
 <p id="section-5.3-4">Example (for illustration only):
 - calling = 12125550100, called = 19495550199, secret = "hamburger"
 - Concatenated: "12125550100|19495550199|hamburger"
-- SHA-256 first 8 hex → decimal → padded/prepended token = 12953388433 (or similar)<a href="#section-5.3-4" class="pilcrow">¶</a></p>
+- SHA-256 first 8 hex -&gt; decimal -&gt; padded/prepended token = 12953388433 (or similar)<a href="#section-5.3-4" class="pilcrow">¶</a></p>
 <p id="section-5.3-5">Implementations MUST use the identical normalization and concatenation order for both vetting calls and any Redis (or equivalent) cache lookups. The token is valid only inside the Validity Window.<a href="#section-5.3-5" class="pilcrow">¶</a></p>
 <div id="multi-tenant-considerations">
 <section id="section-5.3.1">
@@ -1940,9 +1897,9 @@ already scoped by the shared secret.<a href="#section-5.3.1-3" class="pilcrow">�
 dialogs) using a pre-agreed shared key. The process confirms that
 the <strong>called party (Bob)</strong> controls the target telephone number and
 possesses the correct shared secret. In the examples below, Alice is
-the verifier who initiates the two calls to Bob’s number in order to
-vet Bob’s number.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
-<p id="section-5.4-2">Before vetting begins, Alice and Bob agree on a shared secret, Bob’s
+the verifier who initiates the two calls to Bob's number in order to
+vet Bob's number.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+<p id="section-5.4-2">Before vetting begins, Alice and Bob agree on a shared secret, Bob's
 vetting Caller-ID, and a Validity Window.<a href="#section-5.4-2" class="pilcrow">¶</a></p>
 <p id="section-5.4-3">Alice places a vetting call to Bob using a Caller-ID beginning with the digits "101".<a href="#section-5.4-3" class="pilcrow">¶</a></p>
 <p id="section-5.4-4">When Bob's CIDVV platform receives the first vetting call, it removes
@@ -2092,14 +2049,14 @@ cached for the Validity Window.<a href="#section-6.1.1-2.9.2.2.1" class="pilcrow
                   <p id="section-6.1.1-2.9.2.3.1">Finds a matching entry from step 3.<a href="#section-6.1.1-2.9.2.3.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-6.1.1-2.9.2.4">
-                  <p id="section-6.1.1-2.9.2.4.1">Considers this a successful primary verification and returns
+                  <p id="section-6.1.1-2.9.2.4.1">Considers this a successful Phase 1 Verification and returns
 <strong>486 Busy Here</strong>.<a href="#section-6.1.1-2.9.2.4.1" class="pilcrow">¶</a></p>
 </li>
               </ul>
 </li>
             <li id="section-6.1.1-2.10">
               <p id="section-6.1.1-2.10.1">Bob's SBC receives the 486 via the PSTN, recognizes it as a
-successful primary verification, and advances the original call
+successful Phase 1 Verification, and advances the original call
 to Bob's User Agent.<a href="#section-6.1.1-2.10.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.1.1-2.11">
@@ -2209,13 +2166,13 @@ the PSTN using the original Caller-ID.<a href="#section-6.2.1-2.4.1" class="pilc
                   <p id="section-6.2.1-2.6.2.1.1">Constructs the CIDVV token <code>10019495550199</code>.<a href="#section-6.2.1-2.6.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-6.2.1-2.6.2.2">
-                  <p id="section-6.2.1-2.6.2.2.1">Initiates a primary verification call toward Alice's number
+                  <p id="section-6.2.1-2.6.2.2.1">Initiates a Phase 1 Verification call toward Alice's number
 (<code>+12125550100</code>) using the Caller-ID <code>10019495550199</code>.<a href="#section-6.2.1-2.6.2.2.1" class="pilcrow">¶</a></p>
 </li>
               </ul>
 </li>
             <li id="section-6.2.1-2.7">
-              <p id="section-6.2.1-2.7.1">The primary verification call arrives at Alice's SBC via the PSTN.<a href="#section-6.2.1-2.7.1" class="pilcrow">¶</a></p>
+              <p id="section-6.2.1-2.7.1">The Phase 1 Verification call arrives at Alice's SBC via the PSTN.<a href="#section-6.2.1-2.7.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.2.1-2.8">
               <p id="section-6.2.1-2.8.1"><strong>Alice's SBC</strong>:<a href="#section-6.2.1-2.8.1" class="pilcrow">¶</a></p>
@@ -2247,14 +2204,14 @@ the PSTN using the original Caller-ID.<a href="#section-6.2.1-2.4.1" class="pilc
 verification.<a href="#section-6.2.1-2.10.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.2.1-2.11">
-              <p id="section-6.2.1-2.11.1"><strong>Bob's SBC (optional secondary verification)</strong>:
+              <p id="section-6.2.1-2.11.1"><strong>Bob's SBC (Phase 2 Verification)</strong>:
    - Constructs a second CIDVV token by prefixing "101" to the same
  12-digit payload, resulting in <code>10119495550199</code>.
-   - Initiates a secondary verification call toward Alice's number
+   - Initiates a Phase 2 Verification call toward Alice's number
  using the Caller-ID <code>10119495550199</code>.<a href="#section-6.2.1-2.11.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.2.1-2.12">
-              <p id="section-6.2.1-2.12.1">The secondary verification call arrives at Alice's SBC via the PSTN.<a href="#section-6.2.1-2.12.1" class="pilcrow">¶</a></p>
+              <p id="section-6.2.1-2.12.1">The Phase 2 Verification call arrives at Alice's SBC via the PSTN.<a href="#section-6.2.1-2.12.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.2.1-2.13">
               <p id="section-6.2.1-2.13.1"><strong>Alice's SBC</strong>:
@@ -2278,10 +2235,10 @@ verification behavior.<a href="#section-6.2.1-2.15.1" class="pilcrow">¶</a></p>
               <p id="section-6.2.1-2.16.1">Having observed:<a href="#section-6.2.1-2.16.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.2.1-2.16.2.1">
-                  <p id="section-6.2.1-2.16.2.1.1">"100" → 486, and<a href="#section-6.2.1-2.16.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-6.2.1-2.16.2.1.1">"100" -&gt; 486, and<a href="#section-6.2.1-2.16.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-6.2.1-2.16.2.2">
-                  <p id="section-6.2.1-2.16.2.2.1">"101" → 404
+                  <p id="section-6.2.1-2.16.2.2.1">"101" -&gt; 404
 within the Validity Window,<a href="#section-6.2.1-2.16.2.2.1" class="pilcrow">¶</a></p>
 </li>
               </ul>
@@ -2317,10 +2274,10 @@ SIP 486 (Busy Here), the vouch MUST be treated as unsuccessful.<a href="#section
 of:<a href="#section-6.3-3.2.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.3-3.2.2.1">
-                <p id="section-6.3-3.2.2.1.1">"100" → 486, and<a href="#section-6.3-3.2.2.1.1" class="pilcrow">¶</a></p>
+                <p id="section-6.3-3.2.2.1.1">"100" -&gt; 486, and<a href="#section-6.3-3.2.2.1.1" class="pilcrow">¶</a></p>
 </li>
               <li class="normal" id="section-6.3-3.2.2.2">
-                <p id="section-6.3-3.2.2.2.1">"101" → 404
+                <p id="section-6.3-3.2.2.2.1">"101" -&gt; 404
 is not observed within the Validity Window, the vouch MUST be
 treated as unsuccessful or indeterminate.<a href="#section-6.3-3.2.2.2.1" class="pilcrow">¶</a></p>
 </li>
@@ -2406,22 +2363,22 @@ separately, but together they constitute a single vetting operation.<a href="#se
 <p id="section-6.4.3-1">Vetting a remote number requires two separate calls (distinct SIP dialogs) using a pre-agreed shared key. The process confirms that the called party (Bob) controls the target telephone number and possesses the correct shared secret.<a href="#section-6.4.3-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-6.4.3-2">
 <li id="section-6.4.3-2.1">
-              <p id="section-6.4.3-2.1.1">Alice and Bob agree on a shared secret (e.g., <code>hamburger</code>) and Alice’s vetting Caller-ID (<code>+12125550100</code>, or its rightmost 12 digits for matching purposes).<a href="#section-6.4.3-2.1.1" class="pilcrow">¶</a></p>
+              <p id="section-6.4.3-2.1.1">Alice and Bob agree on a shared secret (e.g., <code>hamburger</code>) and Alice's vetting Caller-ID (<code>+12125550100</code>, or its rightmost 12 digits for matching purposes).<a href="#section-6.4.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.2">
-              <p id="section-6.4.3-2.2.1">Both parties enter the shared secret, Alice’s vetting Caller-ID, and an optional Validity Window (e.g., one week) into their respective CIDVV platforms.<a href="#section-6.4.3-2.2.1" class="pilcrow">¶</a></p>
+              <p id="section-6.4.3-2.2.1">Both parties enter the shared secret, Alice's vetting Caller-ID, and an optional Validity Window (e.g., one week) into their respective CIDVV platforms.<a href="#section-6.4.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.3">
-              <p id="section-6.4.3-2.3.1">Alice’s CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID <code>10112125550100</code> toward Bob’s number (<code>+19495550199</code>). The call traverses the PSTN.<a href="#section-6.4.3-2.3.1" class="pilcrow">¶</a></p>
+              <p id="section-6.4.3-2.3.1">Alice's CIDVV platform (CIDVV_A) initiates the first vetting call with Caller-ID <code>10112125550100</code> toward Bob's number (<code>+19495550199</code>). The call traverses the PSTN.<a href="#section-6.4.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.4">
-              <p id="section-6.4.3-2.4.1">Bob’s SBC recognizes the leading <code>101</code> prefix on the incoming Caller-ID and forwards the call to Bob’s CIDVV platform (CIDVV_B).<a href="#section-6.4.3-2.4.1" class="pilcrow">¶</a></p>
+              <p id="section-6.4.3-2.4.1">Bob's SBC recognizes the leading <code>101</code> prefix on the incoming Caller-ID and forwards the call to Bob's CIDVV platform (CIDVV_B).<a href="#section-6.4.3-2.4.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.5">
               <p id="section-6.4.3-2.5.1"><strong>CIDVV_B</strong>:<a href="#section-6.4.3-2.5.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.4.3-2.5.2.1">
-                  <p id="section-6.4.3-2.5.2.1.1">Strips the leading <code>101</code>, recovering Alice’s Caller-ID.<a href="#section-6.4.3-2.5.2.1.1" class="pilcrow">¶</a></p>
+                  <p id="section-6.4.3-2.5.2.1.1">Strips the leading <code>101</code>, recovering Alice's Caller-ID.<a href="#section-6.4.3-2.5.2.1.1" class="pilcrow">¶</a></p>
 </li>
                 <li class="normal" id="section-6.4.3-2.5.2.2">
                   <p id="section-6.4.3-2.5.2.2.1">For matching purposes, CIDVV_B MAY use only the rightmost
@@ -2452,7 +2409,7 @@ constraints.<a href="#section-6.4.3-2.5.2.2.1" class="pilcrow">¶</a></p>
               <p id="section-6.4.3-2.7.1">CIDVV_A immediately places a second vetting call to <code>+19495550199</code> using the Vetting Token Check Caller-ID <code>10112953388433</code>.<a href="#section-6.4.3-2.7.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.8">
-              <p id="section-6.4.3-2.8.1">Bob’s SBC recognizes the <code>101</code> prefix on the Caller-ID and forwards the call to CIDVV_B.<a href="#section-6.4.3-2.8.1" class="pilcrow">¶</a></p>
+              <p id="section-6.4.3-2.8.1">Bob's SBC recognizes the <code>101</code> prefix on the Caller-ID and forwards the call to CIDVV_B.<a href="#section-6.4.3-2.8.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-6.4.3-2.9">
               <p id="section-6.4.3-2.9.1"><strong>CIDVV_B</strong>:<a href="#section-6.4.3-2.9.1" class="pilcrow">¶</a></p>
@@ -2482,10 +2439,10 @@ within the Validity Window are expected to be rare.<a href="#section-6.4.3-3" cl
 <p id="section-6.4.3.1-1">A vetting attempt may fail for the following reasons:<a href="#section-6.4.3.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.4.3.1-2.1">
-                <p id="section-6.4.3.1-2.1.1">Bob does not have a participating CIDVV platform — the first call will not return 404, or the second call will not return 486.<a href="#section-6.4.3.1-2.1.1" class="pilcrow">¶</a></p>
+                <p id="section-6.4.3.1-2.1.1">Bob does not have a participating CIDVV platform - the first call will not return 404, or the second call will not return 486.<a href="#section-6.4.3.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
               <li class="normal" id="section-6.4.3.1-2.2">
-                <p id="section-6.4.3.1-2.2.1">The shared secret, Alice’s vetting Caller-ID, or time window does not match — the two calls will not produce the expected 404 + 486 sequence.<a href="#section-6.4.3.1-2.2.1" class="pilcrow">¶</a></p>
+                <p id="section-6.4.3.1-2.2.1">The shared secret, Alice's vetting Caller-ID, or time window does not match - the two calls will not produce the expected 404 + 486 sequence.<a href="#section-6.4.3.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
               <li class="normal" id="section-6.4.3.1-2.3">
                 <p id="section-6.4.3.1-2.3.1">Network or policy restrictions prevent one or both calls from reaching the remote CIDVV platform.<a href="#section-6.4.3.1-2.3.1" class="pilcrow">¶</a></p>
@@ -2646,7 +2603,7 @@ vouched).<a href="#section-9-2" class="pilcrow">¶</a></p>
 reachability within the Validity Window. This may result in multiple
 calls being validated by a single successful vouch.<a href="#section-9-3" class="pilcrow">¶</a></p>
 <p id="section-9-4">The use of distinct response patterns across multiple verification
-calls (e.g., "100" → 486 and "101" → 404) increases resistance to
+calls (e.g., "100" -&gt; 486 and "101" -&gt; 404) increases resistance to
 false-positive validation arising from common network behaviors.<a href="#section-9-4" class="pilcrow">¶</a></p>
 <div id="trust-model">
 <section id="section-9.1">
@@ -2831,7 +2788,7 @@ cryptographic identity binding.<a href="#section-9.11-1" class="pilcrow">¶</a><
 <div dir="auto" class="left"><span class="country-name">United States of America</span></div>
 <div class="email">
 <span>Email:</span>
-<a href="mailto:cidvv@jollyrogertelephone.com" class="email">cidvv@jollyrogertelephone.com</a>
+<a href="mailto:roger@jollyrogertelephone.com" class="email">roger@jollyrogertelephone.com</a>
 </div>
 </address>
 <address class="vcard">
@@ -2840,7 +2797,7 @@ cryptographic identity binding.<a href="#section-9.11-1" class="pilcrow">¶</a><
 <div dir="auto" class="left"><span class="country-name">United States of America</span></div>
 <div class="email">
 <span>Email:</span>
-<a href="mailto:cidvv@jollyrogertelephone.com" class="email">cidvv@jollyrogertelephone.com</a>
+<a href="mailto:steveb@jollyrogertelephone.com" class="email">steveb@jollyrogertelephone.com</a>
 </div>
 </address>
 <address class="vcard">
@@ -2848,7 +2805,7 @@ cryptographic identity binding.<a href="#section-9.11-1" class="pilcrow">¶</a><
 <div dir="auto" class="left"><span class="country-name">United States of America</span></div>
 <div class="email">
 <span>Email:</span>
-<a href="mailto:cidvv@jollyrogertelephone.com" class="email">cidvv@jollyrogertelephone.com</a>
+<a href="mailto:phillip.askew@theaskewcrew.com" class="email">phillip.askew@theaskewcrew.com</a>
 </div>
 </address>
 </section>
