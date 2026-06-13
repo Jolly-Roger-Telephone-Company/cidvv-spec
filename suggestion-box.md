@@ -14,3 +14,7 @@
   - [ ] Number porting. Especially internationally. In the EU it's possible to port across countries. There's a central ported routing table. I don't think this has any effect on CIDVV
   - [ ] EU toll free or non-geographic like 0800 and 0900.
 - [ ] Bob will need a way to "never vouch" certain numbers. Trading floors want immediate ring. Some callerids will be trusted. Callerid, regex, signers, issuers, attestation levels, cnam. There should be a way to bypass the vouching for specific numbers and immediately return a 302 or 404. Maybe there should be a response code specifically for this.
+- [ ] No need for encrypted/hashed tokens. They're too easy to brute force. Need to have language in the usage agreement that says something like "By initiating a CIDVV vouching request, the called party is voluntarily sharing their phone number with the calling party. The called party is choosing to disclose this information by participating in the protocol."
+- [ ] First release, it might be better to build APIs into the CIDVV platform and distribute a "static frontend" that the user opens locally in their browser. This is html, js, and css to support a react frontend that talks to the CIDVV platform with APIs. Other projects do this and it would streamline the web hosting.
+  - [ ] Refine.dev is good for internal admin panels for frontend hosted on a web server
+  - [ ] Flask or FastAPI can host the APIs themselves
