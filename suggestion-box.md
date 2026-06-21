@@ -18,3 +18,4 @@
 - [ ] First release, it might be better to build APIs into the CIDVV platform and distribute a "static frontend" that the user opens locally in their browser. This is html, js, and css to support a react frontend that talks to the CIDVV platform with APIs. Other projects do this and it would streamline the web hosting.
   - [ ] Refine.dev is good for internal admin panels for frontend hosted on a web server
   - [ ] Flask or FastAPI can host the APIs themselves
+- [ ] Trading floors need immediate connection and do not want to wait. The CIDVV platform need an exception list so some callerids are not vouched.
