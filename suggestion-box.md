@@ -19,3 +19,9 @@
   - [ ] Refine.dev is good for internal admin panels for frontend hosted on a web server
   - [ ] Flask or FastAPI can host the APIs themselves
 - [ ] Trading floors need immediate connection and do not want to wait. The CIDVV platform need an exception list so some callerids are not vouched.
+- [ ] Cloud-based CIDVV should be directly SIP integrated (not PSTN) and identified by
+  - [ ] SIP registration
+  - [ ] unique prefix
+  - [ ] sip header
+  - [ ] CIDR
+  - [ ] All of these should be self service for easy account setup. It would be possible to maliciously inject call notifications if these secrets got out. The prefix or header could be a hash of calling/called/salt, but that would require smarts on the customer side - probably more than their SBC can do.
