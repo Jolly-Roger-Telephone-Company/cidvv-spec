@@ -67,9 +67,10 @@ modification.
 Caller-ID spoofing is widely used in fraudulent and nuisance calling,
 particularly in environments where calls traverse multiple
 administrative domains and heterogeneous network technologies.
-Although mechanisms such as STIR/SHAKEN provide cryptographic
-attestation of caller identity, their effectiveness is limited by
-partial deployment and challenges in international interconnection.
+A common and particularly effective technique is "neighborhood spoofing"
+(or local number spoofing), in which the attacker deliberately chooses
+a number in the same area code/prefix (or that appears local to the
+recipient) to increase the likelihood that the called party will answer.
 
 This document defines Caller-ID Vouching and Vetting (CIDVV), a
 mechanism that verifies caller identity through network reachability
@@ -120,7 +121,7 @@ signaling field used to convey that identity.
 * **Successful Vouch** / **Successful Vet**: Requires **both Phase 1 and Phase 2** to complete with the expected behaviors within the Validity Window.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
 * **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
-* **Validity Window**: A short time interval during which CIDVV signaling state is considered valid for correlation purposes, typically on the order of 10 seconds.
+* **Validity Window**: The time interval during which the originating CIDVV platform will accept and correlate a vouch attempt (return call) from the called party. This is typically on the order of 10–30 seconds.
 * **Asserted Caller-ID**: The Caller-ID value that is being vouched or vetted (i.e., the number whose control is being verified). This is the value used as the basis for the CIDVV Token payload and as the cache lookup key in the tuple (Asserted-Caller-ID, CIDVV-Token).
 
 Once successfully vouched, an Asserted Caller-ID may be referred to informally as a "vouched number," but the formal term used in this document is "Asserted Caller-ID."
@@ -398,6 +399,22 @@ The two verification calls MAY be performed in any order or in parallel. Impleme
 If either Phase 1 or Phase 2 fails to produce the expected response (or is missing, delayed beyond the Validity Window, or altered), the entire vouch MUST be treated as unsuccessful or indeterminate.
 
 The same combined Phase 1 + Phase 2 requirement applies to successful vetting, with Phase 2 semantics adjusted for token confirmation (see Vetting Procedure).
+
+### Vouch Call Timers
+
+The originating platform uses the **Validity Window** to determine how
+long it will wait for the return vouch call(s).
+
+Independently, both the originating and terminating platforms should
+implement configurable local timers that control how long they wait
+for signaling responses during each vouching call. 
+
+A default timeout of 3–6 seconds is reasonable for domestic calls.
+For international destinations, longer timeouts (typically 8–20 seconds)
+are recommended to accommodate higher Post-Dial Delay (PDD).
+
+The two vouch calls (Phase 1 and Phase 2) may be initiated sequentially
+or simultaneously.
 
 ## Correlation Model
 
@@ -867,6 +884,24 @@ requests as unsuccessful until fresh state has been deposited. The
 same hash algorithm defined in Section <xref target="hash-function"/>
 MUST be used for any vetting-related state.
 
+## International and Cross-Border Operation
+
+Implementations must be cautious with international calls because signaling
+behavior varies significantly. Some networks return early ACM/ringing or
+183 Session Progress before the call reaches the terminating carrier. A
+non-CIDVV destination may answer the call (200 OK) or provide early media.
+
+To minimize unintended charges:
+
+- Vouching calls should use a very short ring time (e.g., 3–5 seconds)
+  before aborting if no expected failure response is received.
+- Callers should prefer failure responses (486, 603, 403, etc.) as the
+  primary success signal and treat ringing or 200 OK as non-CIDVV or
+  ambiguous cases.
+- Deployments are encouraged to use originating-side policies that
+  restrict or rate-limit vouching attempts to international destinations
+  until better signaling heuristics are developed.
+  
 # Operational Considerations
 
 ## Protocol Operation - Vouching
@@ -1068,3 +1103,14 @@ This document has no IANA actions.
 # Acknowledgments
 
 The authors thank contributors to telephony security research and PSTN infrastructure development.
+
+# Appendix: Changes from Previous Version
+
+RFC Editor: Please remove this section before publication as an RFC.
+
+## Changes since draft-anderson-askew-cidvv-00 (May 2026)
+
+- Minor editorial improvements and clarifications throughout the document.
+- Made both Vouching calls required and renamed them as "Phase 1" and "Phase 2" for clarity.
+- Updated termination handling so that specific response codes (486 Busy Here, 603 Decline, and 403 Forbidden) are used to prevent SBCs from advancing to the next route.
+- Added this "Changes from Previous Version" appendix to support long-term document maintenance across multiple revisions.
