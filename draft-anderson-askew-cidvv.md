@@ -104,25 +104,24 @@ The mechanism operates entirely within standard PSTN routing behavior and requir
 
 # Terminology
 
-In this document, the term "Caller-ID" refers to the identity
-presented to users, while "Calling Party Number" refers to the
-signaling field used to convey that identity.
-
+* **Caller-ID**: The telephone number presented to the called party (what the end user sees).
+* **Asserted Caller-ID**: The Caller-ID value that is being vouched or vetted by this protocol. This is the number whose control the calling party claims, and it is the value used for the CIDVV Token, state management, and correlation.
+* **Calling Party Number**: The value carried in the signaling protocol (e.g., SIP `From` header or ISUP Calling Party Number parameter). In many deployments this is the same as the presented Caller-ID, but they are not always identical.
 * **Alice**: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob's number.
 * **Bob**: The called party. In vetting flows Bob is the owner whose number is being vetted.
 * **Mallory**: An attacker attempting to spoof a Caller-ID.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
 * **CIDVV-aware Network Element**: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the Asserted Caller-ID.
-* **Vet** (or **Vetting**): The process by which a CIDVV platform confirms the relevant party controls the Asserted Caller-ID via the two-call challenge-response sequence. Vetting may be performed by the number owner directly or on behalf of third parties such as Caller-ID branding services, Google Business Profiles, trade organizations, or enterprise trust programs.
+* **Vet** (or **Vetting**): The process by which a CIDVV platform confirms the relevant party controls the Asserted Caller-ID via the two-call challenge-response sequence. Vetting may be performed on behalf of third parties such as Caller-ID branding services, Vetting Agents, law enforcement agencies, trade organizations, or enterprise trust programs.
 * **Vouching Call**: A short signaling call used in the CIDVV protocol. CIDVV defines **Phase 1** ("100" prefix) and **Phase 2** ("101" prefix) verification calls.
-* **Phase 1 Verification** ("100" prefix): The initial busy-class verification step. Expected response behavior is a "Busy"-class rejection (e.g., SIP 486 Busy Here).
-* **Phase 2 Verification** ("101" prefix): The secondary not-found / rejection-class verification step. Expected response behavior is a "Not Found"-class rejection (e.g., SIP 404 Not Found) for vouching, or busy-class for token confirmation in vetting.
+* **Phase 1 Verification** ("100" prefix for vouching, "101" prefix for vetting): The initial verification step. Expected response behavior is a "Busy"-class response (e.g., SIP 486 Busy Here) for vouching, or a "Rejection"-class response (e.g., SIP 603 Call Rejected) for vetting.
+* **Phase 2 Verification** ("101" prefix): The secondary verification step. Expected response behavior is a "Rejection"-class response for vouching, or a "Busy"-class response for token confirmation in vetting.
 * **Successful Vouch** / **Successful Vet**: Requires **both Phase 1 and Phase 2** to complete with the expected behaviors within the Validity Window.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
 * **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
 * **Validity Window**: The time interval during which the originating CIDVV platform will accept and correlate a vouch attempt (return call) from the called party. This is typically on the order of 10–30 seconds.
-* **Asserted Caller-ID**: The Caller-ID value that is being vouched or vetted (i.e., the number whose control is being verified). This is the value used as the basis for the CIDVV Token payload and as the cache lookup key in the tuple (Asserted-Caller-ID, CIDVV-Token).
+* **Vouch-Call Timeout**: The local timer used by the originating CIDVV platform to limit how long it will wait for a response to an individual Phase 1 or Phase 2 vouching call. This is typically 3–6 seconds for domestic calls and longer (e.g. 8–20 seconds) for international calls. It is distinct from the Validity Window.
 
 Once successfully vouched, an Asserted Caller-ID may be referred to informally as a "vouched number," but the formal term used in this document is "Asserted Caller-ID."
 
@@ -134,28 +133,18 @@ capitals, as shown here.
 
 ## Motivation and Advantages
 
-The CIDVV vouching and vetting mechanism is designed to operate with minimal new infrastructure while providing strong protection against Caller-ID spoofing.  Its primary advantages are:
+The CIDVV vouching and vetting mechanism is designed to operate with minimal new infrastructure while providing strong protection against Caller-ID spoofing. Its primary advantages are:
 
-* **Leverages existing PSTN infrastructure**: The mechanism uses existing numbering plans and routing databases to direct calls without requiring additional infrastructure.
+* **Leverages existing PSTN infrastructure**: Uses existing numbering plans and routing databases without requiring new infrastructure or protocol extensions.
+* **Strong anti-spoofing protection**: A successful vouch provides strong evidence of control over the Asserted Caller-ID, because only the legitimate owner can complete the challenge-response sequence. Spoofed calls are typically rejected early.
+* **Visibility into spoofing activity**: Number owners gain direct insight into how often and to where their numbers are being spoofed through logged vetting attempts.
+* **Low signaling overhead**: The short vouching calls replace what would otherwise be completed fraudulent calls, resulting in lower overall network load.
+* **Full TDM/SS7 compatibility**: Works natively across legacy SS7 and ISDN networks. SIP is not required.
+* **International applicability**: Functions effectively across national boundaries without relying on country-specific frameworks.
+* **Deployment flexibility**: Enterprises can run their own CIDVV platform using open-source tools (e.g., Kamailio or Asterisk). Service providers or third-party Vetting Agents can offer cloud-based vouching and vetting services on behalf of carriers, enterprises, or number owners.
+* **Promotes competition**: Customers using third-party cloud-based CIDVV services can more easily switch between providers, fostering competition and helping to drive down costs.
 
-* **Strong anti-spoofing protection**: A successful vouch provides strong evidence that the Asserted Caller-ID is controlled by the legitimate owner, because only the real owner can generate the correct challenge-response sequence. Spoofed calls are typically rejected early, often resulting in failure responses such as 404 Not Found.
-
-* **Visibility into spoofing activity**: Telephone number owners gain direct insight into how often (and from where) their numbers are being spoofed worldwide through logged vetting attempts.
-
-* **Low signaling overhead**: The two short vetting calls replace what would otherwise be a completed fraudulent call, resulting in lower overall network load.
-
-* **Full TDM/SS7 compatibility**: The mechanism works natively across legacy SS7 and ISDN networks.  SIP is not required.
-
-* **International applicability**: The solution functions across international boundaries without relying on country-specific frameworks.
-
-* **Independent of STIR/SHAKEN**: It provides an effective alternative (or complement) in environments where STIR/SHAKEN is unavailable, not deployed, or insufficient.
-
-* **Enterprise and service-provider flexibility**:
-  * Enterprises can deploy their own CIDVV platform using open-source tools such as Kamailio or Asterisk.
-  * Service providers or third-party vendors (e.g., TransUnion, TNS, First Orion, Hiya, Numeracle, Numhub, or others) can operate cloud-based vouching and vetting services.
-  * Customers can easily switch between providers, fostering real competition and driving down costs.
-
-This design lowers the barrier to entry and encourages broad adoption while avoiding the single points of failure and high coordination costs associated with centralized solutions. These properties make the vouching mechanism particularly suitable for service providers, enterprises, and end users who need robust Caller-ID validation today, using only existing telephone infrastructure.
+This design lowers the barrier to entry and encourages broad adoption while avoiding the single points of failure and high coordination costs of centralized solutions. CIDVV is particularly suitable for service providers, enterprises, and end users who need robust Caller-ID validation using only existing telephone infrastructure.
 
 # Design Principles
 
@@ -172,19 +161,18 @@ requiring specific numeric response codes to be preserved end-to-end.
 # Number Normalization
 {: #number-normalization }
 
-All telephone numbers used in CIDVV operations MUST be normalized to
-a digit string as follows:
+All telephone numbers used in CIDVV operations MUST be normalized to a
+plain digit string in E.164 format (without the leading "+" sign) as
+follows:
 
-1. Remove any leading "+" or other punctuation.
-2. Use the full E.164 representation (country code + national significant
-   number) as a plain digit string.
-
-No padding is performed. Truncation (when required for the 15-digit
-limit) always removes leading digits of the telephone number, preserving
-the rightmost digits.
+1. Remove any leading "+" or other punctuation characters.
+2. Use the full E.164 representation: country code followed by the national significant number.
+3. No padding is performed. If truncation is required to stay within the 15-digit limit, always remove leading digits (preserving the rightmost digits).
 
 ## Protocol Overview
 {: #protocol-overview }
+
+rba left off here
 
 CIDVV uses special Caller-ID prefixes to signal protocol operations:
 
@@ -249,22 +237,9 @@ A successful vouch **requires both** Phase 1 and Phase 2 to complete with their 
 The expected behavior is:
 
 * **Phase 1** ("100" prefix) MUST result in a Busy-class response (e.g., SIP 486 Busy Here or 600 Busy Everywhere). Any other response, timeout, call progression, or successful completion MUST be treated as unsuccessful.
-* **Phase 2** ("101" prefix) MUST result in a Not-Found-class response (e.g., SIP 404 Not Found or 608 Rejected) for vouching. In the context of an active vetting procedure, Phase 2 carries a valid token and MUST result in a Busy-class response.
+* **Phase 2** ("101" prefix) MUST result in a Rejection-class response (e.g., SIP 603 Call Rejected or 403 Forbidden) for vouching. In the context of an active vetting procedure, Phase 2 carries a valid token and MUST result in a Busy-class response.
 
-If either Phase 1 or Phase 2 fails to produce the expected response (or is missing, delayed beyond the Validity Window, altered, or inconsistent), the entire vouch MUST be treated as unsuccessful or indeterminate.
-
-CIDVV exchanges occur using short signaling dialogs and do not require
-media establishment.
-
-CIDVV signaling is encoded entirely within numeric Calling Party
-Number values to maximize survivability across heterogeneous SIP and
-SS7/TDM networks.
-
-Vetting procedures MAY use full telephone numbers or truncated
-forms as input to cryptographic operations, independent of the
-CIDVV Calling Party Number encoding.
-
-CIDVV operations rely on state within the Validity Window.
+If either Phase 1 or Phase 2 fails to produce the expected response within the vouch-call timeout (or is missing, altered, or inconsistent), the entire vouch MUST be treated as unsuccessful or indeterminate.
 
 ## Vouching vs. Vetting Response Patterns
 
@@ -840,67 +815,68 @@ This two-call challenge-response mechanism provides strong confirmation that the
 
 ## Behavior of Non-CIDVV Systems
 
-Systems that do not implement CIDVV are not expected to recognize
-CIDVV signaling prefixes. Such systems will typically process CIDVV
+Systems that do not implement CIDVV are not expected to recognize the
+CIDVV signaling prefixes. Such systems will typically process these
 calls as ordinary calls and may return a wide range of responses.
-
 CIDVV implementations MUST treat any response that does not match the
-expected protocol behavior as indicating a non-participating system (see Section <xref target="protocol-overview"/> for response patterns).
+expected protocol behavior as indicating a non-participating system.
 
 ## Handling of CIDVV Signaling Calls
 
-Networks that recognize CIDVV SHOULD NOT present calls with Calling
-Party Numbers beginning with "100" or "101" to end users.
+Networks and SBCs that recognize CIDVV signaling SHOULD intercept calls
+with Calling Party Numbers beginning with "100", "101", "+100", or "+101"
+before they reach end users. These calls SHOULD result in a non-success
+response (commonly 486 Busy Here or 603 Decline) and MUST NOT establish 
+media.
 
-Such calls SHOULD be intercepted by network elements or CIDVV
-platforms and SHOULD result in a non-success response (e.g., 4xx,
-5xx, or 6xx class response codes). Implementations commonly use
-responses such as 404 (Not Found), 486 (Busy Here), or 603 (Decline).
+Call analytics, labeling, and fraud detection systems SHOULD recognize
+these prefixes and treat the calls as protocol signaling rather than
+ordinary subscriber traffic.
 
-Call analytics, labeling, and fraud detection systems SHOULD
-recognize CIDVV signaling prefixes ("100" and "101") and treat such
-calls as protocol signaling rather than ordinary subscriber calls.
+## Carrier Incentives and SBC Policies
 
-CIDVV-aware elements SHOULD recognize and internally route CIDVV
-signaling calls using the Asserted Caller-ID without user presentation.
+The short-lived CIDVV vouching calls represent a very small incremental
+load on the network. In return, carriers gain a powerful mechanism to
+reduce the much larger burden of fraudulent and nuisance calls.
 
-CIDVV signaling calls are not intended to complete. Implementations
-SHOULD minimize call duration and signaling load and SHOULD avoid any
-media establishment.
+Carriers and SBC operators are strongly encouraged to implement the
+following policies for the reserved prefixes ("100", "101", "+100",
+"+101"):
+
+- Prevent establishment of media or early media.
+- Convert any final 2xx response to 487 Request Terminated.
+- Suppress billing CDRs so these signaling-only calls are non-billable.
+
+Such policies can be implemented with simple, stateless rules on
+originating, border, and transit SBCs. By adopting them, carriers can
+significantly reduce successful spoofing while lowering overall signaling
+load, traceback volume, and customer complaints. The aggregate cost of
+legitimate CIDVV traffic is expected to be far lower than the current
+cost of handling high volumes of short-duration fraudulent calls.
 
 ## Response Variability
 
 Implementations SHOULD interpret responses based on behavioral class
-(e.g., success vs. immediate rejection) rather than relying solely on
-exact numeric values, as intermediate networks may translate or
-modify response codes.
+(e.g., "busy" class such as 486 Busy Here versus "rejection" class such
+as 603 Decline or 403 Forbidden) rather than relying on exact numeric
+values. Intermediate networks may translate or modify response codes,
+so behavioral class is the preferred signal.
 
 ## Short-Term State Management
 
-CIDVV relies on short-lived state for the (Asserted Caller-ID, CIDVV-Token)
-tuple, valid only for the Validity Window. Implementations MUST expire this state automatically and
-MUST fail closed: on restart or state loss, treat all verification
-requests as unsuccessful until fresh state has been deposited. The
-same hash algorithm defined in Section <xref target="hash-function"/>
-MUST be used for any vetting-related state.
+CIDVV relies on short-lived state for the (Calling Number, Called Number)
+tuple, valid only for the Validity Window. Implementations MUST expire
+this state automatically and MUST fail closed: on restart or state loss,
+treat all verification requests as unsuccessful until fresh state has
+been deposited.
 
 ## International and Cross-Border Operation
 
-Implementations must be cautious with international calls because signaling
-behavior varies significantly. Some networks return early ACM/ringing or
-183 Session Progress before the call reaches the terminating carrier. A
-non-CIDVV destination may answer the call (200 OK) or provide early media.
-
-To minimize unintended charges:
-
-- Vouching calls should use a very short ring time (e.g., 3–5 seconds)
-  before aborting if no expected failure response is received.
-- Callers should prefer failure responses (486, 603, 403, etc.) as the
-  primary success signal and treat ringing or 200 OK as non-CIDVV or
-  ambiguous cases.
-- Deployments are encouraged to use originating-side policies that
-  restrict or rate-limit vouching attempts to international destinations
-  until better signaling heuristics are developed.
+International calls often experience higher Post-Dial Delay. Vouching
+call timeouts should be adaptive: 3–6 seconds is appropriate for domestic
+calls, while 8–20 seconds (or more) may be needed for international
+destinations based on observed PDD. The two vouch calls (Phase 1 and
+Phase 2) may be performed sequentially or simultaneously.
   
 # Operational Considerations
 
