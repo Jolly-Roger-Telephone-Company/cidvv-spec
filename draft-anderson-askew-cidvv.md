@@ -172,74 +172,69 @@ follows:
 ## Protocol Overview
 {: #protocol-overview }
 
-rba left off here
+CIDVV is a challenge-response mechanism that proves control of an Asserted
+Caller-ID using short signaling-only calls. No media establishment or new
+protocol extensions are required.
 
-CIDVV uses special Caller-ID prefixes to signal protocol operations:
+### Simple Overview (Vouching)
 
-* "100" prefix - Phase 1 Verification Call
-* "101" prefix - Phase 2 Verification Call / Vetting Call
+When Alice wants to call Bob:
 
-CIDVV Calling Party Numbers are numeric signaling values carried in
-the Calling Party Number field. They are not represented as
-E.164 numbers and are shown without a leading "+" in this document.
+1. Alice places a normal call to Bob using her Asserted Caller-ID.
+2. Bob's CIDVV platform intercepts the incoming call from Alice.
+3. Before ringing Bob's phone, Bob's platform initiates short verification
+   call(s) **back to Alice**:
+   - It uses Alice's Asserted Caller-ID as the destination.
+   - It sets special prefixes in its own Calling Party Number ("100" for
+     Phase 1 and/or "101" for Phase 2).
+4. Alice's CIDVV platform intercepts those return call(s) and responds
+   with the expected behavior to prove she controls the number.
+5. If both verification steps succeed within the Validity Window, Bob's
+   platform allows the original call to ring through to Bob.
 
-Ordinary subscriber telephone numbers (e.g., +12125550100) are
-shown in E.164 format for clarity, while CIDVV signaling values
-(e.g., 10019495550199) are shown as digit strings.
+The two verification calls from Bob's CIDVV platform use **reachability**
+to ensure that Alice really controls the Asserted Caller-ID she is presenting.
 
-CIDVV signaling Calling Party Numbers MUST fit within the 15-digit
-Calling Party Number limit commonly encountered in SS7 and ISDN
-networks. For this reason, CIDVV uses a three-digit prefix followed by
-a payload derived from the Asserted Caller-ID:
+### Vouching Mechanism
 
-~~~~
-   CIDVV-CPN (CIDVV Calling Party Number) = Prefix || Payload
-~~~~
+CIDVV uses two distinct signaling prefixes in the Calling Party Number for
+vouching:
 
-where CIDVV-CPN means CIDVV Calling Party Number, Prefix is "100" or
-"101", and the payload is derived from the Asserted Caller-ID
-(normalized per Section <xref target="number-normalization"/>).
+* **"100"** — Phase 1 Verification Call
+* **"101"** — Phase 2 Verification Call
 
-For vouching operations, the payload is derived from the called number associated with the verification.
-For vetting operations, the payload may be derived from computed token values.
+A successful **Vouch** requires **both** Phase 1 and Phase 2 to complete
+with their expected responses within the Validity Window. The two phases
+MAY be performed in any order or in parallel.
 
-In the common case where the Asserted Caller-ID has 12 or fewer digits,
-the Payload is used in full, so the CIDVV-CPN is simply the three-digit
-prefix directly concatenated with the full Asserted Caller-ID digits.
+Expected behaviors for vouching:
 
-If the resulting CIDVV-CPN would exceed 15 digits (i.e., the asserted
-Caller-ID has more than 12 digits), the leading digits of the asserted
-Caller-ID are removed until the total length is exactly 15 digits,
-consistent with SS7 and ISDN Calling Party Number constraints.
-This truncation preserves the rightmost digits of the telephone
-number, which typically provide greater distinguishing information
-between individual subscribers than leading digits.
+* **Phase 1** ("100" prefix): MUST receive a Busy-class response
+  (e.g., SIP 486 Busy Here).
+* **Phase 2** ("101" prefix): MUST receive a Rejection-class response
+  (e.g., SIP 603 Call Rejected).
 
-A CIDVV-aware element generating a CIDVV verification call MUST apply
-this construction. A CIDVV platform MAY cache and compare the complete
-15-digit CIDVV Calling Party Number (including the prefix) rather than
-reconstructing it for comparison.
+If either phase fails to produce the expected response within the
+vouch-call timeout (or is missing, altered, or inconsistent), the entire
+vouch MUST be treated as unsuccessful or indeterminate.
 
-Because CIDVV payloads may be truncated to the rightmost 12 digits,
-distinct telephone numbers can, in rare cases, produce identical
-payload values. Correlation is therefore additionally scoped by the
-called number and the Validity Window.
+### Simple Overview (Vetting)
 
-In such cases, multiple call attempts may be indistinguishable to the
-CIDVV platform and treated as a single correlation event. As a result,
-a successful verification may apply to more than one call attempt
-within the Validity Window.
+When Alice wants to confirm that Bob controls a particular telephone number:
 
-CIDVV verification consists of observing the behavior of **Phase 1** and **Phase 2** verification calls using the distinct CIDVV prefixes.
+1. Alice and Bob share a secret (e.g., "elephant").
+2. Alice's CIDVV platform calls Bob using a **+101** prefix.
+3. Bob's CIDVV platform intercepts the call, computes a short-lived token
+   derived from the shared secret + Alice's number, and then **calls Alice back**
+   using that token value in its Calling Party Number (with +101 prefix).
+4. Alice's CIDVV platform intercepts Bob's return call. Only if the received
+   token matches what she expects does she respond with a busy-class response.
+5. Bob's platform sees the correct busy response and confirms success to Alice's
+   platform.
 
-A successful vouch **requires both** Phase 1 and Phase 2 to complete with their expected responses within the Validity Window. The two phases MAY be performed in any order or in parallel. Implementations MUST NOT assume a specific ordering.
-
-The expected behavior is:
-
-* **Phase 1** ("100" prefix) MUST result in a Busy-class response (e.g., SIP 486 Busy Here or 600 Busy Everywhere). Any other response, timeout, call progression, or successful completion MUST be treated as unsuccessful.
-* **Phase 2** ("101" prefix) MUST result in a Rejection-class response (e.g., SIP 603 Call Rejected or 403 Forbidden) for vouching. In the context of an active vetting procedure, Phase 2 carries a valid token and MUST result in a Busy-class response.
-
-If either Phase 1 or Phase 2 fails to produce the expected response within the vouch-call timeout (or is missing, altered, or inconsistent), the entire vouch MUST be treated as unsuccessful or indeterminate.
+Only the legitimate owner of Bob's number can receive the token and cause the
+correct response sequence. Alice must be reachable, but this is acceptable for
+vetting use cases.
 
 ## Vouching vs. Vetting Response Patterns
 
