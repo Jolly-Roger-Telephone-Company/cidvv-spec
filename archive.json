@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-25T03:53:37.281477+00:00",
+  "timestamp": "2026-06-28T04:07:14.796080+00:00",
   "repo": "Jolly-Roger-Telephone-Company/cidvv-spec",
   "labels": [
     {
@@ -49,7 +49,24 @@
       "color": "ffffff"
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "number": 2,
+      "id": "I_kwDOSPg1nM8AAAABGuocqA",
+      "title": "Feedback",
+      "url": "https://github.com/Jolly-Roger-Telephone-Company/cidvv-spec/issues/2",
+      "state": "OPEN",
+      "author": "UkoeHB",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "I only watched the youtube video, which may not accurately represent the full protocol.\n\n### Questions\n\n- What are the privacy attributes of CIDVV platforms? E.g. is it a concern that they can track/record all of a user's incoming and outgoing caller ids? Not sure what the baseline privacy environment for phone calls is.\n- How robust is this vs MITM?\n\n### Vetting\n\nThe vetting process does not make sense as explained. If Alice is vetting Bob, it should not be up to Bob to validate the hash. Instead, Bob needs to send a hash of the pre-arranged secret to Alice (`h = H(Alice number, Bob number, Bob ID, Alice challenge, secret`) to confirm that Bob's number has access to the secret (implying it's controlled by Bob) (where `Alice challenge` is a freshly generated secret sent by Alice to Bob to avoid `h` reuse). Otherwise a malicious Bob could just respond 603/486 to any vetting requests.\n\nPresumably the protocol works like this:\n- Bob sends his number(s) + a secret to Alice in a secure side channel\n- Bob and Alice load the secret into their CIDVVs\n- Alice sends Bob's numbers to her CIDVV, which iterates them and validates secret-access\n",
+      "createdAt": "2026-06-25T18:40:54Z",
+      "updatedAt": "2026-06-26T23:22:31Z",
+      "closedAt": null,
+      "comments": []
+    }
+  ],
   "pulls": [
     {
       "number": 1,
