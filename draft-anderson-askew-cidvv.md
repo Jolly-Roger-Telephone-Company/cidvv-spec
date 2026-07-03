@@ -67,15 +67,11 @@ modification.
 Caller-ID spoofing is widely used in fraudulent and nuisance calling,
 particularly in environments where calls traverse multiple
 administrative domains and heterogeneous network technologies.
-A common and particularly effective technique is "neighborhood spoofing"
-(or local number spoofing), in which the attacker deliberately chooses
-a number in the same area code/prefix (or that appears local to the
-recipient) to increase the likelihood that the called party will answer.
 
 This document defines Caller-ID Vouching and Vetting (CIDVV), a
 mechanism that verifies caller identity through network reachability
 rather than asserted identity. CIDVV requires that a party asserting a
-Caller-ID be able to receive a return call at that number within the Validity Window.
+Caller-ID be able to receive a return call at that number within a brief "Validity Window".
 
 CIDVV operates by encoding signaling information within the Calling
 Party Number and leveraging existing call routing behavior to perform
@@ -90,7 +86,7 @@ failure-response behaviors traversing the network path.
 
 CIDVV provides strong, real-time evidence of Caller-ID validity by
 requiring that a party asserting a Caller-ID be able to receive and
-respond to a return call at that number within the Validity Window.
+respond to a return call at that number within a brief Validity Window.
 While it does not provide absolute identity assurance, it offers a
 practical and robust signal of trust in the presented identity.
 
@@ -113,17 +109,17 @@ The mechanism operates entirely within standard PSTN routing behavior and requir
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
 * **CIDVV-aware Network Element**: An SBC or intermediary that recognizes CIDVV signaling prefixes and interprets associated responses, but does not implement the full CIDVV platform logic.
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the Asserted Caller-ID.
-* **Vet** (or **Vetting**): The process by which a CIDVV platform confirms the relevant party controls the Asserted Caller-ID via the two-call challenge-response sequence. Vetting may be performed on behalf of third parties such as Caller-ID branding services, Vetting Agents, law enforcement agencies, trade organizations, or enterprise trust programs.
+* **Vet** (or **Vetting**): The process by which a CIDVV platform confirms the relevant party controls the Asserted Caller-ID via the three-call challenge-response sequence. Vetting may be performed on behalf of third parties such as Caller-ID branding services, Vetting Agents, law enforcement agencies, trade organizations, or enterprise trust programs.
 * **Vouching Call**: A short signaling call used in the CIDVV protocol. CIDVV defines **Phase 1** ("100" prefix) and **Phase 2** ("101" prefix) verification calls.
-* **Phase 1 Verification** ("100" prefix for vouching, "101" prefix for vetting): The initial verification step. Expected response behavior is a "Busy"-class response (e.g., SIP 486 Busy Here) for vouching, or a "Rejection"-class response (e.g., SIP 603 Call Rejected) for vetting.
-* **Phase 2 Verification** ("101" prefix): The secondary verification step. Expected response behavior is a "Rejection"-class response for vouching, or a "Busy"-class response for token confirmation in vetting.
-* **Successful Vouch** / **Successful Vet**: Requires **both Phase 1 and Phase 2** to complete with the expected behaviors within the Validity Window.
+* **Phase 1 Vouch** ("100" prefix): The initial Vouch verification step. Expected response behavior is a "Busy"-class response (e.g., SIP 486 Busy Here).
+* **Phase 2 Vouch** ("101" prefix): The secondary Vouch step. Expected response behavior is a "Rejection"-class response (e.g., SIP 603 Decline).
+* **Successful Vouch**: Requires **both Phase 1 and Phase 2** to complete with the expected behaviors within the Validity Window.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
 * **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
 * **Validity Window**: The time interval during which the originating CIDVV platform will accept and correlate a vouch attempt (return call) from the called party. This is typically on the order of 10–30 seconds.
 * **Vouch-Call Timeout**: The local timer used by the originating CIDVV platform to limit how long it will wait for a response to an individual Phase 1 or Phase 2 vouching call. This is typically 3–6 seconds for domestic calls and longer (e.g. 8–20 seconds) for international calls. It is distinct from the Validity Window.
 
-Once successfully vouched, an Asserted Caller-ID may be referred to informally as a "vouched number," but the formal term used in this document is "Asserted Caller-ID."
+Once successfully vouched, an Asserted Caller-ID may be referred to informally as a "vouched number".
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
@@ -155,7 +151,7 @@ a numeric Calling Party Number that can survive traversal of mixed
 SIP and SS7/TDM networks.
 
 CIDVV relies on the ability to distinguish between classes of
-call rejection behavior (e.g., "busy" vs. "not found"), rather than
+call rejection behavior (e.g., "busy" vs. "rejected"), rather than
 requiring specific numeric response codes to be preserved end-to-end.
 
 # Number Normalization
@@ -186,14 +182,16 @@ When Alice wants to call Bob:
    call(s) **back to Alice**:
    - It uses Alice's Asserted Caller-ID as the destination.
    - It sets special prefixes in its own Calling Party Number ("100" for
-     Phase 1 and/or "101" for Phase 2).
+     Phase 1 and "101" for Phase 2).
 4. Alice's CIDVV platform intercepts those return call(s) and responds
-   with the expected behavior to prove she controls the number.
-5. If both verification steps succeed within the Validity Window, Bob's
+   with the expected behavior to prove she controls the number and has
+   a call in progress to Bob right now.
+6. If both verification steps succeed within the Validity Window, Bob's
    platform allows the original call to ring through to Bob.
 
 The two verification calls from Bob's CIDVV platform use **reachability**
-to ensure that Alice really controls the Asserted Caller-ID she is presenting.
+to ensure that Alice really controls the Asserted Caller-ID she is presenting,
+and is attempting a call to Bob's number.
 
 ### Vouching Mechanism
 
@@ -223,13 +221,20 @@ vouch MUST be treated as unsuccessful or indeterminate.
 When Alice wants to confirm that Bob controls a particular telephone number:
 
 1. Alice and Bob share a secret (e.g., "elephant").
-2. Alice's CIDVV platform calls Bob using a **+101** prefix.
-3. Bob's CIDVV platform intercepts the call, computes a short-lived token
-   derived from the shared secret + Alice's number, and then **calls Alice back**
-   using that token value in its Calling Party Number (with +101 prefix).
-4. Alice's CIDVV platform intercepts Bob's return call. Only if the received
+2. Alice and Bob agree on the caller-id that Alice will use to Vet Bob's number.
+3. Alice's CIDVV platform performs a "Wake" call to Bob using a **+101** prefix
+   along with Alice's Vetting caller-id.
+4. Bob's CIDVV platform performs the following actions upon receiving the call:
+   a.  Intercepts the call.
+   b.  Recognizes Alice's vetting caller-id.
+   c.  Computes a short-lived "recognize" token derived from Alice's number + Bob's number + shared secret.
+   d.  Stores this token in tempory memory.
+   e.  Considers this a successful "Wake" call from Alice to Bob (step 1 of 3).
+6. Alice's CIDVV platform calculates the same "recognize" token derived from
+   Alice's number + Bob's number + shared secret and makes a second "Recognize" call to
+   Bob using using intercepts Bob's return call. Only if the received
    token matches what she expects does she respond with a busy-class response.
-5. Bob's platform sees the correct busy response and confirms success to Alice's
+7. Bob's platform sees the correct busy response and confirms success to Alice's
    platform.
 
 Only the legitimate owner of Bob's number can receive the token and cause the
