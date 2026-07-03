@@ -174,20 +174,26 @@ protocol extensions are required.
 
 ### Simple Overview (Vouching)
 
-When Alice wants to call Bob:
+When Alice wants to call Bob using her asserted caller-id:
 
 1. Alice places a normal call to Bob using her Asserted Caller-ID.
-2. Bob's CIDVV platform intercepts the incoming call from Alice.
-3. Before ringing Bob's phone, Bob's platform initiates short verification
-   call(s) **back to Alice**:
-   - It uses Alice's Asserted Caller-ID as the destination.
-   - It sets special prefixes in its own Calling Party Number ("100" for
-     Phase 1 and "101" for Phase 2).
-4. Alice's CIDVV platform intercepts those return call(s) and responds
-   with the expected behavior to prove she controls the number and has
-   a call in progress to Bob right now.
-6. If both verification steps succeed within the Validity Window, Bob's
-   platform allows the original call to ring through to Bob.
+
+2. Bob's CIDVV platform intercepts the incoming call.
+
+3. Before ringing Bob's phone, Bob's platform initiates two short verification
+   calls back to Alice:
+   
+   a. It uses Alice's Asserted Caller-ID as the destination number.
+   
+   b. It sets a special prefix in the Calling Party Number ("100" for Phase 1
+      and "101" for Phase 2).
+
+4. Alice's CIDVV platform intercepts the verification calls and responds
+   with the expected behavior to prove that she controls the number and has
+   an active call in progress to Bob.
+
+5. If both verification steps succeed within the Validity Window, Bob's
+   CIDVV platform allows the original call to ring through to Bob.
 
 The two verification calls from Bob's CIDVV platform use **reachability**
 to ensure that Alice really controls the Asserted Caller-ID she is presenting,
@@ -217,6 +223,67 @@ vouch-call timeout (or is missing, altered, or inconsistent), the entire
 vouch MUST be treated as unsuccessful or indeterminate.
 
 ### Simple Overview (Vetting)
+
+When Alice wants to confirm that Bob controls a particular telephone number:
+
+1. Alice and Bob share a secret (e.g., "elephant").
+
+2. Alice initiates a "Wake Call" to Bob using a special prefix (`+101`)
+   and her agreed vetting caller-id.
+
+3. Bob's CIDVV platform recognizes the vetting caller-id, computes a short-lived
+   Recognize Token, and rejects the call.
+
+4. Alice's platform then sends a "Recognize Call" using the Recognize Token
+   as the caller-id.
+
+5. Bob's platform verifies the token and responds with an "Auth Call" using
+   an Auth Token.
+
+6. Alice's platform verifies the Auth Token. Both sides now consider the
+   vetting successful.
+
+### Detailed Vouching Procedure
+
+When Alice wants to place a call to Bob using her asserted caller-id, the following steps are performed:
+
+1. Alice’s CIDVV platform is notified of her outbound call attempt to Bob (using her Asserted Caller-ID). This notification is typically done by Alice’s SBC or gateway sending an INVITE to the CIDVV platform. The CIDVV platform rejects this INVITE with a SIP 404 (Not Found) response so that the original call can continue toward the PSTN. Note that the exact notification mechanism is implementation-specific and may use other methods (e.g., an API call or STIR signing request) in future deployments.
+
+2. Bob’s CIDVV platform intercepts the incoming call from Alice and holds it (does not yet alert Bob’s phone).
+
+3. Bob’s CIDVV platform initiates two short verification calls back to Alice (in either order or in parallel):
+
+   a. One verification call with Calling Party Number prefixed by `+100`.
+
+   b. One verification call with Calling Party Number prefixed by `+101`.
+
+   Both calls are directed to Alice’s Asserted Caller-ID.
+
+4. Alice’s CIDVV platform intercepts each verification call and performs the following actions:
+
+   a. For the call with `+100` prefix: Rejects the call with SIP **486 Busy Here**.
+
+   b. For the call with `+101` prefix: Rejects the call with SIP **603 Call Rejected**.
+
+5. Bob’s CIDVV platform evaluates the responses to both verification calls.
+
+6. If both verification calls receive the expected responses (486 for `+100` and 603 for `+101`) within the Validity Window, Bob’s CIDVV platform:
+
+   a. Considers the vouching successful.
+
+   b. Allows the original call from Alice to proceed and ring through to Bob.
+
+7. If either verification call fails to receive the correct response, times out, or does not complete within the Validity Window, Bob’s CIDVV platform:
+
+   a. Considers the vouching failed.
+
+b. May take any of the following actions on the original call (implementation specific):
+      
+   - Reject the call (e.g., with SIP 603 Call Rejected).
+   - Route the call to Bob’s voicemail.
+   - Allow the call to ring through to Bob with a visual warning on the display (e.g., "Unverified Caller-ID").
+
+### Detailed Vetting Procedure
 
 When Alice wants to confirm that Bob controls a particular telephone number, the following protocol is used:
 
