@@ -218,52 +218,10 @@ vouch MUST be treated as unsuccessful or indeterminate.
 
 ### Simple Overview (Vetting)
 
-When Alice wants to confirm that Bob controls a particular telephone number:
-
-1. Alice and Bob share a secret (e.g., "elephant").
-2. Alice and Bob agree on the caller-id that Alice will use to Vet Bob's number.
-3. Alice's CIDVV platform performs a "Wake Call" to Bob using a **+101** prefix
-   along with Alice's Vetting caller-id.
-4. Bob's CIDVV platform performs the following actions:
-   - Intercepts the call.
-   - Recognizes Alice's vetting caller-id and considers this a "Wake Call"
-   - Computes a short-lived "Recognize Token" derived from Alice's number + Bob's number + shared secret, e.g., 13928543029
-   - Stores this token in tempory memory.
-   - Rejects the call with a 603 (Call Rejected) response code.
-   - Considers this a successful "Wake" call from Alice to Bob (step 1 of 3).
-6. Alice's CIDVV platform performs the following actions:
-   - Receives the 603 as expected and considers Bob's CIDVV platform "Awake".
-   - Calculates the "Recognize Token" derived from Alice's number + Bob's number + shared secret (e.g., 13928543029, which matches
-     the token value that Bob's CIDVV platform calculated).
-   - Calculates an "Auth Token" derived slightly differently than the Recognize Token from the shared secret + Bob's
-     number + Alice's number, e.g., 19020621754
-   - Stores this Auth Token in temporary memory
-   - Makes a "Recognize Call" (step 2 of 3) to Bob using the Recognize Token as the callerid (prefixed with **+101**), e.g., **+101**13928543029
-8. Bob's CIDVV platform performs the following actions upon receiving this call:
-   - Intercepts the call.
-   - Determines the caller-id matches the "Recognize Token" from Alice's caller-id that was generated a short time ago (e.g., 13928543029 = 13928543029)
-   - Considers this a successful "Recognize Call" from Alice to Bob (step 2 of 3).
-   - Trusts Alice's CIDVV platform due to the common Recognize Token.
-   - Rejects the call with a 486 Busy Here to indicate Bob's CIDVV Platform trusts Alice's CIDVV platform
-   - Computes an "Auth Token" derived from shared secret + Bob's number + Alice's number, e.g., 19020621754
-   - Makes an "Auth Call" (step 3 of 3) to Alice using the Auth Token as the callerid (prefixed with **+101**), e.g., **+101**19020621754
-9. Alice's CIDVV platform performs the following actions:
-   - Intercepts the call
-   - Determines the caller-id matches the "Auth Token" from Bob's caller-id that was generated a short time ago (e.g., 19020621754 = 19020621754)
-   - Considers this a successful "Auth Call" from Bob to Alice (step 3 of 3).
-   - Trusts Bob's CIDVV platform due to the common Auth Token.
-   - Rejects the call with a 486 Busy Here to indicate Alice's CIDVV Platform trusts Bob's CIDVV platform
-   - Considers this a Successful Vet.
-10. Bob's CIDVV platform receives the 486 Busy Here from Alice's CIDVV Platform and considers this a successful Vet.
-
-### Simple Overview (Vetting)
-
 When Alice wants to confirm that Bob controls a particular telephone number, the following protocol is used:
 
 1. Alice and Bob share a secret (e.g., "elephant").
-
 2. Alice and Bob agree on the caller-id that Alice will use to vet Bob's number.
-
 3. Alice's CIDVV platform initiates a "Wake Call" to Bob by dialing Bob's number prefixed with `+101` and using Alice's agreed vetting caller-id.
 
 4. Bob's CIDVV platform performs the following actions:
