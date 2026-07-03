@@ -221,10 +221,12 @@ vouch MUST be treated as unsuccessful or indeterminate.
 When Alice wants to confirm that Bob controls a particular telephone number, the following protocol is used:
 
 1. Alice and Bob share a secret (e.g., "elephant").
-2. Alice and Bob agree on the caller-id that Alice will use to vet Bob's number.
-3. Alice's CIDVV platform initiates a "Wake Call" to Bob by dialing Bob's number prefixed with `+101` and using Alice's agreed vetting caller-id.
 
-4. Bob's CIDVV platform performs the following actions:
+3. Alice and Bob agree on the caller-id that Alice will use to vet Bob's number.
+
+5. Alice's CIDVV platform initiates a "Wake Call" to Bob by dialing Bob's number prefixed with `+101` and using Alice's agreed vetting caller-id.
+
+6. Bob's CIDVV platform performs the following actions:
 
    a. Intercepts the incoming call.
 
@@ -238,7 +240,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    f. Considers this a successful "Wake Call" from Alice to Bob (step 1 of 3).
 
-5. Alice's CIDVV platform performs the following actions upon receiving the 603 response:
+7. Alice's CIDVV platform performs the following actions upon receiving the 603 response:
 
    a. Considers Bob's CIDVV platform "Awake".
 
@@ -250,7 +252,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    e. Initiates a "Recognize Call" (step 2 of 3) to Bob using the Recognize Token as the caller-id, prefixed with `+101` (example: `+10113928543029`).
 
-6. Bob's CIDVV platform performs the following actions upon receiving the Recognize Call:
+8. Bob's CIDVV platform performs the following actions upon receiving the Recognize Call:
 
    a. Intercepts the call.
 
@@ -266,7 +268,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    g. Initiates an "Auth Call" (step 3 of 3) to Alice using the Auth Token as the caller-id, prefixed with `+101` (example: `+10119020621754`).
 
-7. Alice's CIDVV platform performs the following actions upon receiving the Auth Call:
+9. Alice's CIDVV platform performs the following actions upon receiving the Auth Call:
 
    a. Intercepts the call.
 
@@ -280,7 +282,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    f. Considers the vetting procedure complete and successful.
 
-8. Bob's CIDVV platform receives the 486 (Busy Here) response from Alice and also considers the vetting procedure successful.
+10. Bob's CIDVV platform receives the 486 (Busy Here) response from Alice and also considers the vetting procedure successful.
 
 
 Only the legitimate owner of Bob's number can receive the token and cause the
