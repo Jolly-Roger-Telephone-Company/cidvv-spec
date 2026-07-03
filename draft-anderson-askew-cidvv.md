@@ -225,11 +225,11 @@ When Alice wants to confirm that Bob controls a particular telephone number:
 3. Alice's CIDVV platform performs a "Wake" call to Bob using a **+101** prefix
    along with Alice's Vetting caller-id.
 4. Bob's CIDVV platform performs the following actions upon receiving the call:
-   a.  Intercepts the call.
-   b.  Recognizes Alice's vetting caller-id.
-   c.  Computes a short-lived "recognize" token derived from Alice's number + Bob's number + shared secret.
-   d.  Stores this token in tempory memory.
-   e.  Considers this a successful "Wake" call from Alice to Bob (step 1 of 3).
+    a.  Intercepts the call.
+    b.  Recognizes Alice's vetting caller-id.
+    c.  Computes a short-lived "recognize" token derived from Alice's number + Bob's number + shared secret.
+    d.  Stores this token in tempory memory.
+    e.  Considers this a successful "Wake" call from Alice to Bob (step 1 of 3).
 6. Alice's CIDVV platform calculates the same "recognize" token derived from
    Alice's number + Bob's number + shared secret and makes a second "Recognize" call to
    Bob using using intercepts Bob's return call. Only if the received
