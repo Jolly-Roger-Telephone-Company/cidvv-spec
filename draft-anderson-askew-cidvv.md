@@ -222,20 +222,108 @@ When Alice wants to confirm that Bob controls a particular telephone number:
 
 1. Alice and Bob share a secret (e.g., "elephant").
 2. Alice and Bob agree on the caller-id that Alice will use to Vet Bob's number.
-3. Alice's CIDVV platform performs a "Wake" call to Bob using a **+101** prefix
+3. Alice's CIDVV platform performs a "Wake Call" to Bob using a **+101** prefix
    along with Alice's Vetting caller-id.
-4. Bob's CIDVV platform performs the following actions upon receiving the call:
+4. Bob's CIDVV platform performs the following actions:
    - Intercepts the call.
-   - Recognizes Alice's vetting caller-id.
-   - Computes a short-lived "recognize" token derived from Alice's number + Bob's number + shared secret.
+   - Recognizes Alice's vetting caller-id and considers this a "Wake Call"
+   - Computes a short-lived "Recognize Token" derived from Alice's number + Bob's number + shared secret, e.g., 13928543029
    - Stores this token in tempory memory.
+   - Rejects the call with a 603 (Call Rejected) response code.
    - Considers this a successful "Wake" call from Alice to Bob (step 1 of 3).
-6. Alice's CIDVV platform calculates the same "recognize" token derived from
-   Alice's number + Bob's number + shared secret and makes a second "Recognize" call to
-   Bob using using intercepts Bob's return call. Only if the received
-   token matches what she expects does she respond with a busy-class response.
-7. Bob's platform sees the correct busy response and confirms success to Alice's
-   platform.
+6. Alice's CIDVV platform performs the following actions:
+   - Receives the 603 as expected and considers Bob's CIDVV platform "Awake".
+   - Calculates the "Recognize Token" derived from Alice's number + Bob's number + shared secret (e.g., 13928543029, which matches
+     the token value that Bob's CIDVV platform calculated).
+   - Calculates an "Auth Token" derived slightly differently than the Recognize Token from the shared secret + Bob's
+     number + Alice's number, e.g., 19020621754
+   - Stores this Auth Token in temporary memory
+   - Makes a "Recognize Call" (step 2 of 3) to Bob using the Recognize Token as the callerid (prefixed with **+101**), e.g., **+101**13928543029
+8. Bob's CIDVV platform performs the following actions upon receiving this call:
+   - Intercepts the call.
+   - Determines the caller-id matches the "Recognize Token" from Alice's caller-id that was generated a short time ago (e.g., 13928543029 = 13928543029)
+   - Considers this a successful "Recognize Call" from Alice to Bob (step 2 of 3).
+   - Trusts Alice's CIDVV platform due to the common Recognize Token.
+   - Rejects the call with a 486 Busy Here to indicate Bob's CIDVV Platform trusts Alice's CIDVV platform
+   - Computes an "Auth Token" derived from shared secret + Bob's number + Alice's number, e.g., 19020621754
+   - Makes an "Auth Call" (step 3 of 3) to Alice using the Auth Token as the callerid (prefixed with **+101**), e.g., **+101**19020621754
+9. Alice's CIDVV platform performs the following actions:
+   - Intercepts the call
+   - Determines the caller-id matches the "Auth Token" from Bob's caller-id that was generated a short time ago (e.g., 19020621754 = 19020621754)
+   - Considers this a successful "Auth Call" from Bob to Alice (step 3 of 3).
+   - Trusts Bob's CIDVV platform due to the common Auth Token.
+   - Rejects the call with a 486 Busy Here to indicate Alice's CIDVV Platform trusts Bob's CIDVV platform
+   - Considers this a Successful Vet.
+10. Bob's CIDVV platform receives the 486 Busy Here from Alice's CIDVV Platform and considers this a successful Vet.
+
+### Simple Overview (Vetting)
+
+When Alice wants to confirm that Bob controls a particular telephone number, the following protocol is used:
+
+1. Alice and Bob share a secret (e.g., "elephant").
+
+2. Alice and Bob agree on the caller-id that Alice will use to vet Bob's number.
+
+3. Alice's CIDVV platform initiates a "Wake Call" to Bob by dialing Bob's number prefixed with `+101` and using Alice's agreed vetting caller-id.
+
+4. Bob's CIDVV platform performs the following actions:
+
+   a. Intercepts the incoming call.
+
+   b. Recognizes Alice's vetting caller-id and identifies this as a "Wake Call".
+
+   c. Computes a short-lived "Recognize Token" derived from Alice's number + Bob's number + the shared secret (example: 13928543029).
+
+   d. Stores this token temporarily in memory.
+
+   e. Rejects the call with a SIP 603 (Call Rejected) response.
+
+   f. Considers this a successful "Wake Call" from Alice to Bob (step 1 of 3).
+
+5. Alice's CIDVV platform performs the following actions upon receiving the 603 response:
+
+   a. Considers Bob's CIDVV platform "Awake".
+
+   b. Independently calculates the same "Recognize Token" (example: 13928543029).
+
+   c. Calculates an "Auth Token" using a slightly different derivation from the shared secret + Bob's number + Alice's number (example: 19020621754).
+
+   d. Stores the Auth Token temporarily in memory.
+
+   e. Initiates a "Recognize Call" (step 2 of 3) to Bob using the Recognize Token as the caller-id, prefixed with `+101` (example: `+10113928543029`).
+
+6. Bob's CIDVV platform performs the following actions upon receiving the Recognize Call:
+
+   a. Intercepts the call.
+
+   b. Verifies that the received caller-id matches the previously stored Recognize Token.
+
+   c. Considers this a successful "Recognize Call" from Alice to Bob (step 2 of 3).
+
+   d. Trusts Alice's CIDVV platform based on the matching token.
+
+   e. Rejects the call with a SIP 486 (Busy Here) response.
+
+   f. Computes the corresponding "Auth Token" (example: 19020621754).
+
+   g. Initiates an "Auth Call" (step 3 of 3) to Alice using the Auth Token as the caller-id, prefixed with `+101` (example: `+10119020621754`).
+
+7. Alice's CIDVV platform performs the following actions upon receiving the Auth Call:
+
+   a. Intercepts the call.
+
+   b. Verifies that the received caller-id matches the previously stored Auth Token.
+
+   c. Considers this a successful "Auth Call" from Bob to Alice (step 3 of 3).
+
+   d. Trusts Bob's CIDVV platform based on the matching token.
+
+   e. Rejects the call with a SIP 486 (Busy Here) response.
+
+   f. Considers the vetting procedure complete and successful.
+
+8. Bob's CIDVV platform receives the 486 (Busy Here) response from Alice and also considers the vetting procedure successful.
+
 
 Only the legitimate owner of Bob's number can receive the token and cause the
 correct response sequence. Alice must be reachable, but this is acceptable for
