@@ -182,9 +182,9 @@ When Alice wants to call Bob using her asserted caller-id:
 
 3. Before ringing Bob's phone, Bob's platform initiates two short verification
    calls back to Alice:
-   
+
    a. It uses Alice's Asserted Caller-ID as the destination number.
-   
+
    b. It sets a special prefix in the Calling Party Number ("100" for Phase 1
       and "101" for Phase 2).
 
@@ -199,7 +199,7 @@ The two verification calls from Bob's CIDVV platform use **reachability**
 to ensure that Alice really controls the Asserted Caller-ID she is presenting,
 and is attempting a call to Bob's number.
 
-### Simple Overview (Vetting) 
+### Simple Overview (Vetting)
 
 When Alice wants to confirm that Bob controls a particular telephone number:
 
@@ -294,7 +294,7 @@ When Alice wants to place a call to Bob using her asserted caller-id, the follow
    a. Considers the vouching failed.
 
 b. May take any of the following actions on the original call (implementation specific):
-      
+
    - Reject the call (e.g., with SIP 603 Call Rejected).
    - Route the call to Bob’s voicemail.
    - Allow the call to ring through to Bob with a visual warning on the display (e.g., "Unverified Caller-ID").
@@ -501,7 +501,7 @@ long it will wait for the return vouch call(s).
 
 Independently, both the originating and terminating platforms should
 implement configurable local timers that control how long they wait
-for signaling responses during each vouching call. 
+for signaling responses during each vouching call.
 
 A default timeout of 3–6 seconds is reasonable for domestic calls.
 For international destinations, longer timeouts (typically 8–20 seconds)
@@ -945,7 +945,7 @@ expected protocol behavior as indicating a non-participating system.
 Networks and SBCs that recognize CIDVV signaling SHOULD intercept calls
 with Calling Party Numbers beginning with "100", "101", "+100", or "+101"
 before they reach end users. These calls SHOULD result in a non-success
-response (commonly 486 Busy Here or 603 Decline) and MUST NOT establish 
+response (commonly 486 Busy Here or 603 Decline) and MUST NOT establish
 media.
 
 Call analytics, labeling, and fraud detection systems SHOULD recognize
@@ -996,7 +996,7 @@ call timeouts should be adaptive: 3–6 seconds is appropriate for domestic
 calls, while 8–20 seconds (or more) may be needed for international
 destinations based on observed PDD. The two vouch calls (Phase 1 and
 Phase 2) may be performed sequentially or simultaneously.
-  
+
 # Operational Considerations
 
 ## Protocol Operation - Vouching
