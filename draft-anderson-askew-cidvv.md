@@ -595,11 +595,10 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
 
 # Examples
 
-## Successful Vouch Call Flow (Baseline)
+## Successful Vouch Call Flow (Step 1)
 
-The following diagram shows a baseline successful vouch using only
-the primary "100" verification call. This provides a valid vouch with
-baseline assurance.
+The following diagram shows a "Step 1" successful vouch using only
+the primary "100" verification call. 
 
 ~~~~
    Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
@@ -608,7 +607,7 @@ baseline assurance.
      |           |           |           |           |           |
      |           |<- INVITE -|           |           |           |
      |           |           |           |           |           |
-     |           |--- 486 -->|           |           |           |
+     |           |--- 404 -->|           |           |           |
      |           |           |- INVITE ->|           |           |
      |           |           |           |- INVITE ->|           |
      |           |           |           |           |           |
@@ -622,13 +621,13 @@ baseline assurance.
      |           |           |           |           |- INVITE ->|
      |           |           |           |           |           |
 ~~~~
-{: #fig-successful-vouch title="Example Successful Vouch (Baseline)"}
+{: #fig-successful-vouch title="Example Successful Vouch (Step 1)"}
 
 In the diagram, "VFY100" represents a verification call whose
 Calling Party Number is the CIDVV token formed as "100" followed by
 the rightmost 12 digits of the dialed number.
 
-### Successful Vouch (Baseline) Step-by-step description
+### Successful Vouch (Step 1) Step-by-step description
 
 The diagram above shows the high-level message flow. The following
 numbered steps provide the detailed behavior, including Caller-ID
