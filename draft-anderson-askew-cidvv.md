@@ -39,64 +39,40 @@ Headings (starting with #) must be separated by a blank line. Can use this regex
 
 --- abstract
 
-Caller-ID spoofing remains a significant problem in telephony,
-particularly across inter-domain and international call paths where
-identity frameworks may not be consistently applied.
+Caller-ID spoofing remains a significant problem in telephony, particularly across inter-domain and international call paths where identity frameworks may not yet be fully deployed.
 
-This document defines Caller-ID Vouching and Vetting (CIDVV), a
-lightweight verification mechanism that uses short-lived signaling
-exchanges encoded within the Calling Party Number to confirm that a
-calling party can receive calls at the Asserted Caller-ID.
+This document defines **Caller-ID Vouching and Vetting (CIDVV)**, a lightweight verification mechanism that lets the called party ask a simple question:
 
-CIDVV is designed to operate across heterogeneous SIP and SS7/TDM
-networks without requiring new protocol extensions or persistent
-identity infrastructure. It relies on existing call routing behavior
-and intentionally leverages failure responses as a signaling mechanism,
-using failed call attempts as evidence of number control rather than
-successful call completion.
+> "Will the party responsible for this number vouch for this call right now?"
 
-The mechanism improves resistance to Caller-ID spoofing by requiring
-demonstrable control of the Asserted Caller-ID, while remaining
-incrementally deployable and tolerant of intermediate network
-modification.
+CIDVV uses short-lived signaling exchanges encoded within the Calling Party Number to confirm that the calling party controls the Asserted Caller-ID. It is designed to operate across heterogeneous SIP and SS7/TDM networks without requiring new protocol extensions or persistent identity infrastructure. It relies on existing call routing behavior and intentionally leverages failure responses as a signaling mechanism.
+
+CIDVV is complementary to STIR/SHAKEN and other identity frameworks. It provides an incrementally deployable tool that works even in environments where cryptographic attestation is not yet available or sufficient, while remaining fully tolerant of intermediate network modification.
+
+By requiring demonstrable real-time control of the Asserted Caller-ID, CIDVV strengthens resistance to spoofing in a practical, low-overhead manner.
 
 --- middle
 
 # Introduction
 
-Caller-ID spoofing is widely used in fraudulent and nuisance calling,
-particularly in environments where calls traverse multiple
-administrative domains and heterogeneous network technologies.
+Caller-ID spoofing remains a widespread problem in modern telephony. Fraudulent and nuisance callers frequently impersonate legitimate numbers, eroding trust and complicating call screening for recipients.
 
-This document defines Caller-ID Vouching and Vetting (CIDVV), a
-mechanism that verifies caller identity through network reachability
-rather than asserted identity. CIDVV requires that a party asserting a
-Caller-ID be able to receive a return call at that number within a brief "Validity Window".
+This document defines **Caller-ID Vouching and Vetting (CIDVV)**, a lightweight, incrementally deployable mechanism that allows the called party to ask a simple real-time question:
 
-CIDVV operates by encoding signaling information within the Calling
-Party Number and leveraging existing call routing behavior to perform
-a challenge-response exchange. The protocol does not require new SIP
-headers, protocol extensions, or changes to SS7 signaling, and is
-designed to function across mixed SIP and TDM networks.
+> "Will the party responsible for this number vouch for this call right now?"
 
-CIDVV is incrementally deployable and does not require universal
-adoption to provide benefit. It tolerates modification of signaling
-by intermediate networks and relies on signaling calls and distinct
-failure-response behaviors traversing the network path.
+CIDVV verifies caller identity through network reachability rather than relying solely on asserted identity. It requires that a party asserting a Caller-ID demonstrate control of that number by being able to receive a short return signaling call within a brief Validity Window.
 
-CIDVV provides strong, real-time evidence of Caller-ID validity by
-requiring that a party asserting a Caller-ID be able to receive and
-respond to a return call at that number within a brief Validity Window.
-While it does not provide absolute identity assurance, it offers a
-practical and robust signal of trust in the presented identity.
+CIDVV operates by encoding signaling information within the Calling Party Number and leveraging existing call routing behavior to perform a challenge-response exchange. The protocol requires no new SIP headers, protocol extensions, response codes, or changes to SS7 signaling. It is designed to function across mixed SIP and TDM networks, including international paths.
 
-CIDVV leverages two key elements of the existing telephone ecosystem:
+**CIDVV is complementary to STIR/SHAKEN** and other identity frameworks. It provides practical protection in environments where cryptographic attestation is not yet fully deployed, while remaining fully tolerant of signaling modifications by intermediate networks. It intentionally uses distinct failure-response behaviors as part of its signaling mechanism and does not require universal adoption to deliver benefit.
 
-* Existing routing databases and numbering plans, which provide
-  authoritative routing ownership for telephone numbers.
-* Digit sequences chosen to minimize conflict with valid numbering plans (e.g., "100" and "101").
+The mechanism leverages two key elements of the existing telephone ecosystem:
 
-The mechanism operates entirely within standard PSTN routing behavior and requires no media exchange.
+* Authoritative routing databases and numbering plans, which establish ownership of telephone numbers.
+* Short digit sequences (e.g., "100" and "101") chosen to minimize conflicts with valid numbering plans.
+
+CIDVV operates entirely within standard PSTN routing behavior and requires no media exchange. While it does not provide absolute identity assurance, it delivers strong, real-time evidence of Caller-ID control in a practical and low-overhead manner.
 
 # Terminology
 
@@ -119,8 +95,6 @@ The mechanism operates entirely within standard PSTN routing behavior and requir
 * **Validity Window**: The time interval during which the originating CIDVV platform will accept and correlate a vouch attempt (return call) from the called party. This is typically on the order of 10–30 seconds.
 * **Vouch-Call Timeout**: The local timer used by the originating CIDVV platform to limit how long it will wait for a response to an individual Phase 1 or Phase 2 vouching call. This is typically 3–6 seconds for domestic calls and longer (e.g. 8–20 seconds) for international calls. It is distinct from the Validity Window.
 
-Once successfully vouched, an Asserted Caller-ID may be referred to informally as a "vouched number".
-
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
 "OPTIONAL" in this document are to be interpreted as described in
@@ -129,41 +103,43 @@ capitals, as shown here.
 
 ## Motivation and Advantages
 
-The CIDVV vouching and vetting mechanism is designed to operate with minimal new infrastructure while providing strong protection against Caller-ID spoofing. Its primary advantages are:
+While mechanisms such as STIR/SHAKEN provide important cryptographic caller identity assurance, their deployment is still partial, particularly across international and inter-provider boundaries. CIDVV is designed as a pragmatic, complementary approach that works today using only existing telephone infrastructure.
 
-* **Leverages existing PSTN infrastructure**: Uses existing numbering plans and routing databases without requiring new infrastructure or protocol extensions.
-* **Strong anti-spoofing protection**: A successful vouch provides strong evidence of control over the Asserted Caller-ID, because only the legitimate owner can complete the challenge-response sequence. Spoofed calls are typically rejected early.
-* **Visibility into spoofing activity**: Number owners gain direct insight into how often and to where their numbers are being spoofed through logged vetting attempts.
-* **Low signaling overhead**: The short vouching calls replace what would otherwise be completed fraudulent calls, resulting in lower overall network load.
-* **Full TDM/SS7 compatibility**: Works natively across legacy SS7 and ISDN networks. SIP is not required.
-* **International applicability**: Functions effectively across national boundaries without relying on country-specific frameworks.
-* **Deployment flexibility**: Enterprises can run their own CIDVV platform using open-source tools (e.g., Kamailio or Asterisk). Service providers or third-party Vetting Agents can offer cloud-based vouching and vetting services on behalf of carriers, enterprises, or number owners.
-* **Promotes competition**: Customers using third-party cloud-based CIDVV services can more easily switch between providers, fostering competition and helping to drive down costs.
+The primary advantages of CIDVV are:
 
-This design lowers the barrier to entry and encourages broad adoption while avoiding the single points of failure and high coordination costs of centralized solutions. CIDVV is particularly suitable for service providers, enterprises, and end users who need robust Caller-ID validation using only existing telephone infrastructure.
+* **Leverages existing PSTN infrastructure**: Requires no new protocol extensions, headers, or infrastructure. It uses established numbering plans and routing databases.
 
-# Design Principles
+* **Strong reachability-based anti-spoofing**: A successful vouch gives strong evidence that the calling party controls the Asserted Caller-ID, because only the legitimate owner can respond to the short signaling challenge.
 
-CIDVV is designed to operate under the assumption that intermediate
-networks may normalize, truncate, or otherwise modify signaling
-information. The protocol therefore encodes all required signaling in
-a numeric Calling Party Number that can survive traversal of mixed
-SIP and SS7/TDM networks.
+* **Visibility into spoofing**: Number owners and their providers gain valuable real-world telemetry on spoofing attempts against their numbers through logged vetting requests.
 
-CIDVV relies on the ability to distinguish between classes of
-call rejection behavior (e.g., "busy" vs. "rejected"), rather than
-requiring specific numeric response codes to be preserved end-to-end.
+* **Low signaling overhead**: Short, media-less verification calls replace what would otherwise be completed fraudulent calls, reducing overall network load.
 
-# Number Normalization
-{: #number-normalization }
+* **Broad compatibility**: Works natively across SIP, SS7/TDM, ISDN, and mixed networks, including international paths. No SIP-specific features are required.
 
-All telephone numbers used in CIDVV operations MUST be normalized to a
-plain digit string in E.164 format (without the leading "+" sign) as
-follows:
+* **Incremental and flexible deployment**: Can be implemented by enterprises (using tools such as Kamailio or Asterisk), service providers, or third-party services. No universal adoption is needed to provide benefit.
 
-1. Remove any leading "+" or other punctuation characters.
-2. Use the full E.164 representation: country code followed by the national significant number.
-3. No padding is performed. If truncation is required to stay within the 15-digit limit, always remove leading digits (preserving the rightmost digits).
+* **Promotes competition and innovation**: Third-party cloud-based vouching/vetting services allow easy provider switching, lowering costs and encouraging a healthy ecosystem.
+
+By avoiding centralized authorities and single points of failure, CIDVV lowers the barrier to deployment while providing immediate, practical value in the fight against Caller-ID spoofing.
+
+## Design Principles
+
+CIDVV was designed with the following core principles:
+
+* **Maximal compatibility with existing infrastructure**: The protocol must work across SIP, SS7/TDM, ISDN, and mixed networks - including international paths - without requiring changes to signaling protocols, new headers, response codes, or media support.
+
+* **Resilience to intermediate network behavior**: Intermediate networks may normalize, truncate, or otherwise modify signaling information. Therefore, all protocol state is encoded in a compact numeric form within the Calling Party Number field, which has the highest chance of surviving end-to-end.
+
+* **Use of existing failure semantics**: CIDVV relies on distinguishable classes of call rejection behavior (e.g., "busy" vs. "decline") rather than requiring specific end-to-end response codes. Failed call attempts are intentionally used as a lightweight signaling mechanism.
+
+* **Minimal new infrastructure**: No persistent identity infrastructure, central authorities, or cryptographic key management is required. The mechanism leverages existing routing databases and numbering authority.
+
+* **Incremental deployability**: The protocol provides benefit even with partial adoption and is designed to coexist cleanly with STIR/SHAKEN and other identity solutions.
+
+* **Practical and low-overhead operation**: Verification uses very short signaling-only calls with no media exchange, keeping network impact minimal while still providing strong real-time evidence of number control.
+
+These principles ensure CIDVV can be deployed quickly and broadly while delivering meaningful protection against Caller-ID spoofing today.
 
 ## Simple Overview
 {: #simple-overview }
@@ -954,6 +930,17 @@ that verification could not be performed.
 
 Implementations SHOULD fail closed (treating requests as unverified)
 rather than risk false-positive validation.
+
+# Number Normalization
+{: #number-normalization }
+
+All telephone numbers used in CIDVV operations MUST be normalized to a
+plain digit string in E.164 format (without the leading "+" sign) as
+follows:
+
+1. Remove any leading "+" or other punctuation characters.
+2. Use the full E.164 representation: country code followed by the national significant number.
+3. No padding is performed. If truncation is required to stay within the 15-digit limit, always remove leading digits (preserving the rightmost digits).
 
 ## Prefix Preservation
 
