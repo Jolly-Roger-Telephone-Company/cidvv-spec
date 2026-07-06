@@ -94,8 +94,8 @@ CIDVV operates entirely within standard PSTN routing behavior and requires no me
 * **Successful Vouch**: Requires **both Phase 1 and Phase 2** to complete with the expected behaviors within the Validity Window.
 * **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
 * **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
-* **Validity Window**: The time interval during which the originating CIDVV platform will accept and correlate a vouch attempt (return call) from the called party. This is typically on the order of 10–30 seconds.
-* **Vouch-Call Timeout**: The local timer used by the originating CIDVV platform to limit how long it will wait for a response to an individual Phase 1 or Phase 2 vouching call. This is typically 3–6 seconds for domestic calls and longer (e.g. 8–20 seconds) for international calls. It is distinct from the Validity Window.
+* **Validity Window**: The time interval during which the originating CIDVV platform will accept and correlate a vouch attempt (return call) from the called party. This is typically on the order of 10-30 seconds.
+* **Vouch-Call Timeout**: The local timer used by the originating CIDVV platform to limit how long it will wait for a response to an individual Phase 1 or Phase 2 vouching call. This is typically 3-6 seconds for domestic calls and longer (e.g. 8-20 seconds) for international calls. It is distinct from the Validity Window.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
@@ -184,7 +184,7 @@ When Alice wants to vet that Bob controls a particular telephone number:
 
 This design ensures that the initial Wake Call reveals nothing useful to an attacker, while the subsequent Recognize and Auth steps provide mutual authentication between parties that share the secret. All calls remain short signaling-only exchanges with no media.
 
-**Note**: The shared secret and token exchange details are defined in Section [token-computation].
+**Note**: The shared secret and token exchange details are defined in Section [Token Computation Algorithm](#token-computation).
 
 ## CIDVV Mechanisms
 
@@ -213,7 +213,7 @@ CIDVV uses a three-step handshake for vetting. All calls use the `101` prefix in
 
 A successful **Vet** requires all three steps to complete successfully within the Validity Window.
 
-The **Recognize Call** serves as critical anti-goading protection. Bob’s platform will only initiate the final Auth Call if it has recently received a valid Wake Call *and* the Recognize Token matches what it computed. This prevents an attacker from tricking Bob’s platform into calling Alice.
+The **Recognize Call** serves as critical anti-goading protection. Bob's platform will only initiate the final Auth Call if it has recently received a valid Wake Call *and* the Recognize Token matches what it computed. This prevents an attacker from tricking Bob's platform into calling Alice.
 
 Both sides independently compute the short-lived Recognize Token and Auth Token from the shared secret and the two telephone numbers involved. The tokens are valid only within the Validity Window.
 
@@ -234,7 +234,7 @@ Both sides independently compute the short-lived Recognize Token and Auth Token 
 7. Left-pad with zeros to 10 digits if needed, then prepend '1' to produce an 11-digit token.
 
 **Security Note for Cloud Providers**:
-Cloud-based CIDVV services MUST isolate customers (e.g., by including a unique Customer ID or Tenant ID in the token computation) to prevent one customer from successfully vetting another customer’s numbers. Failure to properly partition customers would allow a malicious actor who knows one customer’s shared secret to impersonate them.
+Cloud-based CIDVV services MUST isolate customers (e.g., by including a unique Customer ID or Tenant ID in the token computation) to prevent one customer from successfully vetting another customer's numbers. Failure to properly partition customers would allow a malicious actor who knows one customer's shared secret to impersonate them.
 
 **Example (for illustration only)**
 - Calling number: `+12125550100`
@@ -242,7 +242,7 @@ Cloud-based CIDVV services MUST isolate customers (e.g., by including a unique C
 - Shared secret: `elephant`
 
 Recognize Token calculation:
-`12125550100|19495550199|elephant` → (SHA-256 processing) → `12953388433`
+`12125550100|19495550199|elephant` -> (SHA-256 processing) -> `12953388433`
 
 Auth Token uses the reversed number order after the shared secret.
 
@@ -252,40 +252,40 @@ Implementations MUST use identical normalization, concatenation order, and proce
 
 When Alice wants to place a call to Bob using her asserted caller-id, the following steps are performed:
 
-1. Alice’s CIDVV platform is notified of her outbound call attempt to Bob (using her Asserted Caller-ID). This notification is typically done by Alice’s SBC or gateway sending an INVITE to the CIDVV platform. The CIDVV platform rejects this INVITE with a SIP 404 (Not Found) response so that the original call can continue toward the PSTN. Note that the exact notification mechanism is implementation-specific and may use other methods (e.g., an API call or STIR signing request) in future deployments.
+1. Alice's CIDVV platform is notified of her outbound call attempt to Bob (using her Asserted Caller-ID). This notification is typically done by Alice's SBC or gateway sending an INVITE to the CIDVV platform. The CIDVV platform rejects this INVITE with a SIP 404 (Not Found) response so that the original call can continue toward the PSTN. Note that the exact notification mechanism is implementation-specific and may use other methods (e.g., an API call or STIR signing request) in future deployments.
 
-2. Bob’s CIDVV platform intercepts the incoming call from Alice and holds it (does not yet alert Bob’s phone).
+2. Bob's CIDVV platform intercepts the incoming call from Alice and holds it (does not yet alert Bob's phone).
 
-3. Bob’s CIDVV platform initiates two short verification calls back to Alice (in either order or in parallel):
+3. Bob's CIDVV platform initiates two short verification calls back to Alice (in either order or in parallel):
 
    a. One verification call with Calling Party Number prefixed by `+100`.
 
    b. One verification call with Calling Party Number prefixed by `+101`.
 
-   Both calls are directed to Alice’s Asserted Caller-ID.
+   Both calls are directed to Alice's Asserted Caller-ID.
 
-4. Alice’s CIDVV platform intercepts each verification call and performs the following actions:
+4. Alice's CIDVV platform intercepts each verification call and performs the following actions:
 
    a. For the call with `+100` prefix: Rejects the call with SIP **486 Busy Here**.
 
    b. For the call with `+101` prefix: Rejects the call with SIP **603 Call Rejected**.
 
-5. Bob’s CIDVV platform evaluates the responses to both verification calls.
+5. Bob's CIDVV platform evaluates the responses to both verification calls.
 
-6. If both verification calls receive the expected responses (486 for `+100` and 603 for `+101`) within the Validity Window, Bob’s CIDVV platform:
+6. If both verification calls receive the expected responses (486 for `+100` and 603 for `+101`) within the Validity Window, Bob's CIDVV platform:
 
    a. Considers the vouching successful.
 
    b. Allows the original call from Alice to proceed and ring through to Bob.
 
-7. If either verification call fails to receive the correct response, times out, or does not complete within the Validity Window, Bob’s CIDVV platform:
+7. If either verification call fails to receive the correct response, times out, or does not complete within the Validity Window, Bob's CIDVV platform:
 
    a. Considers the vouching failed.
 
 b. May take any of the following actions on the original call (implementation specific):
 
    - Reject the call (e.g., with SIP 603 Call Rejected).
-   - Route the call to Bob’s voicemail.
+   - Route the call to Bob's voicemail.
    - Allow the call to ring through to Bob with a visual warning on the display (e.g., "Unverified Caller-ID").
 
 ### Detailed Vetting Procedure
@@ -491,8 +491,8 @@ Independently, both the originating and terminating platforms should
 implement configurable local timers that control how long they wait
 for signaling responses during each vouching call.
 
-A default timeout of 3–6 seconds is reasonable for domestic calls.
-For international destinations, longer timeouts (typically 8–20 seconds)
+A default timeout of 3-6 seconds is reasonable for domestic calls.
+For international destinations, longer timeouts (typically 8-20 seconds)
 are recommended to accommodate higher Post-Dial Delay (PDD).
 
 The two vouch calls (Phase 1 and Phase 2) may be initiated sequentially
@@ -632,23 +632,23 @@ Note that the two verification calls (Phase 1 and Phase 2) MAY be performed in e
 
 1. The originating user (Alice, Asserted Caller-ID `+12125550100`) initiates a call to Bob (`+19495550199`).
 
-2. The call is routed from Alice’s User Agent to her SBC, which forwards it to the originating CIDVV platform (CIDVV_A).
+2. The call is routed from Alice's User Agent to her SBC, which forwards it to the originating CIDVV platform (CIDVV_A).
 
 3. **CIDVV_A**:
    - Caches the call attempt using the tuple `(Asserted Caller-ID: +12125550100, Called: +19495550199)` for the Validity Window.
    - Rejects the call with SIP **404 Not Found**.
 
-4. Alice’s SBC receives the 404 and advances the original call toward the PSTN using Alice’s original Caller-ID.
+4. Alice's SBC receives the 404 and advances the original call toward the PSTN using Alice's original Caller-ID.
 
-5. The call reaches Bob’s SBC via the PSTN, which forwards it to the terminating CIDVV platform (CIDVV_B).
+5. The call reaches Bob's SBC via the PSTN, which forwards it to the terminating CIDVV platform (CIDVV_B).
 
-6. **CIDVV_B** initiates Phase 1 and/or Phase 2 verification calls toward Alice’s number (`+12125550100`):
+6. **CIDVV_B** initiates Phase 1 and/or Phase 2 verification calls toward Alice's number (`+12125550100`):
    - Phase 1: Caller-ID = `+10019495550199`
    - Phase 2: Caller-ID = `+10119495550199`
 
-7. Each verification call arrives at Alice’s SBC via the PSTN.
+7. Each verification call arrives at Alice's SBC via the PSTN.
 
-8. **Alice’s SBC** detects the leading `+100` or `+101` prefix and routes the call to CIDVV_A.
+8. **Alice's SBC** detects the leading `+100` or `+101` prefix and routes the call to CIDVV_A.
 
 9. **CIDVV_A**:
    - Receives the call and looks up the cached tuple for the Validity Window.
@@ -657,11 +657,11 @@ Note that the two verification calls (Phase 1 and Phase 2) MAY be performed in e
 
 10. **CIDVV_B** receives the expected responses for both phases. Once both Phase 1 and Phase 2 have succeeded, it considers the combined result a **Successful Vouch**.
 
-11. CIDVV_B returns a SIP **302 Moved Temporarily** (pointing to Bob’s Contact) to Bob’s SBC.
+11. CIDVV_B returns a SIP **302 Moved Temporarily** (pointing to Bob's Contact) to Bob's SBC.
 
-12. Bob’s SBC receives the 302 and advances the original call to Bob’s User Agent.
+12. Bob's SBC receives the 302 and advances the original call to Bob's User Agent.
 
-13. Bob’s telephone rings.
+13. Bob's telephone rings.
 
 This mechanism allows the originating CIDVV platform to confirm control of the Asserted Caller-ID without completing the initial call to Bob.
 
@@ -673,23 +673,23 @@ Note that the two verification calls (Phase 1 and Phase 2) MAY be performed in e
 
 1. The originating user (Alice, Asserted Caller-ID `+12125550100`) initiates a call to Bob (`+19495550199`).
 
-2. The call is routed from Alice’s User Agent to her SBC, which forwards it to the originating CIDVV platform (CIDVV_A).
+2. The call is routed from Alice's User Agent to her SBC, which forwards it to the originating CIDVV platform (CIDVV_A).
 
 3. **CIDVV_A**:
    - Caches the call attempt using the tuple `(Calling: 12125550100, Called: 19495550199)` for the Validity Window.
    - Rejects the call with SIP **404 Not Found**.
 
-4. Alice’s SBC receives the 404 and advances the original call toward the PSTN using Alice’s original Caller-ID.
+4. Alice's SBC receives the 404 and advances the original call toward the PSTN using Alice's original Caller-ID.
 
-5. The call reaches Bob’s SBC via the PSTN. Because this is a new dialog (initial INVITE), Bob’s **CIDVV-aware SBC** forwards the call to the terminating CIDVV platform (CIDVV_B).
+5. The call reaches Bob's SBC via the PSTN. Because this is a new dialog (initial INVITE), Bob's **CIDVV-aware SBC** forwards the call to the terminating CIDVV platform (CIDVV_B).
 
-6. **CIDVV_B** initiates Phase 1 and/or Phase 2 verification calls toward Alice’s number (`+12125550100`):
+6. **CIDVV_B** initiates Phase 1 and/or Phase 2 verification calls toward Alice's number (`+12125550100`):
    - Phase 1: Caller-ID = `+10019495550199`
    - Phase 2: Caller-ID = `+10119495550199`
 
-7. Each verification call arrives at Alice’s SBC via the PSTN.
+7. Each verification call arrives at Alice's SBC via the PSTN.
 
-8. **Alice’s SBC** detects the leading `+100` or `+101` prefix and routes the call to CIDVV_A.
+8. **Alice's SBC** detects the leading `+100` or `+101` prefix and routes the call to CIDVV_A.
 
 9. **CIDVV_A**:
    - Receives the call and looks up the cached tuple for the Validity Window.
@@ -698,11 +698,11 @@ Note that the two verification calls (Phase 1 and Phase 2) MAY be performed in e
 
 10. **CIDVV_B** receives the expected responses for both phases. Once both Phase 1 and Phase 2 have succeeded, it considers the combined result a **Successful Vouch**.
 
-11. CIDVV_B returns a SIP **302 Moved Temporarily** (pointing to Bob’s Contact) to Bob’s SBC.
+11. CIDVV_B returns a SIP **302 Moved Temporarily** (pointing to Bob's Contact) to Bob's SBC.
 
-12. Bob’s SBC receives the 302 and advances the original call to Bob’s User Agent.
+12. Bob's SBC receives the 302 and advances the original call to Bob's User Agent.
 
-13. Bob’s telephone rings.
+13. Bob's telephone rings.
 
 This mechanism allows the originating CIDVV platform to confirm control of the Asserted Caller-ID without completing the initial call to Bob.
 
@@ -791,16 +791,16 @@ separately, but together they constitute a single vetting operation.
 
 Vetting a remote number requires three separate calls (distinct SIP dialogs) that together form a single challenge-response operation protected by a pre-agreed shared secret. The process confirms that the called party (Bob) controls the target telephone number and possesses the correct shared secret.
 
-1. Alice and Bob agree on a shared secret (e.g., `elephant`) and Alice’s vetting Caller-ID (e.g., `+12125550100`).
+1. Alice and Bob agree on a shared secret (e.g., `elephant`) and Alice's vetting Caller-ID (e.g., `+12125550100`).
 
-2. Both parties configure their CIDVV platforms with the shared secret, Alice’s vetting Caller-ID, and an **optional validity period** (e.g., “one week”). This allows the number owner (Bob) to limit how long the shared secret remains active for vetting.
+2. Both parties configure their CIDVV platforms with the shared secret, Alice's vetting Caller-ID, and an **optional validity period** (e.g., “one week”). This allows the number owner (Bob) to limit how long the shared secret remains active for vetting.
 
-3. Alice’s CIDVV platform (CIDVV_A) initiates the **Wake Call** to Bob’s number (`+19495550199`) with Caller-ID `+10112125550100`.
+3. Alice's CIDVV platform (CIDVV_A) initiates the **Wake Call** to Bob's number (`+19495550199`) with Caller-ID `+10112125550100`.
 
-4. Bob’s SBC recognizes the `101` prefix and forwards the call to CIDVV_B.
+4. Bob's SBC recognizes the `101` prefix and forwards the call to CIDVV_B.
 
 5. **CIDVV_B**:
-   - Strips the `101` prefix to recover Alice’s vetting Caller-ID.
+   - Strips the `101` prefix to recover Alice's vetting Caller-ID.
    - Recognizes it as a pre-agreed vetting number.
    - Computes the Recognize Token.
    - Caches the token for the Validity Window.
@@ -810,7 +810,7 @@ Vetting a remote number requires three separate calls (distinct SIP dialogs) tha
 
 7. CIDVV_A immediately places the **Recognize Call** to Bob using Caller-ID `+101` followed by the Recognize Token (e.g., `+10112953388433`).
 
-8. Bob’s SBC forwards the call (based on the `101` prefix) to CIDVV_B.
+8. Bob's SBC forwards the call (based on the `101` prefix) to CIDVV_B.
 
 9. **CIDVV_B**:
    - Strips the `101` prefix.
@@ -819,7 +819,7 @@ Vetting a remote number requires three separate calls (distinct SIP dialogs) tha
 
 10. CIDVV_A receives the 486 and computes the Auth Token.
 
-11. CIDVV_B computes the Auth Token and initiates the **Auth Call** to Alice’s number using Caller-ID `+101` followed by the Auth Token.
+11. CIDVV_B computes the Auth Token and initiates the **Auth Call** to Alice's number using Caller-ID `+101` followed by the Auth Token.
 
 12. **CIDVV_A**:
     - Strips the `101` prefix.
@@ -901,8 +901,8 @@ been deposited.
 ## International and Cross-Border Operation
 
 International calls often experience higher Post-Dial Delay. Vouching
-call timeouts should be adaptive: 3–6 seconds is appropriate for domestic
-calls, while 8–20 seconds (or more) may be needed for international
+call timeouts should be adaptive: 3-6 seconds is appropriate for domestic
+calls, while 8-20 seconds (or more) may be needed for international
 destinations based on observed PDD. The two vouch calls (Phase 1 and
 Phase 2) may be performed sequentially or simultaneously.
 
@@ -995,15 +995,15 @@ Platforms that do not support switched toll-free mappings will be unable to succ
 
 When the called party (Bob) has forwarded their number to a different destination (Charlie), the verification calls must still be directed to the original Asserted Caller-ID (Bob's number), **not** the final diverted destination.
 
-- The terminating CIDVV platform (or CIDVV-aware SBC) at Charlie’s location SHOULD use the original called number (Bob’s number) from the diversion / redirection information (e.g., SIP `Diversion` header or ISDN Redirecting Number field).
-- Alice’s CIDVV platform will receive verification calls to Bob’s number (which it is expecting) and can respond appropriately.
-- Charlie’s platform is responsible for performing the vouch on behalf of the forwarded number.
+- The terminating CIDVV platform (or CIDVV-aware SBC) at Charlie's location SHOULD use the original called number (Bob's number) from the diversion / redirection information (e.g., SIP `Diversion` header or ISDN Redirecting Number field).
+- Alice's CIDVV platform will receive verification calls to Bob's number (which it is expecting) and can respond appropriately.
+- Charlie's platform is responsible for performing the vouch on behalf of the forwarded number.
 
-This ensures the vouch reflects control of the number the caller originally asserted (Bob’s number), even if the call was ultimately delivered elsewhere.
+This ensures the vouch reflects control of the number the caller originally asserted (Bob's number), even if the call was ultimately delivered elsewhere.
 
 ### Numbers That Should Never Be Vouched (Low-Latency Bypass)
 
-Certain numbers or destinations require extremely low call-setup latency and cannot tolerate the additional delay of CIDVV verification (typically 3–8 seconds round-trip).
+Certain numbers or destinations require extremely low call-setup latency and cannot tolerate the additional delay of CIDVV verification (typically 3-8 seconds round-trip).
 
 Examples include:
 - Trading floors and high-frequency trading desks
@@ -1051,7 +1051,7 @@ CIDVV relies on short-lived state (typically on the order of seconds) to correla
 CIDVV relies on short-lived state to correlate signaling exchanges. This significantly limits the window for replay and ride-along attacks.
 
 **Replay Attacks**
-An attacker who observes a successful verification exchange cannot effectively replay it after the cached state expires. Implementations **MUST** expire cached state quickly. A recommended default is **10 seconds**, although longer values (e.g., 15–30 seconds) MAY be used for international or high-latency routes.
+An attacker who observes a successful verification exchange cannot effectively replay it after the cached state expires. Implementations **MUST** expire cached state quickly. A recommended default is **10 seconds**, although longer values (e.g., 15-30 seconds) MAY be used for international or high-latency routes.
 
 Implementations **MUST** reject verification attempts that do not match recent, valid cached state.
 
