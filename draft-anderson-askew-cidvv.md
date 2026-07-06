@@ -1001,6 +1001,20 @@ When the called party (Bob) has forwarded their number to a different destinatio
 
 This ensures the vouch reflects control of the number the caller originally asserted (Bob’s number), even if the call was ultimately delivered elsewhere.
 
+### Numbers That Should Never Be Vouched (Low-Latency Bypass)
+
+Certain numbers or destinations require extremely low call-setup latency and cannot tolerate the additional delay of CIDVV verification (typically 3–8 seconds round-trip).
+
+Examples include:
+- Trading floors and high-frequency trading desks
+- Emergency operations centers
+- Alarm monitoring systems
+- Certain government and military command lines
+
+CIDVV platforms **SHOULD** support a configurable "Never Vouch" list (or whitelist for immediate pass-through). When an incoming call matches an entry in this list, the platform MUST forward the call immediately without attempting any verification calls.
+
+This decision can be implemented at the CIDVV platform itself or at a CIDVV-aware SBC.
+
 # Security Considerations
 
 CIDVV verification is probabilistic and based on reachability rather than cryptographic identity. It is intended to complement, not replace, mechanisms such as STIR/SHAKEN.
