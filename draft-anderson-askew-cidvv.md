@@ -146,8 +146,6 @@ These principles ensure CIDVV can be deployed quickly and broadly while deliveri
 ## Simple Overview
 {: #simple-overview }
 
-## Simple Overview
-
 CIDVV defines two related operations:
 
 * **Vouching** — Allows the called party (or their provider) to verify in real time whether the party responsible for the presented Caller-ID vouches for *this specific call*.
@@ -396,7 +394,7 @@ A call using the "100" prefix is the **Phase 1** verification call. It succeeds 
 
 A call using the "101" prefix is the **Phase 2** verification call. It succeeds only if it receives a "Rejection"-class response (e.g., SIP 603 Call Rejected or SIP 403 Forbidden).
 
-### Combined Phase Behavior (Required for Success)
+### Combined Phase Behavior (Required for Vouch Success)
 
 A successful vouch or successful vet **requires both Phase 1 and Phase 2** to complete with their expected behaviors within the Validity Window.
 
@@ -623,47 +621,6 @@ The following diagram shows a successful vouch.
 In the diagram
  - "+100" represents a verification call whose Calling Party Number begins with the prefix "100" (or "+100") followed by Bob's Caller-ID
  - "+101" represents a verification call whose Calling Party Number begins with the prefix "101" (or "+101") followed by Bob's Caller-ID
-
-### Successful Vouch Step-by-Step Description
-
-The diagram above shows the high-level message flow. The following numbered steps provide the detailed behavior, including Caller-ID manipulation performed by CIDVV platforms and CIDVV-aware elements.
-
-Note that the two verification calls (Phase 1 and Phase 2) MAY be performed in either order or in parallel.
-
-1. The originating user (Alice, Asserted Caller-ID `+12125550100`) initiates a call to Bob (`+19495550199`).
-
-2. The call is routed from Alice's User Agent to her SBC, which forwards it to the originating CIDVV platform (CIDVV_A).
-
-3. **CIDVV_A**:
-   - Caches the call attempt using the tuple `(Asserted Caller-ID: +12125550100, Called: +19495550199)` for the Validity Window.
-   - Rejects the call with SIP **404 Not Found**.
-
-4. Alice's SBC receives the 404 and advances the original call toward the PSTN using Alice's original Caller-ID.
-
-5. The call reaches Bob's SBC via the PSTN, which forwards it to the terminating CIDVV platform (CIDVV_B).
-
-6. **CIDVV_B** initiates Phase 1 and/or Phase 2 verification calls toward Alice's number (`+12125550100`):
-   - Phase 1: Caller-ID = `+10019495550199`
-   - Phase 2: Caller-ID = `+10119495550199`
-
-7. Each verification call arrives at Alice's SBC via the PSTN.
-
-8. **Alice's SBC** detects the leading `+100` or `+101` prefix and routes the call to CIDVV_A.
-
-9. **CIDVV_A**:
-   - Receives the call and looks up the cached tuple for the Validity Window.
-   - For a `+100` prefix: Returns SIP **486 Busy Here** (successful Phase 1).
-   - For a `+101` prefix: Returns SIP **603 Decline** (successful Phase 2).
-
-10. **CIDVV_B** receives the expected responses for both phases. Once both Phase 1 and Phase 2 have succeeded, it considers the combined result a **Successful Vouch**.
-
-11. CIDVV_B returns a SIP **302 Moved Temporarily** (pointing to Bob's Contact) to Bob's SBC.
-
-12. Bob's SBC receives the 302 and advances the original call to Bob's User Agent.
-
-13. Bob's telephone rings.
-
-This mechanism allows the originating CIDVV platform to confirm control of the Asserted Caller-ID without completing the initial call to Bob.
 
 ### Successful Vouch Step-by-Step Description
 
@@ -1044,10 +1001,6 @@ it verifies control through network reachability.
 
 ## Replay and Ride-Along Attacks
 
-CIDVV relies on short-lived state (typically on the order of seconds) to correlate signaling exchanges. This significantly limits the window for replay and ride-along attacks.
-
-## Replay and Ride-Along Attacks
-
 CIDVV relies on short-lived state to correlate signaling exchanges. This significantly limits the window for replay and ride-along attacks.
 
 **Replay Attacks**
@@ -1070,11 +1023,6 @@ to successfully receive and respond to a return call routed via the
 PSTN. An attacker (Mallory) who does not control the corresponding
 number cannot receive the verification call and therefore cannot
 complete the vouching process.
-
-## Denial of Service
-
-CIDVV introduces additional signaling traffic, which may be abused
-for denial-of-service (DoS) purposes.
 
 ## Denial of Service
 
