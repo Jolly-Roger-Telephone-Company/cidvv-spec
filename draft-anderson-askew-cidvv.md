@@ -55,6 +55,8 @@ By requiring demonstrable real-time control of the Asserted Caller-ID, CIDVV str
 
 # Introduction
 
+CIDVV supports two closely related functions: **Vouching** (real-time verification that the asserted number vouches for a specific call) and **Vetting** (confirmation that a number is controlled by its expected owner, useful for branding, trust programs, and registries). The primary focus of this document is the vouching mechanism, which directly addresses Caller-ID spoofing for individual calls.
+
 Caller-ID spoofing remains a widespread problem in modern telephony. Fraudulent and nuisance callers frequently impersonate legitimate numbers, eroding trust and complicating call screening for recipients.
 
 This document defines **Caller-ID Vouching and Vetting (CIDVV)**, a lightweight, incrementally deployable mechanism that allows the called party to ask a simple real-time question:
@@ -144,103 +146,79 @@ These principles ensure CIDVV can be deployed quickly and broadly while deliveri
 ## Simple Overview
 {: #simple-overview }
 
-CIDVV is a challenge-response mechanism that proves control of an Asserted
-Caller-ID using short signaling-only calls. No media establishment or new
-protocol extensions are required.
+## Simple Overview
 
-### Simple Overview (Vouching)
+CIDVV defines two related operations:
 
-When Alice wants to call Bob using her asserted caller-id:
+* **Vouching** — Allows the called party (or their provider) to verify in real time whether the party responsible for the presented Caller-ID vouches for *this specific call*.
 
-1. Alice places a normal call to Bob using her Asserted Caller-ID.
+* **Vetting** — Allows confirmation that a telephone number is under the control of its expected owner. This is useful for Caller-ID branding services, enterprise trust programs, industry registries, and similar applications.
 
-2. Bob's CIDVV platform intercepts the incoming call.
+### Vouching Operation (Primary Use Case)
 
-3. Before ringing Bob's phone, Bob's platform initiates two short verification
-   calls back to Alice:
+When Alice wants to place a call to Bob while asserting a particular Caller-ID:
 
-   a. It uses Alice's Asserted Caller-ID as the destination number.
+1. Alice places a normal call to Bob using the Asserted Caller-ID. Alice's CIDVV platform is notified of the outbound call attempt.
+2. Bob's CIDVV platform intercepts the incoming call before ringing Bob's phone.
+3. Bob's platform initiates **two short signaling-only verification calls** back to Alice's Asserted Caller-ID (these may be performed in parallel):
+   - **Phase 1** verification call using Calling Party Number prefix `"100"`.
+   - **Phase 2** verification call using Calling Party Number prefix `"101"`.
+4. Alice's CIDVV platform recognizes the special prefixes on the incoming verification calls and responds with the expected rejection behavior for each phase. This proves that it controls the Asserted Caller-ID **and** that Alice has an active call in progress to Bob.
+5. If both Phase 1 and Phase 2 verifications succeed within the Validity Window, Bob's CIDVV platform allows the original call to ring through to Bob.
 
-   b. It sets a special prefix in the Calling Party Number ("100" for Phase 1
-      and "101" for Phase 2).
+The two verification calls use **reachability testing** to confirm that Alice (or her service provider) genuinely controls the Asserted Caller-ID she is presenting for this specific call.
 
-4. Alice's CIDVV platform intercepts the verification calls and responds
-   with the expected behavior to prove that she controls the number and has
-   an active call in progress to Bob.
+### Vetting Operation
 
-5. If both verification steps succeed within the Validity Window, Bob's
-   CIDVV platform allows the original call to ring through to Bob.
+Vetting allows a party (Alice) to confirm that another party (Bob) controls a specific telephone number. It is particularly useful for Caller-ID branding services, trust programs, and registries.
 
-The two verification calls from Bob's CIDVV platform use **reachability**
-to ensure that Alice really controls the Asserted Caller-ID she is presenting,
-and is attempting a call to Bob's number.
+Vetting uses a three-call challenge-response sequence consisting of a **Wake Call**, **Recognize Call**, and **Auth Call**, all protected by a pre-shared secret. The sequence is designed to prevent an attacker from goading the number owner into placing return calls (e.g., by spoofing well-known vetting numbers).
 
-### Simple Overview (Vetting)
+When Alice wants to vet that Bob controls a particular telephone number:
 
-When Alice wants to confirm that Bob controls a particular telephone number:
+1. Alice and Bob share a secret (e.g., a passphrase such as "elephant").
+2. Alice initiates a **Wake Call** to Bob using a special prefix (`101`) and an agreed vetting Caller-ID. Bob's platform recognizes the vetting Caller-ID, computes a short-lived Recognize Token, and rejects the call with the standard response code **603**.
+3. Alice's platform then sends a **Recognize Call** using the Recognize Token in the Calling Party Number.
+4. Bob's platform verifies the token (proving Alice knows the shared secret) and responds with an **Auth Call** using an Auth Token.
+5. Alice's platform verifies the Auth Token (proving Bob knows the shared secret). Both sides now consider the vetting successful.
 
-1. Alice and Bob share a secret (e.g., "elephant").
+This design ensures that the initial Wake Call reveals nothing useful to an attacker, while the subsequent Recognize and Auth steps provide mutual authentication between parties that share the secret. All calls remain short signaling-only exchanges with no media.
 
-2. Alice initiates a "Wake Call" to Bob using a special prefix (`+101`)
-   and her agreed vetting caller-id.
-
-3. Bob's CIDVV platform recognizes the vetting caller-id, computes a short-lived
-   Recognize Token, and rejects the call.
-
-4. Alice's platform then sends a "Recognize Call" using the Recognize Token
-   as the caller-id.
-
-5. Bob's platform verifies the token and responds with an "Auth Call" using
-   an Auth Token.
-
-6. Alice's platform verifies the Auth Token. Both sides now consider the
-   vetting successful.
+**Note**: The shared secret and token exchange details are defined in Section [TBD — Token Exchange]. RBA:// need to add this section
 
 ## CIDVV Mechanisms
 
 ### Vouching Mechanism
 
-CIDVV uses two distinct signaling prefixes in the Calling Party Number for
-vouching:
+CIDVV uses two distinct signaling prefixes in the Calling Party Number for vouching:
 
 * **"100"** — Phase 1 Verification Call
 * **"101"** — Phase 2 Verification Call
 
-A successful **Vouch** requires **both** Phase 1 and Phase 2 to complete
-with their expected responses within the Validity Window. The two phases
-MAY be performed in any order or in parallel.
+A successful **Vouch** requires **both** Phase 1 and Phase 2 to complete with their expected responses within the Validity Window. The two phases MAY be performed in any order or in parallel.
 
-Expected behaviors for vouching:
+**Expected behaviors**:
+* **Phase 1** ("100" prefix): MUST receive a Busy-class response (e.g., SIP 486 Busy Here).
+* **Phase 2** ("101" prefix): MUST receive a Rejection-class response (e.g., SIP 603 Call Rejected).
 
-* **Phase 1** ("100" prefix): MUST receive a Busy-class response
-  (e.g., SIP 486 Busy Here).
-* **Phase 2** ("101" prefix): MUST receive a Rejection-class response
-  (e.g., SIP 603 Call Rejected).
-
-If either phase fails to produce the expected response within the
-vouch-call timeout (or is missing, altered, or inconsistent), the entire
-vouch MUST be treated as unsuccessful or indeterminate.
+If either phase fails to produce the expected response within the vouch-call timeout (or is missing, altered, or inconsistent), the entire vouch MUST be treated as unsuccessful or indeterminate.
 
 ### Vetting Mechanism
 
-CIDVV uses a three-step handshake for vetting. All calls use a `+101` prefix on the Calling Party Number.
+CIDVV uses a three-step handshake for vetting. All calls use the `101` prefix in the Calling Party Number.
 
-- **Wake Call** (Alice → Bob): Alice initiates using her vetting caller-id.
-- **Recognize Call** (Alice → Bob): Alice uses the Recognize Token as the caller-id.
-- **Auth Call** (Bob → Alice): Bob uses the Auth Token as the caller-id.
+- **Wake Call** (Alice -> Bob): Alice initiates using her vetting Caller-ID.
+- **Recognize Call** (Alice -> Bob): Alice uses the Recognize Token as the Calling Party Number.
+- **Auth Call** (Bob -> Alice): Bob uses the Auth Token as the Calling Party Number.
 
 A successful **Vet** requires all three steps to complete successfully within the Validity Window.
 
-The **Recognize Call** serves as an important anti-goading protection. It ensures that Bob will only initiate the final Auth Call back to Alice if he has recently received a valid Wake Call and the Recognize Token matches what he computed. This prevents an attacker from tricking Bob’s platform into calling Alice (e.g., a script-kiddie attack).
+The **Recognize Call** serves as critical anti-goading protection. Bob’s platform will only initiate the final Auth Call if it has recently received a valid Wake Call *and* the Recognize Token matches what it computed. This prevents an attacker from tricking Bob’s platform into calling Alice.
 
 Both sides independently compute the short-lived Recognize Token and Auth Token from the shared secret and the two telephone numbers involved. The tokens are valid only within the Validity Window.
 
-## Hash Function for Vetting and Token Generation
-{: #hash-function }
-
-The same deterministic algorithm MUST be used by both parties to generate the Recognize Token and Auth Token, and for any short-term cache lookups.
-
-**Algorithm (normative)**
+### Token Computation Algorithm (Normative)
+{: #token-computation }
 
 1. Normalize both telephone numbers to E.164 digit strings (no leading "+", no punctuation) as defined in Section [Number Normalization].
 
@@ -251,26 +229,24 @@ The same deterministic algorithm MUST be used by both parties to generate the Re
    - Concatenate as UTF-8 bytes: `shared-secret || "|" || normalized-called-number || "|" || normalized-calling-number`
 
 4. Compute the SHA-256 digest of the concatenated bytes.
-
 5. Take the first 8 hexadecimal characters of the digest.
-
 6. Convert that 8-hex string to a decimal integer.
-
 7. Left-pad with zeros to 10 digits if needed, then prepend '1' to produce an 11-digit token.
 
-**Example (for illustration only)**
+**Security Note for Cloud Providers**:  
+Cloud-based CIDVV services MUST isolate customers (e.g., by including a unique Customer ID or Tenant ID in the token computation) to prevent one customer from successfully vetting another customer’s numbers. Failure to properly partition customers would allow a malicious actor who knows one customer’s shared secret to impersonate them.
 
-- Calling number: `+12125550100`
-- Called number: `+19495550199`
+**Example (for illustration only)**  
+- Calling number: `+12125550100`  
+- Called number: `+19495550199`  
 - Shared secret: `hamburger`
 
-Recognize Token calculation:
-- Concatenated string: `12125550100|19495550199|hamburger`
-- SHA-256 (first 8 hex chars) → decimal conversion → padded/prepended → `12953388433`
+Recognize Token calculation:  
+`12125550100|19495550199|hamburger` → (SHA-256 processing) → `12953388433`
 
-Auth Token calculation uses the reversed order of the numbers after the secret.
+Auth Token uses the reversed number order after the shared secret.
 
-Implementations MUST use identical normalization, concatenation order, and processing for both ends of the vetting exchange. Tokens are valid only inside the Validity Window.
+Implementations MUST use identical normalization, concatenation order, and processing on both sides of the vetting exchange. Tokens are valid only inside the Validity Window.
 
 ### Detailed Vouching Procedure
 
