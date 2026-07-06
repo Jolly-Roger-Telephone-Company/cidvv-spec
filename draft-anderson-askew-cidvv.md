@@ -595,39 +595,43 @@ Any other response, timeout, code mismatch, expired cache entry, or unexpected C
 
 # Examples
 
-## Successful Vouch Call Flow (Step 1)
+## Successful Vouch Call Flow
 
-The following diagram shows a "Step 1" successful vouch using only
-the primary "100" verification call. 
+The following diagram shows a successful vouch.
 
 ~~~~
-   Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
-     |           |           |           |           |           |
-     |------- INVITE ------->|           |           |           |
-     |           |           |           |           |           |
-     |           |<- INVITE -|           |           |           |
-     |           |           |           |           |           |
-     |           |--- 404 -->|           |           |           |
-     |           |           |- INVITE ->|           |           |
-     |           |           |           |- INVITE ->|           |
-     |           |           |           |           |           |
-     |           |           |           |<- VFY100 -|           |
-     |           |           |<- VFY100 -|           |           |
-     |           |<- VFY100 -|           |           |           |
-     |           |           |           |           |           |
-     |           |--- 486 -->|           |           |           |
-     |           |           |--- 486 -->|           |           |
-     |           |           |           |--- 486 -->|           |
-     |           |           |           |           |- INVITE ->|
-     |           |           |           |           |           |
+  Alice    CIDVV_A    SBC_A      PSTN     SBC_B    CIDVV_B     Bob
+    |----- INVITE ----->|         |         |         |         |
+    |         |<-INVITE-|         |         |         |         |
+    |         |- 404 -->|         |         |         |         |
+    |         |         |-INVITE->|         |         |         |
+    |         |         |         |-INVITE->|         |         |
+    |         |         |         |         |-INVITE->|         |
+    |         |         |         |         |<- +100 -|         |
+    |         |         |         |<- +100 -|         |         |
+    |         |         |<- +100 -|         |         |         |
+    |         |<- +100 -|         |         |         |         |
+    |         |- 486 -->|         |         |         |         |
+    |         |         |- 486 -->|         |         |         |
+    |         |         |         |- 486 -->|         |         |
+    |         |         |         |         |- 486 -->|         |
+    |         |         |         |         |<- +101 -|         |
+    |         |         |         |<- +101 -|         |         |
+    |         |         |<- +101 -|         |         |         |
+    |         |<- +101 -|         |         |         |         |
+    |         |- 603 -->|         |         |         |         |
+    |         |         |- 603 -->|         |         |         |
+    |         |         |         |- 603 -->|         |         |
+    |         |         |         |         |- 603 -->|         |
+    |         |         |         |         |<- 302 --|         |
+    |         |         |         |         |----- INVITE ----->|
 ~~~~
-{: #fig-successful-vouch title="Example Successful Vouch (Step 1)"}
+{: #fig-successful-vouch title="Example Successful Vouch"}
 
-In the diagram, "VFY100" represents a verification call whose
-Calling Party Number is the CIDVV token formed as "100" followed by
-the rightmost 12 digits of the dialed number.
+In the diagram, "+100" represents a verification call whose
+Calling Party Number is "100" (or "+100") plus Bob's Caller-ID
 
-### Successful Vouch (Step 1) Step-by-step description
+### Successful Vouch Step-by-step description
 
 The diagram above shows the high-level message flow. The following
 numbered steps provide the detailed behavior, including Caller-ID
@@ -640,177 +644,46 @@ manipulation performed by CIDVV platforms and CIDVV-aware elements.
    forwards it to the originating CIDVV platform (CIDVV_A).
 
 3. **CIDVV_A**:
-   - Constructs a CIDVV token by prefixing "100" to the rightmost
-     12 digits of the dialed number. In this case, the payload is
-     `19495550199`, resulting in the token `10019495550199`.
    - Caches the call attempt using the tuple:
-       `(Called: +12125550100, Token: 10019495550199)`
+       `(Calling: +12125550100, Called: +19495550199)`
      for the Validity Window.
-   - Rejects the call with **486 Busy Here**.
+   - Rejects the call with **404 Not Found**.
 
-4. Alice's SBC receives the 486 and advances the original call toward
+4. Alice's SBC receives the 404 and advances the original call toward
    the PSTN using the original Caller-ID.
 
-5. The call reaches Bob's SBC via the PSTN.
+5. The call reaches Bob's SBC via the PSTN, which forwards it to the terminating CIDVV platform (CIDVV_B)
 
-6. **Bob's SBC (CIDVV-aware element)**:
-   - Constructs the same CIDVV token by prefixing "100" to the
-     rightmost 12 digits of the dialed number (`+19495550199`),
-     resulting in `10019495550199`.
-   - Initiates a verification call toward Alice's number
-     (`+12125550100`) using the Caller-ID `10019495550199`.
+6. CIDVV_B Initiates a verification call toward Alice's number (`+12125550100`) using the dialed number (Bob) prepended with +100 as the Caller-ID `+10019495550199`.
 
-7. The verification call arrives at Alice's SBC via the PSTN.
+9. The verification call arrives at Alice's SBC via the PSTN.
 
-8. **Alice's SBC**:
-   - Detects the leading "100" prefix on the Caller-ID.
-   - Routes the call to CIDVV_A for vouch verification.
+10. **Alice's SBC**:
+   - Detects the leading "+100" prefix on the Caller-ID.
+   - Routes the call to CIDVV_A.
 
-9. **CIDVV_A**:
+11. **CIDVV_A**:
    - Receives the call with:
        `To: +12125550100`
-       `From: 10019495550199`
+       `From: +10019495550199`
    - Looks up the tuple:
-       `(Called: +12125550100, Token: 10019495550199)`
+       `(Calling: +12125550100, Called: +19495550199)`
      cached for the Validity Window.
    - Finds a matching entry from step 3.
-   - Considers this a successful Phase 1 Verification and returns
-     **486 Busy Here**.
+   - Recognizes +100 as a "Step 1 Vouch", considers this a successful Step 1 Verification and returns **486 Busy Here**.
 
-10. Bob's SBC receives the 486 via the PSTN, recognizes it as a
-    successful Phase 1 Verification, and advances the original call
-    to Bob's User Agent.
+11. Bob's SBC receives the 486 via the PSTN, recognizes it as a
+    successful Step 1 Verification, and initiates a Step 2 Verification call toward Alice's
+    number (`+12125550100`) using the dialed number (Bob) prepended with +101 as the Caller-ID `+10119495550199`.
 
-11. Bob's telephone rings.
+12. **Alice's SBC**:
+   - Detects the leading "+101" prefix on the Caller-ID.
+   - Routes the call to CIDVV_A.
+
+13. Bob's telephone rings.
 
 This mechanism allows the originating CIDVV platform to confirm that
 the Asserted Caller-ID is valid without completing the initial call.
-
-## Successful Vouch Call Flow (Enhanced)
-
-The following diagram shows a successful vouch (Enhanced) using both
-the primary "100" verification call and an optional secondary "101"
-verification call. The "101" call provides additional assurance by
-producing a distinct response pattern when combined with a successful
-"100" verification. The "100" verification alone is sufficient for a
-baseline successful vouch.
-
-For clarity, the verification calls are shown sequentially. In
-practice, the two verification calls MAY occur in any order or in
-parallel.
-
-~~~~
-   Alice      CIDVV_A      SBC_A        PSTN       SBC_B        Bob
-     |           |           |           |           |           |
-     |------- INVITE ------->|           |           |           |
-     |           |           |           |           |           |
-     |           |<- INVITE -|           |           |           |
-     |           |           |           |           |           |
-     |           |--- 486 -->|           |           |           |
-     |           |           |- INVITE ->|           |           |
-     |           |           |           |- INVITE ->|           |
-     |           |           |           |           |           |
-     |           |           |           |<- VFY100 -|           |
-     |           |           |<- VFY100 -|           |           |
-     |           |<- VFY100 -|           |           |           |
-     |           |           |           |           |           |
-     |           |--- 486 -->|           |           |           |
-     |           |           |--- 486 -->|           |           |
-     |           |           |           |--- 486 -->|           |
-     |           |           |           |           |           |
-     |           |           |           |<- VFY101 -|           |
-     |           |           |<- VFY101 -|           |           |
-     |           |<- VFY101 -|           |           |           |
-     |           |           |           |           |           |
-     |           |--- 404 -->|           |           |           |
-     |           |           |--- 404 -->|           |           |
-     |           |           |           |--- 404 -->|           |
-     |           |           |           |           |- INVITE ->|
-     |           |           |           |           |           |
-~~~~
-
-In the diagram, "VFY100" and "VFY101" represent verification calls
-whose Calling Party Numbers are formed using the CIDVV token
-construction defined in Protocol Overview.
-
-### Enhanced Successful Vouch Step-by-step description
-
-The diagram above shows an enhanced vouch using both the primary
-"100" verification call and an optional secondary "101" verification
-call. The following steps describe the detailed behavior.
-
-1. The originating user (Alice, Caller-ID `+12125550100`) initiates a
-   call to the destination user (Bob, dialed number `+19495550199`).
-
-2. The call is routed from Alice's User Agent to her SBC, which
-   forwards it to the originating CIDVV platform (CIDVV_A).
-
-3. **CIDVV_A**:
-   - Constructs a CIDVV token by prefixing "100" to the rightmost
-     12 digits of the dialed number (`19495550199`), resulting in
-     `10019495550199`.
-   - Caches the call attempt using the tuple:
-       `(Called: +12125550100, Token: 10019495550199)`
-     for the Validity Window.
-   - Rejects the call with **486 Busy Here**.
-
-4. Alice's SBC receives the 486 and advances the original call toward
-   the PSTN using the original Caller-ID.
-
-5. The call reaches Bob's SBC via the PSTN.
-
-6. **Bob's SBC (CIDVV-aware element)**:
-   - Constructs the CIDVV token `10019495550199`.
-   - Initiates a Phase 1 Verification call toward Alice's number
-     (`+12125550100`) using the Caller-ID `10019495550199`.
-
-7. The Phase 1 Verification call arrives at Alice's SBC via the PSTN.
-
-8. **Alice's SBC**:
-   - Detects the leading "100" prefix.
-   - Routes the call to CIDVV_A for verification.
-
-9. **CIDVV_A**:
-   - Looks up `(Called: +12125550100, Token: 10019495550199)` cached for the Validity Window
-   - Finds a matching entry.
-   - Rejects the call with SIP response **486 Busy Here**.
-
-10. Bob's SBC receives the 486 and recognizes a successful primary
-    verification.
-
-11. **Bob's SBC (Phase 2 Verification)**:
-   - Constructs a second CIDVV token by prefixing "101" to the same
-     12-digit payload, resulting in `10119495550199`.
-   - Initiates a Phase 2 Verification call toward Alice's number
-     using the Caller-ID `10119495550199`.
-
-12. The Phase 2 Verification call arrives at Alice's SBC via the PSTN.
-
-13. **Alice's SBC**:
-   - Detects the leading "101" prefix.
-   - Routes the call to CIDVV_A for processing.
-
-14. **CIDVV_A**:
-   - Receives the call with:
-       `To: +12125550100`
-       `From: 10119495550199`
-   - Performs no matching cache lookup for this prefix in the
-     vouching context.
-   - Rejects the call with **404 Not Found**.
-
-15. Bob's SBC receives the 404 and recognizes the expected secondary
-    verification behavior.
-
-16. Having observed:
-    - "100" -> 486, and
-    - "101" -> 404
-    within the Validity Window,
-
-    Bob's SBC treats this as a higher-assurance successful vouch.
-
-17. Bob's SBC advances the original call to Bob's User Agent.
-
-18. Bob's telephone rings.
 
 ## Unsuccessful Vouch
 
