@@ -220,7 +220,7 @@ Both sides independently compute the short-lived Recognize Token and Auth Token 
 ### Token Computation Algorithm (Normative)
 {: #token-computation }
 
-1. Normalize both telephone numbers to E.164 digit strings (no leading "+", no punctuation) as defined in Section [Number Normalization].
+1. Normalize both telephone numbers to E.164 digit strings (no leading "+", no punctuation) as defined in Section [Number Normalization](#number-normalization).
 
 2. For the **Recognize Token**:
    - Concatenate as UTF-8 bytes: `normalized-calling-number || "|" || normalized-called-number || "|" || shared-secret`
