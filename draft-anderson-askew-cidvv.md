@@ -233,15 +233,15 @@ Both sides independently compute the short-lived Recognize Token and Auth Token 
 6. Convert that 8-hex string to a decimal integer.
 7. Left-pad with zeros to 10 digits if needed, then prepend '1' to produce an 11-digit token.
 
-**Security Note for Cloud Providers**:  
+**Security Note for Cloud Providers**:
 Cloud-based CIDVV services MUST isolate customers (e.g., by including a unique Customer ID or Tenant ID in the token computation) to prevent one customer from successfully vetting another customer’s numbers. Failure to properly partition customers would allow a malicious actor who knows one customer’s shared secret to impersonate them.
 
-**Example (for illustration only)**  
-- Calling number: `+12125550100`  
-- Called number: `+19495550199`  
+**Example (for illustration only)**
+- Calling number: `+12125550100`
+- Called number: `+19495550199`
 - Shared secret: `elephant`
 
-Recognize Token calculation:  
+Recognize Token calculation:
 `12125550100|19495550199|elephant` → (SHA-256 processing) → `12953388433`
 
 Auth Token uses the reversed number order after the shared secret.
@@ -1019,7 +1019,7 @@ This decision can be implemented at the CIDVV platform itself or at a CIDVV-awar
 
 CIDVV verification is probabilistic and based on reachability rather than cryptographic identity. It is intended to complement, not replace, mechanisms such as STIR/SHAKEN.
 
-**Important Limitation**  
+**Important Limitation**
 CIDVV specifically addresses Caller-ID spoofing and impersonation. It does **not** prevent all forms of telephone fraud. Scammers who call from numbers they legitimately control (or that a malicious or compromised service provider controls) can still obtain successful vouches. A malicious CIDVV platform could also "fail open" and vouch for every call. These attacks are outside the scope of the spoofing protection CIDVV provides.
 
 Its security properties derive primarily from the difficulty an attacker faces in receiving calls at the Asserted Caller-ID (the number being vouched).
@@ -1050,12 +1050,12 @@ CIDVV relies on short-lived state (typically on the order of seconds) to correla
 
 CIDVV relies on short-lived state to correlate signaling exchanges. This significantly limits the window for replay and ride-along attacks.
 
-**Replay Attacks**  
+**Replay Attacks**
 An attacker who observes a successful verification exchange cannot effectively replay it after the cached state expires. Implementations **MUST** expire cached state quickly. A recommended default is **10 seconds**, although longer values (e.g., 15–30 seconds) MAY be used for international or high-latency routes.
 
 Implementations **MUST** reject verification attempts that do not match recent, valid cached state.
 
-**Ride-Along Attacks**  
+**Ride-Along Attacks**
 A scammer who successfully obtains a vouch for one call might attempt to "ride along" and use the same vouch for additional calls. Because the originating CIDVV platform controls when cached state is deleted, implementers have flexibility in mitigation:
 
 - An implementation **MAY** delete the cached state immediately after successfully processing the Phase 1 ("100") verification call and returning the 486 response.
