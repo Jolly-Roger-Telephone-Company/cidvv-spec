@@ -929,16 +929,16 @@ that verification could not be performed.
 Implementations SHOULD fail closed (treating requests as unverified)
 rather than risk false-positive validation.
 
-# Number Normalization
+## Number Normalization
 {: #number-normalization }
 
-All telephone numbers used in CIDVV operations MUST be normalized to a
-plain digit string in E.164 format (without the leading "+" sign) as
-follows:
+All telephone numbers used in CIDVV operations (for caching, token generation, comparison, etc.) MUST be normalized to a plain digit string in E.164 format **without any leading "+" sign** as follows:
 
-1. Remove any leading "+" or other punctuation characters.
+1. Remove any leading "+" or other punctuation characters (parentheses, dashes, spaces, etc.).
 2. Use the full E.164 representation: country code followed by the national significant number.
-3. No padding is performed. If truncation is required to stay within the 15-digit limit, always remove leading digits (preserving the rightmost digits).
+3. No padding is performed. If truncation is required to stay within the 15-digit limit for the Calling Party Number field, always remove leading digits (preserving the rightmost digits).
+
+**Note**: While the leading `+` may be present in SIP signaling or user-facing displays, it MUST be stripped before any CIDVV processing, tuple storage, or token computation.
 
 ## Prefix Preservation
 
@@ -964,24 +964,55 @@ processed within cooperating networks.
 Failure to recognize CIDVV signaling may result in increased false
 positives or suppression of verification attempts.
 
+## Edge Cases and Special Handling
+
+### Multiple Simultaneous Calls from the Same Caller-ID (Fan-Out)
+
+In some scenarios, multiple calls may legitimately originate from the same Asserted Caller-ID in a short period of time (e.g., an office full of people calling a radio contest to be the "100th caller", a call center, or a political phone bank).
+
+In such cases, the originating CIDVV platform **MAY** switch to "multi-call" mode for that (Asserted Caller-ID, Called Number) tuple:
+
+- Instead of enforcing strict 1:1 correlation, the platform treats the tuple as active for the Validity Window.
+- Each new outbound call from that Caller-ID restarts (or extends) the expiration timer.
+- Verification calls (Phase 1 and Phase 2) do **not** consume or delete the state, allowing multiple parallel or closely spaced calls to be vouched successfully.
+
+This "multi" token mode is an implementation-specific optimization. Platforms that do not support it MAY simply reject or rate-limit excessive concurrent calls from the same number.
+
+### Switched Toll-Free Caller-ID
+
+Some toll-free numbers are configured as "switched toll-free." In these cases, the PSTN translates the toll-free number into a regular DID before delivering the call to the subscriber's PBX or SIP trunk. The called party (or their CIDVV platform) sees the call arriving at the mapped DID rather than the original toll-free number.
+
+When the Asserted Caller-ID is a switched toll-free number, the originating CIDVV platform **MUST** be aware of the toll-free -> DID mapping. It SHOULD create cache entries for **both** numbers:
+
+- The toll-free number (as presented to the called party in the original call)
+- The mapped DID (where the verification calls will actually be delivered)
+
+This ensures the platform can correctly respond to verification calls arriving at either number.
+
+Platforms that do not support switched toll-free mappings will be unable to successfully vouch calls using those toll-free numbers as the Asserted Caller-ID.
+
+### Call Forwarding / Diversion
+
+When the called party (Bob) has forwarded their number to a different destination (Charlie), the verification calls must still be directed to the original Asserted Caller-ID (Bob's number), **not** the final diverted destination.
+
+- The terminating CIDVV platform (or CIDVV-aware SBC) at Charlie’s location SHOULD use the original called number (Bob’s number) from the diversion / redirection information (e.g., SIP `Diversion` header or ISDN Redirecting Number field).
+- Alice’s CIDVV platform will receive verification calls to Bob’s number (which it is expecting) and can respond appropriately.
+- Charlie’s platform is responsible for performing the vouch on behalf of the forwarded number.
+
+This ensures the vouch reflects control of the number the caller originally asserted (Bob’s number), even if the call was ultimately delivered elsewhere.
+
 # Security Considerations
 
-CIDVV verification is probabilistic and based on reachability.
-It does not provide cryptographic identity guarantees and is
-intended to complement, not replace, mechanisms such as
-STIR/SHAKEN.
+CIDVV verification is probabilistic and based on reachability rather than cryptographic identity. It is intended to complement, not replace, mechanisms such as STIR/SHAKEN.
 
-Its security properties derive from the inability of an attacker
-to receive calls at the Asserted Caller-ID (the number being
-vouched).
+**Important Limitation**  
+CIDVV specifically addresses Caller-ID spoofing and impersonation. It does **not** prevent all forms of telephone fraud. Scammers who call from numbers they legitimately control (or that a malicious or compromised service provider controls) can still obtain successful vouches. A malicious CIDVV platform could also "fail open" and vouch for every call. These attacks are outside the scope of the spoofing protection CIDVV provides.
 
-CIDVV does not provide per-call correlation and instead validates
-reachability within the Validity Window. This may result in multiple
-calls being validated by a single successful vouch.
+Its security properties derive primarily from the difficulty an attacker faces in receiving calls at the Asserted Caller-ID (the number being vouched).
 
-The use of distinct response patterns across multiple verification
-calls (e.g., "100" -> 486 and "101" -> 603) increases resistance to
-false-positive validation arising from common network behaviors.
+CIDVV validates reachability within a short Validity Window rather than providing strict per-call correlation. This may result in multiple calls being validated by a single successful vouch.
+
+The use of distinct response patterns across the two verification calls (Phase 1 with "100" prefix expecting 486 Busy Here, Phase 2 with "101" prefix expecting 603 Decline) increases resistance to false-positive validation caused by common network behaviors.
 
 ## Trust Model
 
@@ -997,18 +1028,26 @@ CIDVV assumes that:
 CIDVV does not assume that Caller-ID values are trustworthy; instead,
 it verifies control through network reachability.
 
-## Replay Attacks
+## Replay and Ride-Along Attacks
 
-CIDVV uses short-lived state (typically on the order of seconds) to
-correlate signaling exchanges. This limits the effectiveness of
-replay attacks.
+CIDVV relies on short-lived state (typically on the order of seconds) to correlate signaling exchanges. This significantly limits the window for replay and ride-along attacks.
 
-Implementations MUST:
-- Expire cached state quickly (e.g., within ~10 seconds)
-- Reject verification attempts that do not match recent state
+## Replay and Ride-Along Attacks
 
-Replay within the Validity Window remains theoretically possible but requires
-precise timing and routing alignment (see Section <xref target="hash-function"/> for vetting tokens).
+CIDVV relies on short-lived state to correlate signaling exchanges. This significantly limits the window for replay and ride-along attacks.
+
+**Replay Attacks**  
+An attacker who observes a successful verification exchange cannot effectively replay it after the cached state expires. Implementations **MUST** expire cached state quickly. A recommended default is **10 seconds**, although longer values (e.g., 15–30 seconds) MAY be used for international or high-latency routes.
+
+Implementations **MUST** reject verification attempts that do not match recent, valid cached state.
+
+**Ride-Along Attacks**  
+A scammer who successfully obtains a vouch for one call might attempt to "ride along" and use the same vouch for additional calls. Because the originating CIDVV platform controls when cached state is deleted, implementers have flexibility in mitigation:
+
+- An implementation **MAY** delete the cached state immediately after successfully processing the Phase 1 ("100") verification call and returning the 486 response.
+- This approach greatly reduces the opportunity for ride-along attacks while still allowing legitimate parallel verification calls.
+
+The choice of when to expire or delete state is left to the implementer, as it involves a trade-off between security and operational robustness (e.g., handling delayed or out-of-order verification calls).
 
 ## Spoofing Resistance
 
