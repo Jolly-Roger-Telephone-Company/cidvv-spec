@@ -184,7 +184,7 @@ When Alice wants to vet that Bob controls a particular telephone number:
 
 This design ensures that the initial Wake Call reveals nothing useful to an attacker, while the subsequent Recognize and Auth steps provide mutual authentication between parties that share the secret. All calls remain short signaling-only exchanges with no media.
 
-**Note**: The shared secret and token exchange details are defined in Section [TBD — Token Exchange]. RBA:// need to add this section
+**Note**: The shared secret and token exchange details are defined in Section [token-computation].
 
 ## CIDVV Mechanisms
 
@@ -220,7 +220,7 @@ Both sides independently compute the short-lived Recognize Token and Auth Token 
 ### Token Computation Algorithm (Normative)
 {: #token-computation }
 
-1. Normalize both telephone numbers to E.164 digit strings (no leading "+", no punctuation) as defined in Section [Number Normalization]. RBA:// make sure this link is good
+1. Normalize both telephone numbers to E.164 digit strings (no leading "+", no punctuation) as defined in Section [Number Normalization].
 
 2. For the **Recognize Token**:
    - Concatenate as UTF-8 bytes: `normalized-calling-number || "|" || normalized-called-number || "|" || shared-secret`
@@ -664,7 +664,7 @@ Note that the two verification calls (Phase 1 and Phase 2) MAY be performed in e
 13. Bob’s telephone rings.
 
 This mechanism allows the originating CIDVV platform to confirm control of the Asserted Caller-ID without completing the initial call to Bob.
-rba:// you stopped here
+
 ### Successful Vouch Step-by-Step Description
 
 The diagram above shows the high-level message flow. The following numbered steps provide the detailed behavior, including Caller-ID manipulation performed by CIDVV platforms.
