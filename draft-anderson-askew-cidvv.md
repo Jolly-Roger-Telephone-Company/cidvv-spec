@@ -357,11 +357,11 @@ When Alice wants to place a call to Bob using her asserted caller-id, the follow
 
    Both calls are directed to Alice's Asserted Caller-ID.
 
-4. Alice's CIDVV platform intercepts each verification call and performs the following actions:
+4. Alice's CIDVV platform receives each verification call and performs the following actions:
 
-   a. For the call with `+100` prefix: Rejects the call with SIP **486 Busy Here**.
+   a. For the call with `+100` prefix: Looks up the cached call state and rejects the call with SIP **486 Busy Here** if matching state exists.
 
-   b. For the call with `+101` prefix: Rejects the call with SIP **603 Decline**.
+   b. For the call with `+101` prefix: Rejects the call with SIP **603 Decline** for vouching purposes, unless the call corresponds to an active vetting procedure.
 
 5. Bob's CIDVV platform evaluates the responses to both verification calls.
 
@@ -389,7 +389,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
 2. Alice and Bob agree on the caller-id that Alice will use to vet Bob's number.
 
-3. Alice's CIDVV platform initiates a "Wake Call" to Bob by dialing Bob's number prefixed with `+101` and using Alice's agreed vetting caller-id.
+3. Alice's CIDVV platform initiates a "Wake Call" to Bob's number using a Calling Party Number consisting of the `101` prefix followed by Alice's agreed vetting Caller-ID.
 
 4. Bob's CIDVV platform performs the following actions:
 
