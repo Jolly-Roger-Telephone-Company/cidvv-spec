@@ -47,7 +47,7 @@ This document defines **Caller-ID Vouching and Vetting (CIDVV)**, a lightweight 
 
 CIDVV uses short-lived signaling exchanges encoded within the Calling Party Number to confirm that the calling party controls the Asserted Caller-ID. It is designed to operate across heterogeneous SIP and SS7/TDM networks without requiring new protocol extensions or persistent identity infrastructure. It relies on existing call routing behavior and intentionally leverages failure responses as a signaling mechanism.
 
-CIDVV is complementary to STIR/SHAKEN and other identity frameworks. It provides an incrementally deployable tool that works even in environments where cryptographic attestation is not yet available or sufficient, while remaining fully tolerant of intermediate network modification.
+CIDVV is complementary to STIR/SHAKEN and other identity frameworks. It provides an incrementally deployable tool that works even in environments where cryptographic attestation is not yet available or sufficient, while being designed to tolerate common forms of intermediate network modification.
 
 By requiring demonstrable real-time control of the Asserted Caller-ID, CIDVV strengthens resistance to spoofing in a practical, low-overhead manner.
 
@@ -67,7 +67,7 @@ CIDVV verifies caller identity through network reachability rather than relying 
 
 CIDVV operates by encoding signaling information within the Calling Party Number and leveraging existing call routing behavior to perform a challenge-response exchange. The protocol requires no new SIP headers, protocol extensions, response codes, or changes to SS7 signaling. It is designed to function across mixed SIP and TDM networks, including international paths.
 
-**CIDVV is complementary to STIR/SHAKEN** and other identity frameworks. It provides practical protection in environments where cryptographic attestation is not yet fully deployed, while remaining fully tolerant of signaling modifications by intermediate networks. It intentionally uses distinct failure-response behaviors as part of its signaling mechanism and does not require universal adoption to deliver benefit.
+**CIDVV is complementary to STIR/SHAKEN** and other identity frameworks. It provides practical protection in environments where cryptographic attestation is not yet fully deployed, while being designed to tolerate common signaling modifications by intermediate networks. It intentionally uses distinct failure-response behaviors as part of its signaling mechanism and does not require universal adoption to deliver benefit.
 
 The mechanism leverages two key elements of the existing telephone ecosystem:
 
@@ -79,7 +79,7 @@ CIDVV operates entirely within standard PSTN routing behavior and requires no me
 # Terminology
 
 * **Caller-ID**: The telephone number presented to the called party (what the end user sees).
-* **Asserted Caller-ID**: The Caller-ID value that is being vouched or vetted by this protocol. This is the number whose control the calling party claims, and it is the value used for the CIDVV Token, state management, and correlation.
+* **Asserted Caller-ID**: The Caller-ID value that is being vouched or vetted by this protocol. This is the number whose control the calling party claims, and it is used for state management, token computation, and correlation.
 * **Calling Party Number**: The value carried in the signaling protocol (e.g., SIP `From` header or ISUP Calling Party Number parameter). In many deployments this is the same as the presented Caller-ID, but they are not always identical.
 * **Alice**: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob's number.
 * **Bob**: The called party. In vetting flows Bob is the owner whose number is being vetted.
@@ -92,7 +92,6 @@ CIDVV operates entirely within standard PSTN routing behavior and requires no me
 * **Phase 1 Vouch** ("100" prefix): The initial Vouch verification step. Expected response behavior is a "Busy"-class response (e.g., SIP 486 Busy Here).
 * **Phase 2 Vouch** ("101" prefix): The secondary Vouch step. Expected response behavior is a "Rejection"-class response (e.g., SIP 603 Decline).
 * **Successful Vouch**: Requires **both Phase 1 and Phase 2** to complete with the expected behaviors within the Validity Window.
-* **Unsuccessful Vouch**: A verification result indicating that no matching cache entry was found.
 * **Verification Not Performed**: A condition where verification could not be completed due to system or network conditions.
 * **Validity Window**: The time interval during which the originating CIDVV platform will accept and correlate a vouch attempt (return call) from the called party. This is typically on the order of 10-30 seconds.
 * **Unsuccessful Vouch**: A verification result indicating that the vouch did not complete successfully, including cases involving missing state, unexpected response behavior, timeout, altered signaling, or incomplete verification phases.
@@ -481,9 +480,16 @@ A call using the "101" prefix is the **Phase 2** verification call. It succeeds 
 
 ### Combined Phase Behavior (Required for Vouch Success)
 
-A successful vouch or successful vet **requires both Phase 1 and Phase 2** to complete with their expected behaviors within the Validity Window.
+A successful vouch requires both Phase 1 and Phase 2 to complete with
+their expected behaviors within the Validity Window.
 
-Implementations MUST NOT treat a single phase as sufficient. If either phase fails, is missing, altered, delayed, or inconsistent, the result MUST be treated as unsuccessful or indeterminate.
+Implementations MUST NOT treat a single phase as sufficient for a
+successful vouch. If either phase fails, is missing, altered, delayed, or
+inconsistent, the vouch result MUST be treated as unsuccessful or
+indeterminate.
+
+Vetting success is defined separately by the Wake, Recognize, and Auth
+procedure in Section [Vetting Procedure](#vetting-procedure).
 
 # Protocol Operation
 
@@ -572,8 +578,13 @@ procedure in Section [Vetting Procedure](#vetting-procedure).
 
 ### Vouch Call Timers
 
-The originating platform uses the **Validity Window** to determine how
-long it will wait for the return vouch call(s).
+The Validity Window controls how long cached vouching state remains
+valid at the originating CIDVV platform.
+
+Independently, the platform that initiates a Phase 1 or Phase 2
+verification call SHOULD implement a configurable local timer that
+controls how long it waits for a signaling response to that verification
+call.
 
 Independently, both the originating and terminating platforms should
 implement configurable local timers that control how long they wait
@@ -633,19 +644,6 @@ Implementations MAY use separate storage, partitioning, customer-specific
 configuration, tenant identifiers, or access-control boundaries to
 achieve this isolation.
 
-### Multi-Tenant Considerations
-
-CIDVV platforms that perform vouching on behalf of multiple
-independent customers MUST ensure that correlation state is scoped
-per customer. This prevents unintended interaction between unrelated
-vouching operations that may produce identical CIDVV payload values.
-
-Implementations MAY use separate storage, partitioning, or
-customer-specific identifiers to achieve this isolation.
-
-This requirement does not apply to vetting operations, which are
-already scoped by the shared secret.
-
 ## Vetting Procedure
 {: #vetting-procedure }
 
@@ -659,28 +657,45 @@ vet Bob's number.
 Before vetting begins, Alice and Bob agree on a shared secret, Alice's
 vetting Caller-ID, and a Validity Window.
 
-Alice places a vetting call to Bob using a Caller-ID beginning with the digits "101".
+Alice places a Wake Call to Bob using a Calling Party Number consisting
+of the "101" prefix followed by Alice's agreed vetting Caller-ID.
 
-When Bob's CIDVV platform receives the first vetting call, it removes
-the "101" prefix and verifies that the resulting Caller-ID is expected
-for the current vetting attempt.
+When Bob's CIDVV platform receives the Wake Call, it removes the "101"
+prefix and verifies that the resulting Caller-ID is expected for the
+current vetting attempt.
 
 Bob's platform MUST compute the Recognize Token using the algorithm
 defined in Section [Token Computation Algorithm](#token-computation) and
-store the resulting token for the Validity Window. It then rejects the call with
-SIP response 603 (Decline).
+store the resulting token for the Validity Window. It then rejects the
+Wake Call with SIP response 603 (Decline).
 
-Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.
+Alice computes the same Recognize Token and places a Recognize Call to
+Bob using a Calling Party Number consisting of the "101" prefix followed
+by the Recognize Token.
 
-When Bob's CIDVV platform receives the Vetting Token Check call, it removes the "101" prefix and compares the remaining numeric code to the recently cached value.
+When Bob's CIDVV platform receives the Recognize Call, it removes the
+"101" prefix and compares the remaining numeric value to the recently
+cached Recognize Token.
 
-If the Recognize Token matches, Bob's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Alice's platform treats this response as a successful Recognize.
+If the Recognize Token matches, Bob's CIDVV platform MUST reject the
+Recognize Call with SIP response 486 (Busy Here). Alice's platform treats
+this response as a successful Recognize.
 
-When Bob's CIDVV platform receives the 486 response to the Recognize call, it places the Auth call to Alice using the Auth token as the Caller-ID.
+Bob's CIDVV platform then computes the Auth Token using the algorithm
+defined in Section [Token Computation Algorithm](#token-computation) and
+places an Auth Call to Alice using a Calling Party Number consisting of
+the "101" prefix followed by the Auth Token.
 
-If the Auth Token matches, Alice's CIDVV platform MUST reject the call with SIP response 486 (Busy Here). Bob's platform treats this response as a successful Auth
+When Alice's CIDVV platform receives the Auth Call, it removes the "101"
+prefix and compares the remaining numeric value to the expected Auth
+Token.
 
-Any other response, timeout, code mismatch, expired cache entry, or unexpected Caller-ID MUST be treated as an unsuccessful vet.
+If the Auth Token matches, Alice's CIDVV platform MUST reject the Auth
+Call with SIP response 486 (Busy Here). Bob's platform treats this
+response as a successful Auth.
+
+Any other response, timeout, token mismatch, expired cache entry, or
+unexpected Caller-ID MUST be treated as an unsuccessful vet.
 
 # Examples
 
