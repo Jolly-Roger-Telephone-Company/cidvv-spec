@@ -1875,11 +1875,11 @@ b. One verification call with Calling Party Number prefixed by <code>+101</code>
 Both calls are directed to Alice's Asserted Caller-ID.<a href="#section-2.4.4-2.3.4" class="pilcrow">¶</a></p>
 </li>
             <li id="section-2.4.4-2.4">
-              <p id="section-2.4.4-2.4.1">Alice's CIDVV platform intercepts each verification call and performs the following actions:<a href="#section-2.4.4-2.4.1" class="pilcrow">¶</a></p>
+              <p id="section-2.4.4-2.4.1">Alice's CIDVV platform receives each verification call and performs the following actions:<a href="#section-2.4.4-2.4.1" class="pilcrow">¶</a></p>
 <p id="section-2.4.4-2.4.2">
-a. For the call with <code>+100</code> prefix: Rejects the call with SIP <strong>486 Busy Here</strong>.<a href="#section-2.4.4-2.4.2" class="pilcrow">¶</a></p>
+a. For the call with <code>+100</code> prefix: Looks up the cached call state and rejects the call with SIP <strong>486 Busy Here</strong> if matching state exists.<a href="#section-2.4.4-2.4.2" class="pilcrow">¶</a></p>
 <p id="section-2.4.4-2.4.3">
-b. For the call with <code>+101</code> prefix: Rejects the call with SIP <strong>603 Decline</strong>.<a href="#section-2.4.4-2.4.3" class="pilcrow">¶</a></p>
+b. For the call with <code>+101</code> prefix: Rejects the call with SIP <strong>603 Decline</strong> for vouching purposes, unless the call corresponds to an active vetting procedure.<a href="#section-2.4.4-2.4.3" class="pilcrow">¶</a></p>
 </li>
             <li id="section-2.4.4-2.5">
               <p id="section-2.4.4-2.5.1">Bob's CIDVV platform evaluates the responses to both verification calls.<a href="#section-2.4.4-2.5.1" class="pilcrow">¶</a></p>
@@ -1926,7 +1926,7 @@ b. May take any of the following actions on the original call (implementation sp
               <p id="section-2.4.5-2.2.1">Alice and Bob agree on the caller-id that Alice will use to vet Bob's number.<a href="#section-2.4.5-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-2.4.5-2.3">
-              <p id="section-2.4.5-2.3.1">Alice's CIDVV platform initiates a "Wake Call" to Bob by dialing Bob's number prefixed with <code>+101</code> and using Alice's agreed vetting caller-id.<a href="#section-2.4.5-2.3.1" class="pilcrow">¶</a></p>
+              <p id="section-2.4.5-2.3.1">Alice's CIDVV platform initiates a "Wake Call" to Bob's number using a Calling Party Number consisting of the <code>101</code> prefix followed by Alice's agreed vetting Caller-ID.<a href="#section-2.4.5-2.3.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-2.4.5-2.4">
               <p id="section-2.4.5-2.4.1">Bob's CIDVV platform performs the following actions:<a href="#section-2.4.5-2.4.1" class="pilcrow">¶</a></p>
