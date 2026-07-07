@@ -212,7 +212,7 @@ When Alice wants to place a call to Bob while asserting a particular Caller-ID:
    - **Phase 1** verification call using Calling Party Number prefix `"100"`.
    - **Phase 2** verification call using Calling Party Number prefix `"101"`.
 4. Alice's CIDVV platform recognizes the special prefixes on the incoming verification calls and responds with the expected rejection behavior for each phase. This proves that it controls the Asserted Caller-ID **and** that Alice has an active call in progress to Bob.
-5. If both Phase 1 and Phase 2 verifications succeed within the Validity Window, Bob's CIDVV platform allows the original call to ring through to Bob.
+5. Bob's CIDVV platform evaluates the verification result. If both Phase 1 and Phase 2 succeed within the Validity Window, the vouch is successful. If either phase fails, times out, or produces an unexpected response, the vouch is unsuccessful or indeterminate. The handling of the original call is implementation-specific; the platform may allow the call, label it, route it differently, send it to voicemail, or reject it according to local policy.
 
 The two verification calls use **reachability testing** to confirm that Alice (or her service provider) genuinely controls the Asserted Caller-ID she is presenting for this specific call.
 
