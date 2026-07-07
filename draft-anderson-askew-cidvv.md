@@ -343,7 +343,7 @@ algorithm.
 
 ### Detailed Vouching Procedure
 
-When Alice wants to place a call to Bob using her asserted caller-id, the following steps are performed:
+When Alice wants to place a call to Bob using her Asserted Caller-ID, the following steps are performed:
 
 1. Alice's CIDVV platform is notified of her outbound call attempt to Bob (using her Asserted Caller-ID). This notification is typically done by Alice's SBC or gateway sending an INVITE to the CIDVV platform. The CIDVV platform rejects this INVITE with a SIP 404 (Not Found) response so that the original call can continue toward the PSTN. Note that the exact notification mechanism is implementation-specific and may use other methods (e.g., an API call or STIR signing request) in future deployments.
 
@@ -387,7 +387,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
 1. Alice and Bob share a secret (e.g., "elephant").
 
-2. Alice and Bob agree on the caller-id that Alice will use to vet Bob's number.
+2. Alice and Bob agree on the Caller-ID that Alice will use to vet Bob's number.
 
 3. Alice's CIDVV platform initiates a "Wake Call" to Bob's number using a Calling Party Number consisting of the `101` prefix followed by Alice's agreed vetting Caller-ID.
 
@@ -395,7 +395,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    a. Intercepts the incoming call.
 
-   b. Recognizes Alice's vetting caller-id and identifies this as a "Wake Call".
+   b. Recognizes Alice's vetting Caller-ID and identifies this as a "Wake Call".
 
    c. Computes a short-lived "Recognize Token" derived from Alice's number + Bob's number + the shared secret (example: 13093956974).
 
@@ -415,13 +415,13 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    d. Stores the Auth Token temporarily in memory.
 
-   e. Initiates a "Recognize Call" (step 2 of 3) to Bob using the Recognize Token as the caller-id, prefixed with `+101` (example: `+10113093956974`).
+   e. Initiates a "Recognize Call" (step 2 of 3) to Bob using the Recognize Token as the Caller-ID, prefixed with `+101` (example: `+10113093956974`).
 
 6. Bob's CIDVV platform performs the following actions upon receiving the Recognize Call:
 
    a. Intercepts the call.
 
-   b. Verifies that the received caller-id matches the previously stored Recognize Token.
+   b. Verifies that the received Caller-ID matches the previously stored Recognize Token.
 
    c. Considers this a successful "Recognize Call" from Alice to Bob (step 2 of 3).
 
@@ -431,13 +431,13 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    f. Computes the corresponding "Auth Token" (example: 12674591304).
 
-   g. Initiates an "Auth Call" (step 3 of 3) to Alice using the Auth Token as the caller-id, prefixed with `+101` (example: `+10112674591304`).
+   g. Initiates an "Auth Call" (step 3 of 3) to Alice using the Auth Token as the Caller-ID, prefixed with `+101` (example: `+10112674591304`).
 
 7. Alice's CIDVV platform performs the following actions upon receiving the Auth Call:
 
    a. Intercepts the call.
 
-   b. Verifies that the received caller-id matches the previously stored Auth Token.
+   b. Verifies that the received Caller-ID matches the previously stored Auth Token.
 
    c. Considers this a successful "Auth Call" from Bob to Alice (step 3 of 3).
 
@@ -465,7 +465,7 @@ CIDVV uses the following special prefixes in the Calling Party Number:
 | +101   | Recognize Call     | Alice -> Bob   | Prove knowledge of shared secret             | 486 Busy Here                |
 | +101   | Auth Call          | Bob -> Alice   | Prove control of destination number          | 486 Busy Here                |
 
-**Note:** All vetting-related calls use the `+101` prefix. Context is determined by the caller-id used (vetting caller-id vs. token value) and the current state maintained by the CIDVV platform.
+**Note:** All vetting-related calls use the `+101` prefix. Context is determined by the Caller-ID used (vetting Caller-ID vs. token value) and the current state maintained by the CIDVV platform.
 
 ## Response Semantics
 
@@ -492,7 +492,7 @@ A call using the "100" prefix is the **Phase 1** verification call. It succeeds 
 
 ### Phase 2 Verification ("101" Prefix)
 
-A call using the "101" prefix is the **Phase 2** verification call. It succeeds only if it receives a "Rejection"-class response (e.g., SIP 603 Decline or SIP 403 Forbidden).
+A call using the "101" prefix is the **Phase 2** verification call. It succeeds only if it receives a "Rejection"-class response, with SIP 603 Decline as the canonical example.
 
 ### Combined Phase Behavior (Required for Vouch Success)
 
@@ -1003,7 +1003,7 @@ that does not create a false-positive CIDVV verification result.
 
 Implementations SHOULD interpret responses based on behavioral class
 (e.g., "busy" class such as 486 Busy Here versus "rejection" class such
-as 603 Decline or 403 Forbidden) rather than relying on exact numeric
+as 603 Decline) rather than relying on exact numeric
 values. Intermediate networks may translate or modify response codes,
 so behavioral class is the preferred signal.
 
@@ -1028,9 +1028,9 @@ Phase 2) may be performed sequentially or simultaneously.
 ## Protocol Operation - Vouching
 
 If a vouching call results in a provisional response (e.g., 180
-Ringing) or a successful response (200 OK), the originating system
-SHOULD immediately cancel the call and treat the remote system as not
-implementing CIDVV.
+Ringing) or a successful response (200 OK), the platform that initiated
+the verification call SHOULD immediately cancel the call and treat the
+remote system as not implementing CIDVV.
 
 ## Failure and Restart Behavior
 
