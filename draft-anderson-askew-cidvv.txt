@@ -651,7 +651,7 @@ Table of Contents
 
 2.4.4.  Detailed Vouching Procedure
 
-   When Alice wants to place a call to Bob using her asserted caller-id,
+   When Alice wants to place a call to Bob using her Asserted Caller-ID,
    the following steps are performed:
 
    1.  Alice's CIDVV platform is notified of her outbound call attempt
@@ -724,7 +724,7 @@ Table of Contents
 
    1.  Alice and Bob share a secret (e.g., "elephant").
 
-   2.  Alice and Bob agree on the caller-id that Alice will use to vet
+   2.  Alice and Bob agree on the Caller-ID that Alice will use to vet
        Bob's number.
 
    3.  Alice's CIDVV platform initiates a "Wake Call" to Bob's number
@@ -735,7 +735,7 @@ Table of Contents
 
        a.  Intercepts the incoming call.
 
-       b.  Recognizes Alice's vetting caller-id and identifies this as a
+       b.  Recognizes Alice's vetting Caller-ID and identifies this as a
        "Wake Call".
 
        c.  Computes a short-lived "Recognize Token" derived from Alice's
@@ -763,7 +763,7 @@ Table of Contents
        d.  Stores the Auth Token temporarily in memory.
 
        e.  Initiates a "Recognize Call" (step 2 of 3) to Bob using the
-       Recognize Token as the caller-id, prefixed with +101 (example:
+       Recognize Token as the Caller-ID, prefixed with +101 (example:
        +10113093956974).
 
    6.  Bob's CIDVV platform performs the following actions upon
@@ -771,7 +771,7 @@ Table of Contents
 
        a.  Intercepts the call.
 
-       b.  Verifies that the received caller-id matches the previously
+       b.  Verifies that the received Caller-ID matches the previously
        stored Recognize Token.
 
        c.  Considers this a successful "Recognize Call" from Alice to
@@ -785,7 +785,7 @@ Table of Contents
        12674591304).
 
        g.  Initiates an "Auth Call" (step 3 of 3) to Alice using the
-       Auth Token as the caller-id, prefixed with +101 (example:
+       Auth Token as the Caller-ID, prefixed with +101 (example:
        +10112674591304).
 
    7.  Alice's CIDVV platform performs the following actions upon
@@ -793,7 +793,7 @@ Table of Contents
 
        a.  Intercepts the call.
 
-       b.  Verifies that the received caller-id matches the previously
+       b.  Verifies that the received Caller-ID matches the previously
        stored Auth Token.
 
        c.  Considers this a successful "Auth Call" from Bob to Alice
@@ -846,7 +846,7 @@ Table of Contents
                                   Table 1
 
    *Note:* All vetting-related calls use the +101 prefix.  Context is
-   determined by the caller-id used (vetting caller-id vs. token value)
+   determined by the Caller-ID used (vetting Caller-ID vs. token value)
    and the current state maintained by the CIDVV platform.
 
 2.5.  Response Semantics
@@ -877,8 +877,8 @@ Table of Contents
 2.5.2.  Phase 2 Verification ("101" Prefix)
 
    A call using the "101" prefix is the *Phase 2* verification call.  It
-   succeeds only if it receives a "Rejection"-class response (e.g., SIP
-   603 Decline or SIP 403 Forbidden).
+   succeeds only if it receives a "Rejection"-class response, with SIP
+   603 Decline as the canonical example.
 
 2.5.3.  Combined Phase Behavior (Required for Vouch Success)
 
@@ -1498,9 +1498,9 @@ Table of Contents
 
    Implementations SHOULD interpret responses based on behavioral class
    (e.g., "busy" class such as 486 Busy Here versus "rejection" class
-   such as 603 Decline or 403 Forbidden) rather than relying on exact
-   numeric values.  Intermediate networks may translate or modify
-   response codes, so behavioral class is the preferred signal.
+   such as 603 Decline) rather than relying on exact numeric values.
+   Intermediate networks may translate or modify response codes, so
+   behavioral class is the preferred signal.
 
 5.5.  Short-Term State Management
 
@@ -1524,9 +1524,9 @@ Table of Contents
 6.1.  Protocol Operation - Vouching
 
    If a vouching call results in a provisional response (e.g., 180
-   Ringing) or a successful response (200 OK), the originating system
-   SHOULD immediately cancel the call and treat the remote system as not
-   implementing CIDVV.
+   Ringing) or a successful response (200 OK), the platform that
+   initiated the verification call SHOULD immediately cancel the call
+   and treat the remote system as not implementing CIDVV.
 
 6.2.  Failure and Restart Behavior
 

@@ -1857,7 +1857,7 @@ algorithm.<a href="#section-2.4.3-17" class="pilcrow">¶</a></p>
           <h4 id="name-detailed-vouching-procedure">
 <a href="#section-2.4.4" class="section-number selfRef">2.4.4. </a><a href="#name-detailed-vouching-procedure" class="section-name selfRef">Detailed Vouching Procedure</a>
           </h4>
-<p id="section-2.4.4-1">When Alice wants to place a call to Bob using her asserted caller-id, the following steps are performed:<a href="#section-2.4.4-1" class="pilcrow">¶</a></p>
+<p id="section-2.4.4-1">When Alice wants to place a call to Bob using her Asserted Caller-ID, the following steps are performed:<a href="#section-2.4.4-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-2.4.4-2">
 <li id="section-2.4.4-2.1">
               <p id="section-2.4.4-2.1.1">Alice's CIDVV platform is notified of her outbound call attempt to Bob (using her Asserted Caller-ID). This notification is typically done by Alice's SBC or gateway sending an INVITE to the CIDVV platform. The CIDVV platform rejects this INVITE with a SIP 404 (Not Found) response so that the original call can continue toward the PSTN. Note that the exact notification mechanism is implementation-specific and may use other methods (e.g., an API call or STIR signing request) in future deployments.<a href="#section-2.4.4-2.1.1" class="pilcrow">¶</a></p>
@@ -1923,7 +1923,7 @@ b. May take any of the following actions on the original call (implementation sp
               <p id="section-2.4.5-2.1.1">Alice and Bob share a secret (e.g., "elephant").<a href="#section-2.4.5-2.1.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-2.4.5-2.2">
-              <p id="section-2.4.5-2.2.1">Alice and Bob agree on the caller-id that Alice will use to vet Bob's number.<a href="#section-2.4.5-2.2.1" class="pilcrow">¶</a></p>
+              <p id="section-2.4.5-2.2.1">Alice and Bob agree on the Caller-ID that Alice will use to vet Bob's number.<a href="#section-2.4.5-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-2.4.5-2.3">
               <p id="section-2.4.5-2.3.1">Alice's CIDVV platform initiates a "Wake Call" to Bob's number using a Calling Party Number consisting of the <code>101</code> prefix followed by Alice's agreed vetting Caller-ID.<a href="#section-2.4.5-2.3.1" class="pilcrow">¶</a></p>
@@ -1933,7 +1933,7 @@ b. May take any of the following actions on the original call (implementation sp
 <p id="section-2.4.5-2.4.2">
 a. Intercepts the incoming call.<a href="#section-2.4.5-2.4.2" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.4.3">
-b. Recognizes Alice's vetting caller-id and identifies this as a "Wake Call".<a href="#section-2.4.5-2.4.3" class="pilcrow">¶</a></p>
+b. Recognizes Alice's vetting Caller-ID and identifies this as a "Wake Call".<a href="#section-2.4.5-2.4.3" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.4.4">
 c. Computes a short-lived "Recognize Token" derived from Alice's number + Bob's number + the shared secret (example: 13093956974).<a href="#section-2.4.5-2.4.4" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.4.5">
@@ -1954,14 +1954,14 @@ c. Calculates an "Auth Token" using a slightly different derivation from the sha
 <p id="section-2.4.5-2.5.5">
 d. Stores the Auth Token temporarily in memory.<a href="#section-2.4.5-2.5.5" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.5.6">
-e. Initiates a "Recognize Call" (step 2 of 3) to Bob using the Recognize Token as the caller-id, prefixed with <code>+101</code> (example: <code>+10113093956974</code>).<a href="#section-2.4.5-2.5.6" class="pilcrow">¶</a></p>
+e. Initiates a "Recognize Call" (step 2 of 3) to Bob using the Recognize Token as the Caller-ID, prefixed with <code>+101</code> (example: <code>+10113093956974</code>).<a href="#section-2.4.5-2.5.6" class="pilcrow">¶</a></p>
 </li>
             <li id="section-2.4.5-2.6">
               <p id="section-2.4.5-2.6.1">Bob's CIDVV platform performs the following actions upon receiving the Recognize Call:<a href="#section-2.4.5-2.6.1" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.6.2">
 a. Intercepts the call.<a href="#section-2.4.5-2.6.2" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.6.3">
-b. Verifies that the received caller-id matches the previously stored Recognize Token.<a href="#section-2.4.5-2.6.3" class="pilcrow">¶</a></p>
+b. Verifies that the received Caller-ID matches the previously stored Recognize Token.<a href="#section-2.4.5-2.6.3" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.6.4">
 c. Considers this a successful "Recognize Call" from Alice to Bob (step 2 of 3).<a href="#section-2.4.5-2.6.4" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.6.5">
@@ -1971,14 +1971,14 @@ e. Rejects the call with a SIP 486 (Busy Here) response.<a href="#section-2.4.5-
 <p id="section-2.4.5-2.6.7">
 f. Computes the corresponding "Auth Token" (example: 12674591304).<a href="#section-2.4.5-2.6.7" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.6.8">
-g. Initiates an "Auth Call" (step 3 of 3) to Alice using the Auth Token as the caller-id, prefixed with <code>+101</code> (example: <code>+10112674591304</code>).<a href="#section-2.4.5-2.6.8" class="pilcrow">¶</a></p>
+g. Initiates an "Auth Call" (step 3 of 3) to Alice using the Auth Token as the Caller-ID, prefixed with <code>+101</code> (example: <code>+10112674591304</code>).<a href="#section-2.4.5-2.6.8" class="pilcrow">¶</a></p>
 </li>
             <li id="section-2.4.5-2.7">
               <p id="section-2.4.5-2.7.1">Alice's CIDVV platform performs the following actions upon receiving the Auth Call:<a href="#section-2.4.5-2.7.1" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.7.2">
 a. Intercepts the call.<a href="#section-2.4.5-2.7.2" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.7.3">
-b. Verifies that the received caller-id matches the previously stored Auth Token.<a href="#section-2.4.5-2.7.3" class="pilcrow">¶</a></p>
+b. Verifies that the received Caller-ID matches the previously stored Auth Token.<a href="#section-2.4.5-2.7.3" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.7.4">
 c. Considers this a successful "Auth Call" from Bob to Alice (step 3 of 3).<a href="#section-2.4.5-2.7.4" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.7.5">
@@ -2052,7 +2052,7 @@ Alice must be reachable, but this is acceptable for vetting use cases.<a href="#
               </tr>
             </tbody>
           </table>
-<p id="section-2.4.6-3"><strong>Note:</strong> All vetting-related calls use the <code>+101</code> prefix. Context is determined by the caller-id used (vetting caller-id vs. token value) and the current state maintained by the CIDVV platform.<a href="#section-2.4.6-3" class="pilcrow">¶</a></p>
+<p id="section-2.4.6-3"><strong>Note:</strong> All vetting-related calls use the <code>+101</code> prefix. Context is determined by the Caller-ID used (vetting Caller-ID vs. token value) and the current state maintained by the CIDVV platform.<a href="#section-2.4.6-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2088,7 +2088,7 @@ distinction may not support CIDVV vouching.<a href="#section-2.5-4" class="pilcr
           <h4 id="name-phase-2-verification-101-pr">
 <a href="#section-2.5.2" class="section-number selfRef">2.5.2. </a><a href="#name-phase-2-verification-101-pr" class="section-name selfRef">Phase 2 Verification ("101" Prefix)</a>
           </h4>
-<p id="section-2.5.2-1">A call using the "101" prefix is the <strong>Phase 2</strong> verification call. It succeeds only if it receives a "Rejection"-class response (e.g., SIP 603 Decline or SIP 403 Forbidden).<a href="#section-2.5.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.5.2-1">A call using the "101" prefix is the <strong>Phase 2</strong> verification call. It succeeds only if it receives a "Rejection"-class response, with SIP 603 Decline as the canonical example.<a href="#section-2.5.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="combined-phase-behavior-required-for-vouch-success">
@@ -2772,7 +2772,7 @@ that does not create a false-positive CIDVV verification result.<a href="#sectio
         </h3>
 <p id="section-5.4-1">Implementations SHOULD interpret responses based on behavioral class
 (e.g., "busy" class such as 486 Busy Here versus "rejection" class such
-as 603 Decline or 403 Forbidden) rather than relying on exact numeric
+as 603 Decline) rather than relying on exact numeric
 values. Intermediate networks may translate or modify response codes,
 so behavioral class is the preferred signal.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
 </section>
@@ -2814,9 +2814,9 @@ Phase 2) may be performed sequentially or simultaneously.<a href="#section-5.6-1
 <a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-protocol-operation-vouching" class="section-name selfRef">Protocol Operation - Vouching</a>
         </h3>
 <p id="section-6.1-1">If a vouching call results in a provisional response (e.g., 180
-Ringing) or a successful response (200 OK), the originating system
-SHOULD immediately cancel the call and treat the remote system as not
-implementing CIDVV.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+Ringing) or a successful response (200 OK), the platform that initiated
+the verification call SHOULD immediately cancel the call and treat the
+remote system as not implementing CIDVV.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="failure-and-restart-behavior">
