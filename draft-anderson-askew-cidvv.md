@@ -59,11 +59,19 @@ CIDVV supports two closely related functions: **Vouching** (real-time verificati
 
 Caller-ID spoofing remains a widespread problem in modern telephony. Fraudulent and nuisance callers frequently impersonate legitimate numbers, eroding trust and complicating call screening for recipients.
 
-This document defines **Caller-ID Vouching and Vetting (CIDVV)**, a lightweight, incrementally deployable mechanism that allows the called party to ask a simple real-time question:
+At the signaling layer, legitimate Caller-ID use and malicious impersonation
+can appear identical. Originating networks routinely assert a
+Caller-ID on behalf of a calling party, but intermediate carriers and
+terminating networks generally cannot infer the **intent** behind that
+assertion from ordinary PSTN signaling alone. Without a reliable identity
+signal, the network may be unable to distinguish legitimate use
+from malicious impersonation.
+
+This document defines **Caller-ID Vouching and Vetting (CIDVV)**, a lightweight, incrementally deployable mechanism that allows the called party, or a platform acting on its behalf, to ask a simple real-time question:
 
 > "Will the party responsible for this number vouch for this call right now?"
 
-CIDVV verifies caller identity through network reachability rather than relying solely on asserted identity. It requires that a party asserting a Caller-ID demonstrate control of that number by being able to receive a short return signaling call within a brief Validity Window.
+CIDVV verifies Caller-ID control through network reachability rather than relying solely on asserted identity. It requires that a party asserting a Caller-ID demonstrate control of that number by being able to receive a short return signaling call within a brief Validity Window.
 
 CIDVV operates by encoding signaling information within the Calling Party Number and leveraging existing call routing behavior to perform a challenge-response exchange. The protocol requires no new SIP headers, protocol extensions, response codes, or changes to SS7 signaling. It is designed to function across mixed SIP and TDM networks, including international paths.
 
