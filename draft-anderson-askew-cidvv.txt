@@ -673,14 +673,16 @@ Table of Contents
    the following steps are performed:
 
    1.  Alice's CIDVV platform is notified of her outbound call attempt
-       to Bob (using her Asserted Caller-ID).  This notification is
-       typically done by Alice's SBC or gateway sending an INVITE to the
-       CIDVV platform.  The CIDVV platform rejects this INVITE with a
-       SIP 404 (Not Found) response so that the original call can
-       continue toward the PSTN.  Note that the exact notification
-       mechanism is implementation-specific and may use other methods
-       (e.g., an API call or STIR signing request) in future
-       deployments.
+       to Bob using her Asserted Caller-ID.  The notification mechanism
+       is implementation-specific.  For example, Alice's SBC or gateway
+       might send an INVITE to the CIDVV platform before advancing the
+       original call toward the PSTN, or the platform might be notified
+       through an API, routing policy, STIR signing workflow, or other
+       local mechanism.
+
+       Upon receiving this notification, Alice's CIDVV platform records
+       the attempted call state for the Validity Window so that it can
+       respond to subsequent Phase 1 and Phase 2 verification calls.
 
    2.  Bob's CIDVV platform intercepts the incoming call from Alice and
        holds it (does not yet alert Bob's phone).
