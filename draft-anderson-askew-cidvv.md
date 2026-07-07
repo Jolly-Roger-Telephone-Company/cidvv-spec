@@ -308,8 +308,24 @@ Auth Token input:
 
 `elephant|19495550199|12125550100`
 
-The resulting Recognize Token and Auth Token will differ because the
-input ordering is different.
+Recognize Token calculation:
+
+- SHA-256 digest begins with: `b86a096e`
+- First 8 hexadecimal characters: `b86a096e`
+- Decimal value: `3093956974`
+- 10-digit decimal value: `3093956974`
+- Final 11-digit Recognize Token: `13093956974`
+
+Auth Token calculation:
+
+- SHA-256 digest begins with: `9f6b0648`
+- First 8 hexadecimal characters: `9f6b0648`
+- Decimal value: `2674591304`
+- 10-digit decimal value: `2674591304`
+- Final 11-digit Auth Token: `12674591304`
+
+The resulting Recognize Token and Auth Token differ because the input
+ordering is different.
 
 Implementations MUST use identical normalization, input ordering, digest
 processing, decimal conversion, zero-padding, and prefixing on both sides
@@ -381,7 +397,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    b. Recognizes Alice's vetting caller-id and identifies this as a "Wake Call".
 
-   c. Computes a short-lived "Recognize Token" derived from Alice's number + Bob's number + the shared secret (example: 13928543029).
+   c. Computes a short-lived "Recognize Token" derived from Alice's number + Bob's number + the shared secret (example: 13093956974).
 
    d. Stores this token temporarily in memory.
 
@@ -770,7 +786,7 @@ Note that the two verification calls (Phase 1 and Phase 2) MAY be performed in e
 
 13. Bob's telephone rings.
 
-This mechanism allows the originating CIDVV platform to confirm control of the Asserted Caller-ID without completing the initial call to Bob.
+This mechanism allows Bob's CIDVV platform to verify Alice's asserted Caller-ID without completing the initial call to Bob.
 
 ## Unsuccessful Vouch
 
@@ -1186,7 +1202,7 @@ Implementations SHOULD:
 ## Response Code Manipulation
 
 CIDVV does not require specific SIP response codes to be preserved
-end-to-end, but it does require that distinct rejection behaviors
+end-to-end, but it does require that distinct response behaviors
 (e.g., "busy" vs. "reject") remain distinguishable.
 
 Implementations MUST interpret responses based on behavioral class
@@ -1267,7 +1283,7 @@ RFC Editor: Please remove this section before publication as an RFC.
 - Updated termination handling so that Busy-class and Rejection-class
   responses, with canonical SIP 486 and 603 behavior, are used for
   CIDVV verification signaling.
-- Added a third call to the Vetting process to ensure Alice and Bob each trust the other shares the key.
+- Added a third call to the Vetting process to ensure Alice and Bob each trust that the other possesses the shared secret.
 - Added option Multi-Number Vetting optimization
 - Added this "Changes from Previous Version" appendix to support long-term document maintenance across multiple revisions.
 - Improved abstract and Introduction
