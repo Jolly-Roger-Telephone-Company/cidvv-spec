@@ -92,7 +92,6 @@ CIDVV operates entirely within standard PSTN routing behavior and requires no me
 * **Calling Party Number**: The value carried in the signaling protocol (e.g., SIP `From` header or ISUP Calling Party Number parameter). In many deployments this is the same as the presented Caller-ID, but they are not always identical.
 * **Alice**: The calling party and verifier. In vouching flows Alice asserts a number; in vetting flows Alice verifies Bob's number.
 * **Bob**: The called party. In vetting flows Bob is the owner whose number is being vetted.
-* **Mallory**: An attacker attempting to spoof a Caller-ID.
 * **CIDVV Platform**: A system that implements the vouching and vetting procedures defined in this document.
 * **CIDVV-aware Network Element**: A network element (typically an SBC or proxy) that recognizes CIDVV signaling prefixes ("100" and "101") in the Calling Party Number and routes those calls to a CIDVV platform. In some deployments, it may also forward initial INVITEs for new dialogs to a CIDVV platform and handle local responses that allow the original call to continue.
 * **Vouch**: The act of a CIDVV platform asserting that it has verified control of a telephone number through the challenge-response mechanism described in this document, which may consist of one or more verification calls. A successful vouch provides strong evidence that the calling party controls the Asserted Caller-ID.
@@ -1241,10 +1240,11 @@ bypass, route differently, reject, or otherwise handle the original call.
 
 #### Vetting Mapped Numbers
 
-The same called-number mapping issue can occur during vetting. For
-example, Alice may attempt to vet Bob's toll-free number `18005550199`,
-but the Wake Call may be translated and delivered to Bob's CIDVV platform
-on DID `19495550199`.
+Mapped or translated numbers can also affect vetting because the number
+Alice attempts to vet may differ from the number on which Bob's CIDVV
+platform receives the Wake Call. For example, Alice may attempt to vet
+Bob's toll-free number `18005550199`, but the Wake Call may be translated
+and delivered to Bob's CIDVV platform on DID `19495550199`.
 
 Vetting tokens are computed using the number being vetted, not
 necessarily the number on which the Wake Call is ultimately received. If
@@ -1272,106 +1272,215 @@ translated, or indirectly mapped numbers.
 
 ### Call Forwarding / Diversion
 
-When the called party (Bob) has forwarded the call to a different destination (Charlie), the terminating CIDVV platform at Charlie's location may be the platform that performs the vouching procedure.
+When the called party (Bob) has forwarded the call to a different
+destination, the terminating CIDVV platform at the forwarded destination
+may be the platform that performs the vouching procedure.
 
-In this case, Charlie's CIDVV platform SHOULD use the original called number (Bob's number), when available from diversion or redirection information (e.g., SIP `Diversion` header or ISDN Redirecting Number field), as the called-number value encoded in the Calling Party Number of the return vouch calls.
+In this case, the terminating CIDVV platform SHOULD use the original
+called number (Bob's number), when available from diversion or redirection
+information (e.g., SIP `Diversion` header or ISDN Redirecting Number
+field), as the called-number value encoded in the Calling Party Number of
+the return vouch calls.
 
-The return vouch calls are still directed to Alice's Asserted Caller-ID. However, their Calling Party Numbers encode Bob's original called number, for example:
+The return vouch calls are still directed to Alice's Asserted Caller-ID.
+However, their Calling Party Numbers encode Bob's original called number,
+for example:
 
 - Phase 1: `+100` followed by Bob's number.
 - Phase 2: `+101` followed by Bob's number.
 
-Alice's CIDVV platform can then correlate the verification calls with the cached state for Alice's original call to Bob. Charlie's platform is responsible for performing the vouch on behalf of the forwarded call destination.
-
-### Numbers That Should Never Be Vouched (Low-Latency Bypass)
-
-Certain numbers or destinations require extremely low call-setup latency and cannot tolerate the additional delay of CIDVV verification (typically 3-8 seconds round-trip).
-
-Examples include:
-- Trading floors and high-frequency trading desks
-- Emergency operations centers
-- Alarm monitoring systems
-- Certain government and military command lines
-
-CIDVV platforms **SHOULD** support a configurable "Never Vouch" list (or whitelist for immediate pass-through). When an incoming call matches an entry in this list, the platform MUST forward the call immediately without attempting any verification calls.
-
-This decision can be implemented at the CIDVV platform itself or at a CIDVV-aware SBC.
+Alice's CIDVV platform can then correlate the verification calls with the
+cached state for Alice's original call to Bob. The terminating CIDVV
+platform is responsible for performing the vouch on behalf of the
+forwarded call destination.
 
 # Security Considerations
 
-CIDVV verification is probabilistic and based on reachability rather than cryptographic identity. It is intended to complement, not replace, mechanisms such as STIR/SHAKEN.
+CIDVV verification is probabilistic and based on reachability rather than
+cryptographic identity. It is intended to complement, not replace,
+mechanisms such as STIR/SHAKEN.
 
 **Important Limitation**
-CIDVV specifically addresses Caller-ID spoofing and impersonation. It does **not** prevent all forms of telephone fraud. Scammers who call from numbers they legitimately control (or that a malicious or compromised service provider controls) can still obtain successful vouches. A malicious CIDVV platform could also "fail open" and vouch for every call. These attacks are outside the scope of the spoofing protection CIDVV provides.
 
-Its security properties derive primarily from the difficulty an attacker faces in receiving calls at the Asserted Caller-ID (the number being vouched).
+CIDVV specifically addresses Caller-ID spoofing and impersonation. It
+does **not** prevent all forms of telephone fraud. Callers who use
+numbers they legitimately control can still obtain successful vouches,
+even if the calls themselves are fraudulent, abusive, or unwanted.
 
-CIDVV validates reachability within a short Validity Window rather than providing strict per-call correlation. This may result in multiple calls being validated by a single successful vouch.
+Similarly, a malicious or compromised CIDVV platform, carrier, or service
+provider could incorrectly vouch for calls using numbers under its
+control. However, this does not allow that platform to vouch for
+arbitrary third-party numbers unless it can also receive verification
+calls for those numbers. The scope of the failure is therefore limited to
+the numbers and routing authority controlled by that platform or
+provider.
 
-The use of distinct response patterns across the two verification calls (Phase 1 with "100" prefix expecting 486 Busy Here, Phase 2 with "101" prefix expecting 603 Decline) increases resistance to false-positive validation caused by common network behaviors.
+These cases are outside the scope of the spoofing protection CIDVV
+provides.
+
+CIDVV's security properties derive primarily from the difficulty a
+spoofing caller faces in receiving calls at the Asserted Caller-ID, which
+is the number being vouched.
+
+CIDVV validates reachability within a short Validity Window rather than
+providing strict per-call correlation. As a result, a successful vouch
+indicates that at least one matching call attempt occurred within the
+Validity Window, not necessarily that a specific verification call maps
+one-to-one to a specific original call leg.
+
+The use of distinct response patterns across the two verification calls
+-- Phase 1 with the "100" prefix expecting a Busy-class response, and
+Phase 2 with the "101" prefix expecting a Rejection-class response --
+increases resistance to false-positive validation caused by common
+network behaviors.
 
 ## Trust Model
 
 CIDVV assumes that:
-- The PSTN routes calls to the correct terminating service provider
-  for a given telephone number.
-- The terminating service provider has authoritative control over the
-  number and can originate return calls.
-- Intermediate networks may modify signaling but will generally
-  preserve sufficient information to allow correlation of requests
-  and responses.
 
-CIDVV does not assume that Caller-ID values are trustworthy; instead,
-it verifies control through network reachability.
+- The PSTN routes calls for a telephone number to the responsible service
+  provider, administrative domain, or platform serving that number.
+
+- A CIDVV platform acting for the Asserted Caller-ID can receive
+  verification calls directed to that Caller-ID and route them to the
+  appropriate CIDVV processing function.
+
+- A CIDVV platform performing vouching for the called party can originate
+  short return signaling calls toward the Asserted Caller-ID.
+
+- Intermediate networks may modify signaling but will generally preserve
+  sufficient information to allow correlation of requests and responses.
+
+- CIDVV verification traffic related to attempted use of a telephone
+  number as an Asserted Caller-ID is routed toward the party responsible
+  for that number.
+
+CIDVV does not assume that Caller-ID values are trustworthy; instead, it
+verifies control through network reachability.
 
 ## Replay and Ride-Along Attacks
 
-CIDVV relies on short-lived state to correlate signaling exchanges. This significantly limits the window for replay and ride-along attacks.
+CIDVV relies on short-lived state to correlate signaling exchanges. This
+significantly limits the window for replay and ride-along attacks.
 
 **Replay Attacks**
-An attacker who observes a successful verification exchange cannot effectively replay it after the cached state expires. Implementations **MUST** expire cached state quickly. A recommended default is **10 seconds**, although longer values (e.g., 15-30 seconds) MAY be used for international or high-latency routes.
 
-Implementations **MUST** reject verification attempts that do not match recent, valid cached state.
+A party that observes a successful verification exchange cannot
+effectively replay it after the cached state expires. Implementations
+**MUST** expire cached state quickly. A recommended default is **10
+seconds**, although longer values (e.g., 15-30 seconds) **MAY** be used
+for international or high-latency routes.
+
+Implementations **MUST** reject verification attempts that do not match
+recent, valid cached state.
 
 **Ride-Along Attacks**
-A scammer who successfully obtains a vouch for one call might attempt to "ride along" and use the same vouch for additional calls. Because the originating CIDVV platform controls when cached state is deleted, implementers have flexibility in mitigation:
 
-- An implementation **MAY** delete the cached state immediately after successfully processing the Phase 1 ("100") verification call and returning the 486 response.
-- This approach greatly reduces the opportunity for ride-along attacks while still allowing legitimate parallel verification calls.
+A ride-along attack is limited to the same correlation tuple used for
+vouching: the Asserted Caller-ID, the called number, and the Validity
+Window. A successful vouch for one called number does not allow a caller
+to vouch calls to other destinations, and a successful vouch for one
+Asserted Caller-ID does not apply to other Caller-IDs.
 
-The choice of when to expire or delete state is left to the implementer, as it involves a trade-off between security and operational robustness (e.g., handling delayed or out-of-order verification calls).
+A spoofing caller might attempt to place an additional call using the
+same Asserted Caller-ID to the same called number while matching cached
+state is still valid. Because the originating CIDVV platform controls how
+long cached state remains valid, implementers have flexibility in
+mitigation:
+
+- An implementation **MAY** delete or expire the cached state immediately
+  after successfully processing the Phase 1 ("100") verification call and
+  returning the Busy-class response.
+
+- An implementation **MAY** keep the cached state active for the Validity
+  Window to support legitimate parallel or closely spaced calls from the
+  same Asserted Caller-ID to the same called number.
+
+The choice of when to expire or delete state is left to the implementer,
+as it involves a trade-off between reducing ride-along opportunities and
+supporting legitimate simultaneous-call or fan-out behavior.
 
 ## Spoofing Resistance
 
 CIDVV improves resistance to spoofing by requiring the party asserting a
 Caller-ID to successfully receive and respond to a return call routed via
-the PSTN. An attacker (Mallory) who does not control the corresponding
-number is not expected to receive the verification call and therefore
-cannot complete the vouching process under normal routing conditions.
+the PSTN. If a caller attempts to impersonate Alice's Caller-ID without
+being able to receive calls for Alice's number, the verification call
+will normally be routed to the party responsible for Alice's number
+rather than to the impersonating caller. As a result, the impersonating
+caller cannot complete the vouching process under normal routing
+conditions.
 
 ## Denial of Service
 
-CIDVV introduces additional signaling traffic, which could be abused for denial-of-service attacks.
+CIDVV introduces additional signaling traffic, and deployments need to
+account for the possibility of excessive or malicious verification
+attempts. Because CIDVV vouching traffic is related to ordinary call
+traffic, high call volumes may legitimately produce high verification
+volumes.
 
-Implementations MUST:
-- Rate-limit CIDVV signaling requests per source and per destination.
-- Detect and suppress repeated unsuccessful attempts from the same source.
-- **Bound resource usage for temporary state** (e.g., limit the maximum number of concurrent cache entries and automatically expire old entries).
+CIDVV can also expose useful telemetry about telephone-number usage. For
+example, if a widely spoofed enterprise number is asserted on many calls,
+CIDVV verification attempts may cause the responsible enterprise or
+service provider to receive a large volume of return verification calls.
+This traffic can help identify spoofing activity, but it can also create
+operational load on the CIDVV platform and serving network.
 
-Implementations SHOULD:
-- Apply per-source and per-destination limits
-- Monitor for anomalous traffic patterns
+Denial-of-service protection is therefore a deployment responsibility
+shared by CIDVV platforms, SBCs, proxies, gateways, and other responsible
+network elements.
+
+Deployments SHOULD apply appropriate ingress controls at the SBC, proxy,
+or other network edge, including rate limits, source filtering, anomaly
+detection, and protection against repeated invalid or abusive signaling
+patterns. Such controls SHOULD be designed so that high-volume legitimate
+enterprise traffic and high-volume spoofing telemetry can be observed
+without overwhelming the CIDVV platform.
+
+CIDVV platforms MUST bound resource usage for temporary state. For
+example, implementations MUST limit the number of concurrent cache
+entries, expire old entries automatically, and avoid retaining state
+beyond the Validity Window except where explicitly required by local
+policy.
+
+CIDVV platforms SHOULD fail closed under resource exhaustion. If a
+platform cannot safely allocate state or process a verification request,
+it SHOULD treat the verification as unsuccessful or indeterminate rather
+than returning a response that could create a false-positive vouch.
+
+Deployments SHOULD monitor CIDVV signaling volume and error patterns,
+especially repeated unsuccessful attempts, unexpected response patterns,
+traffic inconsistent with normal call volume, or sudden increases in
+verification traffic for particular asserted numbers.
 
 ## Amplification and Reflection
 
-CIDVV generates return calls as part of its operation. Care MUST be
-taken to ensure that this behavior cannot be exploited for
+CIDVV generates return signaling calls as part of its operation. Care
+MUST be taken to ensure that this behavior cannot be exploited for
 amplification or reflection attacks.
 
-Implementations SHOULD:
-- Only initiate return calls in response to valid inbound attempts
-- Limit the rate of outbound verification calls
-- Avoid generating multiple responses for a single triggering event
+A spoofed call using a widely abused Caller-ID can cause verification
+traffic to be directed toward the party responsible for that Caller-ID.
+This is an intended part of CIDVV's reachability model and may provide
+useful telemetry, but deployments SHOULD ensure that the resulting
+verification traffic remains bounded and manageable.
+
+Implementations SHOULD initiate return verification calls only in response
+to valid inbound call attempts or valid CIDVV protocol steps.
+
+Implementations SHOULD limit outbound verification-call generation using
+local policy, including rate limits, concurrency limits, and safeguards
+against repeated unsuccessful attempts.
+
+When multiple candidate called numbers are used for mapped, translated,
+or forwarded numbers, implementations SHOULD keep the candidate set
+bounded and authoritative. A single triggering event SHOULD NOT generate
+an unbounded number of verification calls.
+
+Implementations SHOULD avoid generating multiple outbound verification
+calls for a single triggering event except where explicitly required by
+CIDVV operation, such as Phase 1 and Phase 2 vouching calls or bounded
+candidate attempts for mapped numbers.
 
 ## Response Code Manipulation
 
@@ -1380,22 +1489,35 @@ end-to-end, but it does require that distinct response behaviors
 (e.g., "busy" vs. "reject") remain distinguishable.
 
 Implementations MUST interpret responses based on behavioral class
-(e.g., "Busy"-class vs. "Rejection"-class) rather than exact numeric values.
+(e.g., "Busy"-class vs. "Rejection"-class) rather than exact numeric
+values.
+
+Intermediate networks and gateways SHOULD NOT translate, synthesize, or
+normalize responses in a way that causes an unsuccessful CIDVV response
+to be interpreted as successful CIDVV behavior.
 
 ## Data Privacy
 
-CIDVV exchanges inherently expose calling and called numbers within
-signaling messages.
+CIDVV uses telephone numbers and related call metadata as part of normal
+signaling behavior. CIDVV may also create operational telemetry about
+attempted use of telephone numbers as Asserted Caller-IDs, including
+successful and unsuccessful verification attempts.
 
-Implementations SHOULD:
-- Avoid storing telephone numbers in plaintext where possible
-- Use derived values (e.g., cryptographic hashes) for temporary state
-- Limit retention of any identifying data
+Deployments SHOULD handle CIDVV signaling records, verification logs, and
+related telemetry according to their normal privacy, security, retention,
+and access-control policies for call signaling data.
 
-Temporary state MUST be short lived and automatically expired.
+Implementations SHOULD minimize retention of CIDVV telemetry where
+practical. Temporary state used for CIDVV verification MUST be short
+lived and automatically expired.
+
+Where operationally practical, access to CIDVV logs and telemetry SHOULD
+be limited to systems and personnel responsible for operations, security,
+fraud prevention, debugging, or compliance.
 
 ## Hash-Based Token Security (Vetting)
 
+rba://
 The security of the vetting mechanism depends on the shared secret and the derived Recognize and Auth Tokens.
 
 Implementations MUST:
