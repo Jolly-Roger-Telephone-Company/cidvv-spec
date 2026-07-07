@@ -1419,25 +1419,32 @@ svg {
       </h2>
 <p id="section-1-1">CIDVV supports two closely related functions: <strong>Vouching</strong> (real-time verification that the asserted number vouches for a specific call) and <strong>Vetting</strong> (confirmation that a number is controlled by its expected owner, useful for branding, trust programs, and registries). The primary focus of this document is the vouching mechanism, which directly addresses Caller-ID spoofing for individual calls.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <p id="section-1-2">Caller-ID spoofing remains a widespread problem in modern telephony. Fraudulent and nuisance callers frequently impersonate legitimate numbers, eroding trust and complicating call screening for recipients.<a href="#section-1-2" class="pilcrow">¶</a></p>
-<p id="section-1-3">This document defines <strong>Caller-ID Vouching and Vetting (CIDVV)</strong>, a lightweight, incrementally deployable mechanism that allows the called party to ask a simple real-time question:<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-3">At the signaling layer, legitimate Caller-ID use and malicious impersonation
+can appear identical. Originating networks routinely assert a
+Caller-ID on behalf of a calling party, but intermediate carriers and
+terminating networks generally cannot infer the <strong>intent</strong> behind that
+assertion from ordinary PSTN signaling alone. Without a reliable identity
+signal, the network may be unable to distinguish legitimate use
+from malicious impersonation.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">This document defines <strong>Caller-ID Vouching and Vetting (CIDVV)</strong>, a lightweight, incrementally deployable mechanism that allows the called party, or a platform acting on its behalf, to ask a simple real-time question:<a href="#section-1-4" class="pilcrow">¶</a></p>
 <ul class="normal ulEmpty">
-<li class="normal ulEmpty" id="section-1-4.1">
-          <p id="section-1-4.1.1">"Will the party responsible for this number vouch for this call right now?"<a href="#section-1-4.1.1" class="pilcrow">¶</a></p>
+<li class="normal ulEmpty" id="section-1-5.1">
+          <p id="section-1-5.1.1">"Will the party responsible for this number vouch for this call right now?"<a href="#section-1-5.1.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-5">CIDVV verifies caller identity through network reachability rather than relying solely on asserted identity. It requires that a party asserting a Caller-ID demonstrate control of that number by being able to receive a short return signaling call within a brief Validity Window.<a href="#section-1-5" class="pilcrow">¶</a></p>
-<p id="section-1-6">CIDVV operates by encoding signaling information within the Calling Party Number and leveraging existing call routing behavior to perform a challenge-response exchange. The protocol requires no new SIP headers, protocol extensions, response codes, or changes to SS7 signaling. It is designed to function across mixed SIP and TDM networks, including international paths.<a href="#section-1-6" class="pilcrow">¶</a></p>
-<p id="section-1-7"><strong>CIDVV is complementary to STIR/SHAKEN</strong> and other identity frameworks. It provides practical protection in environments where cryptographic attestation is not yet fully deployed, while being designed to tolerate common signaling modifications by intermediate networks. It intentionally uses distinct failure-response behaviors as part of its signaling mechanism and does not require universal adoption to deliver benefit.<a href="#section-1-7" class="pilcrow">¶</a></p>
-<p id="section-1-8">The mechanism leverages two key elements of the existing telephone ecosystem:<a href="#section-1-8" class="pilcrow">¶</a></p>
+<p id="section-1-6">CIDVV verifies Caller-ID control through network reachability rather than relying solely on asserted identity. It requires that a party asserting a Caller-ID demonstrate control of that number by being able to receive a short return signaling call within a brief Validity Window.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">CIDVV operates by encoding signaling information within the Calling Party Number and leveraging existing call routing behavior to perform a challenge-response exchange. The protocol requires no new SIP headers, protocol extensions, response codes, or changes to SS7 signaling. It is designed to function across mixed SIP and TDM networks, including international paths.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<p id="section-1-8"><strong>CIDVV is complementary to STIR/SHAKEN</strong> and other identity frameworks. It provides practical protection in environments where cryptographic attestation is not yet fully deployed, while being designed to tolerate common signaling modifications by intermediate networks. It intentionally uses distinct failure-response behaviors as part of its signaling mechanism and does not require universal adoption to deliver benefit.<a href="#section-1-8" class="pilcrow">¶</a></p>
+<p id="section-1-9">The mechanism leverages two key elements of the existing telephone ecosystem:<a href="#section-1-9" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-1-9.1">
-          <p id="section-1-9.1.1">Authoritative routing databases and numbering plans, which establish ownership of telephone numbers.<a href="#section-1-9.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-1-10.1">
+          <p id="section-1-10.1.1">Authoritative routing databases and numbering plans, which establish ownership of telephone numbers.<a href="#section-1-10.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-1-9.2">
-          <p id="section-1-9.2.1">Short digit sequences (e.g., "100" and "101") chosen to minimize conflicts with valid numbering plans.<a href="#section-1-9.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-1-10.2">
+          <p id="section-1-10.2.1">Short digit sequences (e.g., "100" and "101") chosen to minimize conflicts with valid numbering plans.<a href="#section-1-10.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-10">CIDVV operates entirely within standard PSTN routing behavior and requires no media exchange. While it does not provide absolute identity assurance, it delivers strong, real-time evidence of Caller-ID control in a practical and low-overhead manner.<a href="#section-1-10" class="pilcrow">¶</a></p>
+<p id="section-1-11">CIDVV operates entirely within standard PSTN routing behavior and requires no media exchange. While it does not provide absolute identity assurance, it delivers strong, real-time evidence of Caller-ID control in a practical and low-overhead manner.<a href="#section-1-11" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="terminology">
