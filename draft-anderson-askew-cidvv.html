@@ -1656,7 +1656,7 @@ Caller-ID spoofing.<a href="#section-2.1-6" class="pilcrow">¶</a></p>
               <p id="section-2.3.1-2.4.1">Alice's CIDVV platform recognizes the special prefixes on the incoming verification calls and responds with the expected rejection behavior for each phase. This proves that it controls the Asserted Caller-ID <strong>and</strong> that Alice has an active call in progress to Bob.<a href="#section-2.3.1-2.4.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-2.3.1-2.5">
-              <p id="section-2.3.1-2.5.1">If both Phase 1 and Phase 2 verifications succeed within the Validity Window, Bob's CIDVV platform allows the original call to ring through to Bob.<a href="#section-2.3.1-2.5.1" class="pilcrow">¶</a></p>
+              <p id="section-2.3.1-2.5.1">Bob's CIDVV platform evaluates the verification result. If both Phase 1 and Phase 2 succeed within the Validity Window, the vouch is successful. If either phase fails, times out, or produces an unexpected response, the vouch is unsuccessful or indeterminate. The handling of the original call is implementation-specific; the platform may allow the call, label it, route it differently, send it to voicemail, or reject it according to local policy.<a href="#section-2.3.1-2.5.1" class="pilcrow">¶</a></p>
 </li>
           </ol>
 <p id="section-2.3.1-3">The two verification calls use <strong>reachability testing</strong> to confirm that Alice (or her service provider) genuinely controls the Asserted Caller-ID she is presenting for this specific call.<a href="#section-2.3.1-3" class="pilcrow">¶</a></p>
