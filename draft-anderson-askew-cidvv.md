@@ -79,8 +79,9 @@ CIDVV operates by encoding signaling information within the Calling Party Number
 
 The mechanism leverages two key elements of the existing telephone ecosystem:
 
-* Authoritative routing databases and numbering plans, which establish ownership of telephone numbers.
-* Short digit sequences (e.g., "100" and "101") chosen to minimize conflicts with valid numbering plans.
+* **Authoritative PSTN routing**: Calls to a telephone number are generally routed to the provider, service, or party responsible for that number. CIDVV uses this existing routing behavior to test whether the party responsible for an asserted Caller-ID can receive and respond to a return verification call.
+
+* **Numbering-plan compatibility**: CIDVV uses short digit sequences (e.g., "100" and "101") chosen to minimize conflicts with valid numbering plans while fitting within existing Calling Party Number constraints.
 
 CIDVV operates entirely within standard PSTN routing behavior and requires no media exchange. While it does not provide absolute identity assurance, it delivers strong, real-time evidence of Caller-ID control in a practical and low-overhead manner.
 
