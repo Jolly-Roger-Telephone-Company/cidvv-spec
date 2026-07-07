@@ -1438,10 +1438,10 @@ from malicious impersonation.<a href="#section-1-3" class="pilcrow">¶</a></p>
 <p id="section-1-9">The mechanism leverages two key elements of the existing telephone ecosystem:<a href="#section-1-9" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-1-10.1">
-          <p id="section-1-10.1.1">Authoritative routing databases and numbering plans, which establish ownership of telephone numbers.<a href="#section-1-10.1.1" class="pilcrow">¶</a></p>
+          <p id="section-1-10.1.1"><strong>Authoritative PSTN routing</strong>: Calls to a telephone number are generally routed to the provider, service, or party responsible for that number. CIDVV uses this existing routing behavior to test whether the party responsible for an asserted Caller-ID can receive and respond to a return verification call.<a href="#section-1-10.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-1-10.2">
-          <p id="section-1-10.2.1">Short digit sequences (e.g., "100" and "101") chosen to minimize conflicts with valid numbering plans.<a href="#section-1-10.2.1" class="pilcrow">¶</a></p>
+          <p id="section-1-10.2.1"><strong>Numbering-plan compatibility</strong>: CIDVV uses short digit sequences (e.g., "100" and "101") chosen to minimize conflicts with valid numbering plans while fitting within existing Calling Party Number constraints.<a href="#section-1-10.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-1-11">CIDVV operates entirely within standard PSTN routing behavior and requires no media exchange. While it does not provide absolute identity assurance, it delivers strong, real-time evidence of Caller-ID control in a practical and low-overhead manner.<a href="#section-1-11" class="pilcrow">¶</a></p>
