@@ -259,33 +259,71 @@ Both sides independently compute the short-lived Recognize Token and Auth Token 
 ### Token Computation Algorithm (Normative)
 {: #token-computation }
 
-1. Normalize both telephone numbers to E.164 digit strings (no leading "+", no punctuation) as defined in Section [Number Normalization](#number-normalization).
+CIDVV vetting uses two derived numeric tokens:
 
-2. For the **Recognize Token**:
-   - Concatenate as UTF-8 bytes: `normalized-calling-number || "|" || normalized-called-number || "|" || shared-secret`
+* **Recognize Token**: Computed by Alice and verified by Bob.
+* **Auth Token**: Computed by Bob and verified by Alice.
 
-3. For the **Auth Token**:
-   - Concatenate as UTF-8 bytes: `shared-secret || "|" || normalized-called-number || "|" || normalized-calling-number`
+Both tokens are computed using the same processing steps, but with
+different input ordering. This prevents the Recognize Token and Auth
+Token from being interchangeable.
+
+1. Normalize both telephone numbers to E.164 digit strings with no
+   leading "+" and no punctuation, as defined in Section
+   [Number Normalization](#number-normalization).
+
+2. For the **Recognize Token**, concatenate the following values as
+   UTF-8 bytes:
+
+   `normalized-calling-number || "|" || normalized-called-number || "|" || shared-secret`
+
+   In this context, `normalized-calling-number` is Alice's vetting
+   Caller-ID and `normalized-called-number` is Bob's number being vetted.
+
+3. For the **Auth Token**, concatenate the following values as UTF-8
+   bytes:
+
+   `shared-secret || "|" || normalized-called-number || "|" || normalized-calling-number`
 
 4. Compute the SHA-256 digest of the concatenated bytes.
-5. Take the first 8 hexadecimal characters of the digest.
-6. Convert that 8-hex string to a decimal integer.
-7. Left-pad with zeros to 10 digits if needed, then prepend '1' to produce an 11-digit token.
 
-**Security Note for Cloud Providers**:
-Cloud-based CIDVV services MUST isolate customers (e.g., by including a unique Customer ID or Tenant ID in the token computation) to prevent one customer from successfully vetting another customer's numbers. Failure to properly partition customers would allow a malicious actor who knows one customer's shared secret to impersonate them.
+5. Take the first 8 hexadecimal characters of the digest.
+
+6. Convert that 8-character hexadecimal string to a decimal integer.
+
+7. Left-pad the decimal value with zeros to 10 digits if needed, then
+   prepend the digit "1" to produce an 11-digit token.
 
 **Example (for illustration only)**
-- Calling number: `+12125550100`
-- Called number: `+19495550199`
+
+- Alice vetting Caller-ID: `+12125550100`
+- Bob's number: `+19495550199`
 - Shared secret: `elephant`
 
-Recognize Token calculation:
-`12125550100|19495550199|elephant` -> (SHA-256 processing) -> `12953388433`
+Recognize Token input:
 
-Auth Token uses the reversed number order after the shared secret.
+`12125550100|19495550199|elephant`
 
-Implementations MUST use identical normalization, concatenation order, and processing on both sides of the vetting exchange. Tokens are valid only inside the Validity Window.
+Auth Token input:
+
+`elephant|19495550199|12125550100`
+
+The resulting Recognize Token and Auth Token will differ because the
+input ordering is different.
+
+Implementations MUST use identical normalization, input ordering, digest
+processing, decimal conversion, zero-padding, and prefixing on both sides
+of the vetting exchange. Tokens are valid only within the Validity Window
+or, for multivetting, within the refreshed Validity Window.
+
+Hosted or multi-tenant CIDVV services MUST ensure that shared secrets,
+configuration, token state, and cached vetting state are scoped to the
+appropriate customer or tenant. A tenant-specific value MAY be included
+as an additional token-computation input only when both sides of the
+vetting relationship are explicitly configured to use the same value.
+Otherwise, tenant isolation MUST be enforced by provisioning, storage,
+and access-control boundaries rather than by changing the token
+algorithm.
 
 ### Detailed Vouching Procedure
 
@@ -552,46 +590,37 @@ A successful vouch indicates that at least one matching call attempt
 occurred during the Validity Window, rather than proving a
 one-to-one correspondence between specific call legs.
 
-## Hash Function for Vetting and State Storage
-{: #hash-function }
+## State Storage and Multi-Tenant Isolation
+{: #state-storage }
 
-The same deterministic processing pipeline MUST be used for all vetting token computation and short-term state storage. Two distinct tokens are used in the vetting flow:
+CIDVV implementations maintain short-lived state for vouching and
+vetting. The representation of that state is implementation specific and
+is not carried on the wire.
 
-* **Recognize Token**: Computed by Alice (verifier) and verified by Bob.
-* **Auth Token**: Computed by Bob and verified by Alice.
+For vouching, implementations commonly store state associated with the
+Asserted Caller-ID, the called number, and the Validity Window. For
+vetting, implementations store temporary state associated with the Wake,
+Recognize, and Auth steps, including any pending Recognize Token or Auth
+Token.
 
-**Algorithm (normative)**
+Implementations MAY use hashes, derived keys, database keys, in-memory
+objects, or other local mechanisms for state storage. These internal
+storage keys MUST NOT alter the externally visible token computation
+defined in Section [Token Computation Algorithm](#token-computation).
 
-1. Normalize both telephone numbers to E.164 digit strings (no leading "+", no punctuation) as defined in Section [number-normalization](#number-normalization).
+All temporary state MUST expire automatically. Loss of state, expiration
+of state, or inability to retrieve state MUST cause the corresponding
+vouching or vetting operation to fail closed.
 
-2. **Recognize Token** (Alice -> Bob direction):
-   - Concatenate as UTF-8 bytes: `normalized-calling-number || "|" || normalized-called-number || "|" || shared-secret`
-   - (Here `calling-number` is Alice's vetting Caller-ID and `called-number` is Bob's number being vetted.)
+CIDVV platforms that operate on behalf of multiple independent customers
+MUST ensure that all vouching and vetting state is scoped per customer
+or tenant. This prevents unrelated customers from interacting through
+shared state, identical telephone-number tuples, identical token values,
+or misconfigured shared secrets.
 
-3. **Auth Token** (Bob -> Alice direction):
-   - Concatenate as UTF-8 bytes: `shared-secret || "|" || normalized-called-number || "|" || normalized-calling-number`
-   - (Note the reversal of number order after the shared secret.)
-
-4. Compute the SHA-256 digest of the concatenated bytes.
-5. Take the first 8 hexadecimal characters of the digest.
-6. Convert that 8-hex string to a decimal integer.
-7. Left-pad with zeros to 10 digits if needed, then prepend '1' to produce an 11-digit token.
-
-**Example** (for illustration only, using shared secret `elephant`):
-- Alice vetting Caller-ID: `12125550100`
-- Bob's number: `19495550199`
-
-Recognize Token concatenation:  
-`12125550100|19495550199|elephant`
-
-Auth Token concatenation:  
-`elephant|19495550199|12125550100`
-
-(The resulting tokens will differ due to the different concatenation order; exact values depend on the SHA-256 output.)
-
-Implementations MUST use identical normalization, concatenation order, and processing steps on both sides. Tokens are valid only inside the Validity Window (or the refreshed window during multivetting). The same pipeline (with appropriate number ordering) MUST be used for any short-term cache lookups.
-
-**Security Note**: The reversal in the Auth Token concatenation provides a simple but effective differentiation between the two directions, reducing the risk of token reuse or confusion.
+Implementations MAY use separate storage, partitioning, customer-specific
+configuration, tenant identifiers, or access-control boundaries to
+achieve this isolation.
 
 ### Multi-Tenant Considerations
 
@@ -625,9 +654,9 @@ When Bob's CIDVV platform receives the first vetting call, it removes
 the "101" prefix and verifies that the resulting Caller-ID is expected
 for the current vetting attempt.
 
-Bob's platform MUST compute the vetting token using the algorithm
-defined in Section <xref target="hash-function"/> and store the
-resulting token for the Validity Window. It then rejects the call with
+Bob's platform MUST compute the Recognize Token using the algorithm
+defined in Section [Token Computation Algorithm](#token-computation) and
+store the resulting token for the Validity Window. It then rejects the call with
 SIP response 603 (Decline).
 
 Alice performs the same SHA-256 calculation and places a second vetting call to Bob. This second call uses a Caller-ID beginning with the Vetting Token Check prefix of "101" followed by the computed numeric code.
@@ -855,7 +884,11 @@ In this optimization:
 
 This optimization is **OPTIONAL**. Implementations MUST support the base three-call-per-number sequence. Multivetting requires Bob's platform to maintain per-Alice session state. The Wake call establishes "Bob is awake and shares the secret"; Recognize/Auth pairs confirm per-number control.
 
-All other requirements (token computation via the hash function in Section [hash-function], per-vet failure handling, etc.) remain unchanged. Each individual vet MUST complete its Recognize + Auth exchange within the (refreshed) Validity Window. The overall multivetting operation for N numbers is subject only to local per-vet timers and network reachability.
+All other requirements, including token computation as defined in Section
+[Token Computation Algorithm](#token-computation), per-vet failure
+handling, and state isolation as described in Section
+[State Storage and Multi-Tenant Isolation](#state-storage), remain
+unchanged.
 
 **Rationale**: This balances efficiency for bulk vetting (e.g., enterprise portfolios or service-provider batch validation) with strong per-number security properties and operational flexibility.
 
