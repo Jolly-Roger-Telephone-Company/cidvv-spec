@@ -1800,20 +1800,56 @@ prepend the digit "1" to produce an 11-digit token.<a href="#section-2.4.3-4.7.1
 <p id="section-2.4.3-8"><code>12125550100|19495550199|elephant</code><a href="#section-2.4.3-8" class="pilcrow">¶</a></p>
 <p id="section-2.4.3-9">Auth Token input:<a href="#section-2.4.3-9" class="pilcrow">¶</a></p>
 <p id="section-2.4.3-10"><code>elephant|19495550199|12125550100</code><a href="#section-2.4.3-10" class="pilcrow">¶</a></p>
-<p id="section-2.4.3-11">The resulting Recognize Token and Auth Token will differ because the
-input ordering is different.<a href="#section-2.4.3-11" class="pilcrow">¶</a></p>
-<p id="section-2.4.3-12">Implementations MUST use identical normalization, input ordering, digest
+<p id="section-2.4.3-11">Recognize Token calculation:<a href="#section-2.4.3-11" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.4.3-12.1">
+              <p id="section-2.4.3-12.1.1">SHA-256 digest begins with: <code>b86a096e</code><a href="#section-2.4.3-12.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-2.4.3-12.2">
+              <p id="section-2.4.3-12.2.1">First 8 hexadecimal characters: <code>b86a096e</code><a href="#section-2.4.3-12.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-2.4.3-12.3">
+              <p id="section-2.4.3-12.3.1">Decimal value: <code>3093956974</code><a href="#section-2.4.3-12.3.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-2.4.3-12.4">
+              <p id="section-2.4.3-12.4.1">10-digit decimal value: <code>3093956974</code><a href="#section-2.4.3-12.4.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-2.4.3-12.5">
+              <p id="section-2.4.3-12.5.1">Final 11-digit Recognize Token: <code>13093956974</code><a href="#section-2.4.3-12.5.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-2.4.3-13">Auth Token calculation:<a href="#section-2.4.3-13" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.4.3-14.1">
+              <p id="section-2.4.3-14.1.1">SHA-256 digest begins with: <code>9f6b0648</code><a href="#section-2.4.3-14.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-2.4.3-14.2">
+              <p id="section-2.4.3-14.2.1">First 8 hexadecimal characters: <code>9f6b0648</code><a href="#section-2.4.3-14.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-2.4.3-14.3">
+              <p id="section-2.4.3-14.3.1">Decimal value: <code>2674591304</code><a href="#section-2.4.3-14.3.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-2.4.3-14.4">
+              <p id="section-2.4.3-14.4.1">10-digit decimal value: <code>2674591304</code><a href="#section-2.4.3-14.4.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-2.4.3-14.5">
+              <p id="section-2.4.3-14.5.1">Final 11-digit Auth Token: <code>12674591304</code><a href="#section-2.4.3-14.5.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-2.4.3-15">The resulting Recognize Token and Auth Token differ because the input
+ordering is different.<a href="#section-2.4.3-15" class="pilcrow">¶</a></p>
+<p id="section-2.4.3-16">Implementations MUST use identical normalization, input ordering, digest
 processing, decimal conversion, zero-padding, and prefixing on both sides
 of the vetting exchange. Tokens are valid only within the Validity Window
-or, for multivetting, within the refreshed Validity Window.<a href="#section-2.4.3-12" class="pilcrow">¶</a></p>
-<p id="section-2.4.3-13">Hosted or multi-tenant CIDVV services MUST ensure that shared secrets,
+or, for multivetting, within the refreshed Validity Window.<a href="#section-2.4.3-16" class="pilcrow">¶</a></p>
+<p id="section-2.4.3-17">Hosted or multi-tenant CIDVV services MUST ensure that shared secrets,
 configuration, token state, and cached vetting state are scoped to the
 appropriate customer or tenant. A tenant-specific value MAY be included
 as an additional token-computation input only when both sides of the
 vetting relationship are explicitly configured to use the same value.
 Otherwise, tenant isolation MUST be enforced by provisioning, storage,
 and access-control boundaries rather than by changing the token
-algorithm.<a href="#section-2.4.3-13" class="pilcrow">¶</a></p>
+algorithm.<a href="#section-2.4.3-17" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="detailed-vouching-procedure">
@@ -1899,7 +1935,7 @@ a. Intercepts the incoming call.<a href="#section-2.4.5-2.4.2" class="pilcrow">�
 <p id="section-2.4.5-2.4.3">
 b. Recognizes Alice's vetting caller-id and identifies this as a "Wake Call".<a href="#section-2.4.5-2.4.3" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.4.4">
-c. Computes a short-lived "Recognize Token" derived from Alice's number + Bob's number + the shared secret (example: 13928543029).<a href="#section-2.4.5-2.4.4" class="pilcrow">¶</a></p>
+c. Computes a short-lived "Recognize Token" derived from Alice's number + Bob's number + the shared secret (example: 13093956974).<a href="#section-2.4.5-2.4.4" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.4.5">
 d. Stores this token temporarily in memory.<a href="#section-2.4.5-2.4.5" class="pilcrow">¶</a></p>
 <p id="section-2.4.5-2.4.6">
@@ -2396,7 +2432,7 @@ unexpected Caller-ID MUST be treated as an unsuccessful vet.<a href="#section-3.
               <p id="section-4.1.1-3.13.1">Bob's telephone rings.<a href="#section-4.1.1-3.13.1" class="pilcrow">¶</a></p>
 </li>
           </ol>
-<p id="section-4.1.1-4">This mechanism allows the originating CIDVV platform to confirm control of the Asserted Caller-ID without completing the initial call to Bob.<a href="#section-4.1.1-4" class="pilcrow">¶</a></p>
+<p id="section-4.1.1-4">This mechanism allows Bob's CIDVV platform to verify Alice's asserted Caller-ID without completing the initial call to Bob.<a href="#section-4.1.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3020,7 +3056,7 @@ amplification or reflection attacks.<a href="#section-7.5-1" class="pilcrow">¶<
 <a href="#section-7.6" class="section-number selfRef">7.6. </a><a href="#name-response-code-manipulation" class="section-name selfRef">Response Code Manipulation</a>
         </h3>
 <p id="section-7.6-1">CIDVV does not require specific SIP response codes to be preserved
-end-to-end, but it does require that distinct rejection behaviors
+end-to-end, but it does require that distinct response behaviors
 (e.g., "busy" vs. "reject") remain distinguishable.<a href="#section-7.6-1" class="pilcrow">¶</a></p>
 <p id="section-7.6-2">Implementations MUST interpret responses based on behavioral class
 (e.g., "Busy"-class vs. "Rejection"-class) rather than exact numeric values.<a href="#section-7.6-2" class="pilcrow">¶</a></p>
@@ -3136,7 +3172,7 @@ responses, with canonical SIP 486 and 603 behavior, are used for
 CIDVV verification signaling.<a href="#appendix-B.1-1.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="appendix-B.1-1.4">
-            <p id="appendix-B.1-1.4.1">Added a third call to the Vetting process to ensure Alice and Bob each trust the other shares the key.<a href="#appendix-B.1-1.4.1" class="pilcrow">¶</a></p>
+            <p id="appendix-B.1-1.4.1">Added a third call to the Vetting process to ensure Alice and Bob each trust that the other possesses the shared secret.<a href="#appendix-B.1-1.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="appendix-B.1-1.5">
             <p id="appendix-B.1-1.5.1">Added option Multi-Number Vetting optimization<a href="#appendix-B.1-1.5.1" class="pilcrow">¶</a></p>
