@@ -433,7 +433,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
       of the shared secret before placing any return call to Alice. This
       prevents an attacker from spoofing Alice's vetting Caller-ID in a
       Wake Call in order to goad Bob's platform into calling Alice.
-   
+
 6. Alice's CIDVV platform performs the following actions upon receiving the 603 response:
 
    a. Considers Bob's CIDVV platform "Awake".
