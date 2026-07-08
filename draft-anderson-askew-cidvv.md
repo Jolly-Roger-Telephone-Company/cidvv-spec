@@ -1517,46 +1517,90 @@ fraud prevention, debugging, or compliance.
 
 ## Hash-Based Token Security (Vetting)
 
-rba://
-The security of the vetting mechanism depends on the shared secret and the derived Recognize and Auth Tokens.
+## Token and Shared-Secret Security (Vetting)
 
-Implementations MUST:
-- Use a cryptographically secure hash function (SHA-256 is REQUIRED).
-- Protect shared secrets from disclosure.
-- Ensure that tokens are only valid within the Validity Window and are automatically expired.
+The security of the vetting mechanism depends on the shared secret and
+the derived Recognize and Auth Tokens. Tokens MUST be computed as
+specified in Section [Token Computation Algorithm](#token-computation).
 
-Implementations SHOULD:
-- Use sufficiently long and random shared secrets.
-- Avoid reusing the same secret across many numbers or for long periods.
+Shared secrets used for vetting MAY be long-lived configuration values.
+For example, a vetting agent and a number owner might retain the same
+shared secret in order to perform periodic or recurring vetting of the
+same customer numbers.
+
+Implementations MUST protect shared secrets from disclosure. If a shared
+secret is disclosed, a third party may be able to complete vetting
+challenges for the vetting relationships and numbers covered by that
+secret. Disclosure of a vetting shared secret does not, by itself, allow
+the third party to successfully vouch for calls, because vouching also
+requires reachability and valid call state for the Asserted Caller-ID.
+
+Recognize and Auth Tokens MUST be valid only within the Validity Window
+and MUST be automatically expired.
+
+Implementations SHOULD use sufficiently long and random shared secrets.
+Deployments SHOULD scope shared secrets to the appropriate customer,
+tenant, number owner, or vetting relationship, and SHOULD support
+rotation or revocation if a secret is suspected to be disclosed.
 
 ## Failure Modes
 
 CIDVV implementations MUST fail closed. If verification cannot be
-completed due to:
-- network errors
-- state loss
-- unexpected responses
+completed due to network errors, state loss, synchronization delay,
+resource exhaustion, or unexpected responses, the result MUST be treated
+as unverified or indeterminate rather than successful.
 
-the result MUST be treated as unverified.
+CIDVV platforms commonly rely on short-lived state with automatic
+expiration. After a restart or loss of temporary state, the platform MAY
+continue accepting new call notifications, but it MUST NOT successfully
+verify calls until fresh matching state has been deposited. During this
+recovery interval, legitimate calls may fail to receive a successful
+vouch, but calls without matching state will not be falsely vouched.
+
+Distributed CIDVV deployments may include multiple ingress points,
+geographically diverse SBCs, or replicated state stores. If a verification
+call reaches a CIDVV processing node before the relevant call state has
+been replicated to that node, the verification MUST fail closed.
+
+Deployments that use distributed state SHOULD ensure that call-deposit
+state is available to all CIDVV nodes that may receive subsequent
+verification calls within the Validity Window. Implementations MAY delay
+advancing the original call briefly, use synchronous replication, use
+sticky routing, or apply other local mechanisms to reduce the chance that
+a valid verification call arrives before matching state is available.
 
 ## Interoperability Risks
 
-CIDVV operates across heterogeneous networks, including SIP and
-SS7/TDM environments. Intermediate systems may:
-- modify Calling Party Number values
-- truncate digits
-- alter signaling behavior
+CIDVV operates across heterogeneous networks, including SIP and SS7/TDM
+environments. Intermediate systems may modify Calling Party Number
+values, truncate digits, alter response codes, or otherwise change
+signaling behavior.
 
-These behaviors may cause verification to fail but MUST NOT result in
-false-positive validation.
+These behaviors may cause verification to fail. Implementations MUST
+treat ambiguous, altered, missing, or inconsistent signaling as
+unsuccessful or indeterminate rather than allowing false-positive
+validation.
+
+Deployments SHOULD test CIDVV behavior across the specific carriers,
+gateways, SBCs, and interworking paths used in their environment,
+especially where Calling Party Number preservation, digit truncation, or
+response-class translation may occur.
 
 ## Residual Risk
 
 CIDVV improves resistance to Caller-ID spoofing but does not provide
-absolute identity assurance. It reduces the effectiveness of spoofing
-attacks rather than eliminating them and relies on probabilistic
-verification based on reachability and response behavior, not
-cryptographic identity binding.
+absolute identity assurance. It reduces the effectiveness of spoofing by
+testing reachability and response behavior for the Asserted Caller-ID
+within a short Validity Window.
+
+CIDVV does not prove the intent, legitimacy, or trustworthiness of the
+caller. A caller using a number it legitimately controls may still place
+fraudulent, abusive, or unwanted calls and receive successful vouches for
+that number.
+
+CIDVV should therefore be treated as one verification signal among
+multiple inputs to call-handling, fraud-prevention, analytics, reputation,
+or policy systems.
 
 # IANA Considerations
 
@@ -1582,4 +1626,4 @@ RFC Editor: Please remove this section before publication as an RFC.
 - Added a third call to the Vetting process to ensure Alice and Bob each trust that the other possesses the shared secret.
 - Added option Multi-Number Vetting optimization
 - Added this "Changes from Previous Version" appendix to support long-term document maintenance across multiple revisions.
-- Improved abstract and Introduction
+- Improved Abstract, Introduction, and call flow.
