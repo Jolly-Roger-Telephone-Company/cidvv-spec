@@ -56,10 +56,10 @@ By requiring demonstrable real-time control of the Asserted Caller-ID, CIDVV str
 # Introduction
 
 CIDVV supports two closely related functions: **Vouching** (real-time
-verification that the party responsible for the asserted number vouches
-for a specific call) and **Vetting** (confirmation that a number is 
-controlled by its expected owner, useful for branding, trust programs, 
-and registries). The primary focus of this document is the vouching mechanism, 
+verification that the party responsible for the Asserted Caller-ID vouches
+for a specific call) and **Vetting** (confirmation that a number is
+controlled by its expected owner, useful for branding, trust programs,
+and registries). The primary focus of this document is the vouching mechanism,
 which directly addresses Caller-ID spoofing for individual calls.
 
 Caller-ID spoofing remains a widespread problem in modern telephony. Fraudulent and nuisance callers frequently impersonate legitimate numbers, eroding trust and complicating call screening for recipients.
@@ -84,9 +84,9 @@ CIDVV operates by encoding signaling information within the Calling Party Number
 
 The mechanism leverages two key elements of the existing telephone ecosystem:
 
-* **Authoritative PSTN routing**: Calls to a telephone number are generally routed to the provider, service, or party responsible for that number. CIDVV uses this existing routing behavior to test whether the party responsible for an asserted Caller-ID can receive and respond to a return verification call.
+* **Authoritative PSTN routing**: Calls to a telephone number are generally routed to the provider, service, or party responsible for that number. CIDVV uses this existing routing behavior to test whether the party responsible for an Asserted Caller-ID can receive and respond to a return verification call.
 
-* **Calling Party Number encoding**: CIDVV carries its signaling state in compact numeric values placed in the Calling Party Number. The prefixes "100" and "101" identify CIDVV verification calls while preserving ordinary routing to the asserted telephone number.
+* **Calling Party Number encoding**: CIDVV carries its signaling state in compact numeric values placed in the Calling Party Number. The prefixes "100" and "101" identify CIDVV verification calls while preserving ordinary routing to the Asserted Caller-ID.
 
 CIDVV operates entirely within standard PSTN routing behavior and requires no media exchange. While it does not provide absolute identity assurance, it delivers strong, real-time evidence of Caller-ID control in a practical and low-overhead manner.
 
@@ -1396,7 +1396,8 @@ A ride-along attack is limited to the same correlation tuple used for
 vouching: the Asserted Caller-ID, the called number, and the Validity
 Window. A successful vouch for one called number does not allow a caller
 to vouch calls to other destinations, and a successful vouch for one
-Asserted Caller-ID does not apply to other Caller-IDs.
+Asserted Caller-ID value does not apply to other Asserted Caller-ID
+values.
 
 A spoofing caller might attempt to place an additional call using the
 same Asserted Caller-ID to the same called number while matching cached
@@ -1467,7 +1468,7 @@ than returning a response that could create a false-positive vouch.
 Deployments SHOULD monitor CIDVV signaling volume and error patterns,
 especially repeated unsuccessful attempts, unexpected response patterns,
 traffic inconsistent with normal call volume, or sudden increases in
-verification traffic for particular asserted numbers.
+verification traffic for particular Asserted Caller-ID values.
 
 ## Amplification and Reflection
 
@@ -1516,7 +1517,7 @@ to be interpreted as successful CIDVV behavior.
 
 CIDVV uses telephone numbers and related call metadata as part of normal
 signaling behavior. CIDVV may also create operational telemetry about
-attempted use of telephone numbers as Asserted Caller-IDs, including
+attempted use of telephone numbers as Asserted Caller-ID values, including
 successful and unsuccessful verification attempts.
 
 Deployments SHOULD handle CIDVV signaling records, verification logs, and
