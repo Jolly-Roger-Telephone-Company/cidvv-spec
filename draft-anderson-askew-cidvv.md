@@ -5,7 +5,7 @@ category: info
 docname: draft-anderson-askew-cidvv-latest
 submissiontype: IETF
 ipr: trust200902
-date: 2026-05-07
+date: 2026-07-08
 consensus: false
 v: 3
 keyword: telephony, callerid, spoofing, PSTN
@@ -184,7 +184,7 @@ CIDVV was designed with the following core principles:
 
 * **Use of existing failure semantics**: CIDVV relies on distinguishable classes of call rejection behavior (e.g., "busy" vs. "decline") rather than requiring specific end-to-end response codes. Failed call attempts are intentionally used as a lightweight signaling mechanism.
 
-* **Minimal new infrastructure**: No persistent identity infrastructure, central authorities, or cryptographic key management is required. The mechanism leverages existing routing databases and numbering authority.
+* **Minimal new infrastructure**: No persistent identity infrastructure or central authorities are required. Vouching requires no cryptographic key management, and vetting can use locally configured shared secrets.
 
 * **Incremental deployability**: The protocol provides benefit even with partial adoption and is designed to coexist cleanly with STIR/SHAKEN and other identity solutions.
 
@@ -210,7 +210,7 @@ When Alice wants to place a call to Bob while asserting a particular Caller-ID:
 3. Bob's platform initiates **two short signaling-only verification calls** back to Alice's Asserted Caller-ID (these may be performed in parallel):
    - **Phase 1** verification call using Calling Party Number prefix `"100"`.
    - **Phase 2** verification call using Calling Party Number prefix `"101"`.
-4. Alice's CIDVV platform recognizes the special prefixes on the incoming verification calls and responds with the expected rejection behavior for each phase. This proves that it controls the Asserted Caller-ID **and** that Alice has an active call in progress to Bob.
+4. Alice's CIDVV platform recognizes the special prefixes on the incoming verification calls and responds with the expected non-success response behavior for each phase. This provides evidence that it controls the Asserted Caller-ID **and** that Alice has an active call in progress to Bob.
 5. Bob's CIDVV platform evaluates the verification result. If both Phase 1 and Phase 2 succeed within the Validity Window, the vouch is successful. If either phase fails, times out, or produces an unexpected response, the vouch is unsuccessful or indeterminate. The handling of the original call is implementation-specific; the platform may allow the call, label it, route it differently, send it to voicemail, or reject it according to local policy.
 
 The two verification calls use **reachability testing** to confirm that Alice (or her service provider) genuinely controls the Asserted Caller-ID she is presenting for this specific call.
@@ -224,10 +224,12 @@ Vetting uses a three-call challenge-response sequence consisting of a **Wake Cal
 When Alice wants to vet that Bob controls a particular telephone number:
 
 1. Alice and Bob share a secret (e.g., a passphrase such as "elephant").
-2. Alice initiates a **Wake Call** to Bob using a special prefix (`101`) and an agreed vetting Caller-ID. Bob's platform recognizes the vetting Caller-ID, computes a short-lived Recognize Token, and rejects the call with the standard response code **603**.
-3. Alice's platform then sends a **Recognize Call** using the Recognize Token in the Calling Party Number.
-4. Bob's platform verifies the token (proving Alice knows the shared secret) and responds with an **Auth Call** using an Auth Token.
-5. Alice's platform verifies the Auth Token (proving Bob knows the shared secret). Both sides now consider the vetting successful.
+2. Alice initiates a **Wake Call** to Bob using the `101` prefix and an agreed vetting Caller-ID.
+3. Bob's platform recognizes the vetting Caller-ID, computes a short-lived Recognize Token, and responds to the Wake Call with SIP **603 Decline**.
+4. Alice's platform computes the same Recognize Token and sends a **Recognize Call** using the Recognize Token in the Calling Party Number.
+5. Bob's platform verifies the Recognize Token, proving that Alice knows the shared secret. Bob then responds to the Recognize Call with SIP **486 Busy Here** and initiates an **Auth Call** using an Auth Token.
+6. Alice's platform verifies the Auth Token, proving that Bob knows the shared secret, and responds to the Auth Call with SIP **486 Busy Here**.
+7. After Alice verifies the Auth Token and Bob receives the expected SIP **486 Busy Here** response to the Auth Call, both sides consider the vetting successful.
 
 This design ensures that the initial Wake Call reveals nothing useful to an attacker, while the subsequent Recognize and Auth steps provide mutual authentication between parties that share the secret. All calls remain short signaling-only exchanges with no media.
 
@@ -255,8 +257,8 @@ If either phase fails to produce the expected response within the vouch-call tim
 CIDVV uses a three-step handshake for vetting. All calls use the `101` prefix in the Calling Party Number.
 
 - **Wake Call** (Alice -> Bob): Alice initiates using her vetting Caller-ID.
-- **Recognize Call** (Alice -> Bob): Alice uses the Recognize Token as the Calling Party Number.
-- **Auth Call** (Bob -> Alice): Bob uses the Auth Token as the Calling Party Number.
+- **Recognize Call** (Alice -> Bob): Alice uses the `101` prefix followed by the Recognize Token as the Calling Party Number.
+- **Auth Call** (Bob -> Alice): Bob uses the `101` prefix followed by the Auth Token as the Calling Party Number.
 
 A successful **Vet** requires all three steps to complete successfully within the Validity Window.
 
@@ -380,9 +382,9 @@ When Alice wants to place a call to Bob using her Asserted Caller-ID, the follow
 
 5. Alice's CIDVV platform receives each verification call and performs the following actions:
 
-   a. For the call with `+100` prefix: Looks up the cached call state and rejects the call with SIP **486 Busy Here** if matching state exists.
+   a. For the call with `+100` prefix: Looks up the cached call state and responds to the call with SIP **486 Busy Here** if matching state exists.
 
-   b. For the call with `+101` prefix: Rejects the call with SIP **603 Decline** for vouching purposes, unless the call corresponds to an active vetting procedure as described in Section [Vetting Procedure](#vetting-procedure).
+   b. For the call with `+101` prefix: Responds to the call with SIP **603 Decline** for vouching purposes, unless the call corresponds to an active vetting procedure as described in Section [Vetting Procedure](#vetting-procedure).
 
 6. Bob's CIDVV platform evaluates the responses to both verification calls.
 
@@ -390,17 +392,17 @@ When Alice wants to place a call to Bob using her Asserted Caller-ID, the follow
 
    a. Considers the vouching successful.
 
-   b. Allows the original call from Alice to proceed and ring through to Bob.
+   b. Applies local call-handling policy to the original call.
 
 8. If either verification call fails to receive the correct response, times out, or does not complete within the Validity Window, Bob's CIDVV platform:
 
-   a. Considers the vouching failed.
+   a. Considers the vouching unsuccessful or indeterminate.
 
-   b. May take any of the following actions on the original call (implementation specific):
+   b. May take any of the following actions on the original call (implementation-specific):
 
-   - Reject the call (e.g., with SIP 603 Decline).
-   - Route the call to Bob's voicemail.
-   - Allow the call to ring through to Bob with a visual warning on the display (e.g., "Unverified Caller-ID").
+      - Reject the call (e.g., with SIP 603 Decline).
+      - Route the call to Bob's voicemail.
+      - Allow the original call to continue with an indication that the Caller-ID was not verified (e.g., "Unverified Caller-ID").
 
 ### Detailed Vetting Procedure
 
@@ -422,7 +424,7 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    d. Stores this token temporarily in memory.
 
-   e. Rejects the call with a SIP 603 Decline response.
+   e. Responds to the call with SIP **603 Decline**.
 
    f. Considers this a successful "Wake Call" from Alice to Bob (step 1 of 3).
 
@@ -434,19 +436,19 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
       prevents an attacker from spoofing Alice's vetting Caller-ID in a
       Wake Call in order to goad Bob's platform into calling Alice.
 
-6. Alice's CIDVV platform performs the following actions upon receiving the 603 response:
+5. Alice's CIDVV platform performs the following actions upon receiving the 603 response:
 
    a. Considers Bob's CIDVV platform "Awake".
 
    b. Independently calculates the same "Recognize Token" (example: 13093956974).
 
-   c. Calculates an "Auth Token" using a slightly different derivation from the shared secret + Bob's number + Alice's number (example: 12674591304).
+   c. Calculates an "Auth Token" using the Auth Token input ordering defined in Section [Token Computation Algorithm](#token-computation) (example: 12674591304).
 
    d. Stores the Auth Token temporarily in memory.
 
    e. Initiates a "Recognize Call" (step 2 of 3) to Bob using the Recognize Token as the Caller-ID, prefixed with `+101` (example: `+10113093956974`).
 
-7. Bob's CIDVV platform performs the following actions upon receiving the Recognize Call:
+6. Bob's CIDVV platform performs the following actions upon receiving the Recognize Call:
 
    a. Intercepts the call.
 
@@ -454,15 +456,15 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    c. Considers this a successful "Recognize Call" from Alice to Bob (step 2 of 3).
 
-   d. Trusts Alice's CIDVV platform based on the matching token.
+   d. Treats Alice's CIDVV platform as authenticated for this vetting exchange.
 
-   e. Rejects the call with a SIP 486 (Busy Here) response.
+   e. Responds to the call with SIP **486 Busy Here**.
 
    f. Computes the corresponding "Auth Token" (example: 12674591304).
 
    g. Initiates an "Auth Call" (step 3 of 3) to Alice using the Auth Token as the Caller-ID, prefixed with `+101` (example: `+10112674591304`).
 
-8. Alice's CIDVV platform performs the following actions upon receiving the Auth Call:
+7. Alice's CIDVV platform performs the following actions upon receiving the Auth Call:
 
    a. Intercepts the call.
 
@@ -470,13 +472,13 @@ When Alice wants to confirm that Bob controls a particular telephone number, the
 
    c. Considers this a successful "Auth Call" from Bob to Alice (step 3 of 3).
 
-   d. Trusts Bob's CIDVV platform based on the matching token.
+   d. Treats Bob's CIDVV platform as authenticated for this vetting exchange.
 
-   e. Rejects the call with a SIP 486 (Busy Here) response.
+   e. Responds with SIP **486 Busy Here**.
 
    f. Considers the vetting procedure complete and successful.
 
-9. Bob's CIDVV platform receives the 486 (Busy Here) response from Alice and also considers the vetting procedure successful.
+8. Bob's CIDVV platform receives the 486 (Busy Here) response from Alice and also considers the vetting procedure successful.
 
 Only a party that can receive calls for Bob's number and that knows the
 shared secret can complete the expected token and response sequence.
@@ -490,8 +492,8 @@ CIDVV uses the following special prefixes in the Calling Party Number:
 | +100   | Vouch Phase 1      | Bob -> Alice   | Vouching verification (Phase 1)               | 486 Busy Here                 |
 | +101   | Vouch Phase 2      | Bob -> Alice   | Vouching verification (Phase 2)               | 603 Decline                   |
 | +101   | Wake Call          | Alice -> Bob   | Initiate vetting and trigger token generation | 603 Decline                   |
-| +101   | Recognize Call     | Alice -> Bob   | Prove knowledge of shared secret              | 486 Busy Here                 |
-| +101   | Auth Call          | Bob -> Alice   | Prove control of destination number           | 486 Busy Here                 |
+| +101   | Recognize Call     | Alice -> Bob   | Alice proves knowledge of shared secret       | 486 Busy Here                 |
+| +101   | Auth Call          | Bob -> Alice   | Bob proves knowledge of shared secret         | 486 Busy Here                 |
 
 **Note:** All vetting-related calls use the `+101` prefix. Context is determined by the Caller-ID used (vetting Caller-ID vs. token value) and the current state maintained by the CIDVV platform.
 
@@ -522,7 +524,7 @@ A call using the "100" prefix is the **Phase 1** verification call. It succeeds 
 
 A call using the "101" prefix is the **Phase 2** verification call. It succeeds only if it receives a "Rejection"-class response, with SIP 603 Decline as the canonical example.
 
-### Combined Phase Behavior (Required for Vouch Success)
+### Vouch Success Response Requirements
 
 A successful vouch requires both Phase 1 and Phase 2 to complete with
 their expected behaviors within the Validity Window.
@@ -548,11 +550,11 @@ implementation-specific.
 
 The following subsections define the required behavior for vouching.
 
-Alice initiates a call to Bob using her Asserted Caller-ID
+Alice initiates a call to Bob using her Asserted Caller-ID.
 
 Alice's CIDVV platform receives a notification of an attempted call from
 Alice to Bob using Alice's Asserted Caller-ID. The notification mechanism
-is implementation specific. For example, Alice's SBC or gateway might
+is implementation-specific. For example, Alice's SBC or gateway might
 send an INVITE to the CIDVV platform before advancing the original call
 toward the PSTN.
 
@@ -669,7 +671,7 @@ the Same Caller-ID](#fan-out).
 {: #state-storage }
 
 CIDVV implementations maintain short-lived state for vouching and
-vetting. The representation of that state is implementation specific and
+vetting. The representation of that state is implementation-specific and
 is not carried on the wire.
 
 For vouching, implementations commonly store state associated with the
@@ -703,9 +705,8 @@ achieve this isolation.
 Vetting a remote number requires three separate calls (distinct SIP
 dialogs) using a pre-agreed shared secret. The process confirms that
 the **called party (Bob)** controls the target telephone number and
-possesses the correct shared secret. In the examples below, Alice is
-the verifier who initiates the vetting procedure to Bob's number in order to
-vet Bob's number.
+possesses the correct shared secret. In the examples below, Alice is the verifier who initiates the vetting
+procedure for Bob's number.
 
 Before vetting begins, Alice and Bob agree on a shared secret, Alice's
 vetting Caller-ID, and a Validity Window.
@@ -719,8 +720,8 @@ current vetting attempt.
 
 Bob's platform MUST compute the Recognize Token using the algorithm
 defined in Section [Token Computation Algorithm](#token-computation) and
-store the resulting token for the Validity Window. It then rejects the
-Wake Call with SIP response 603 (Decline).
+store the resulting token for the Validity Window. It then responds to the
+Wake Call with SIP **603 Decline**.
 
 Alice computes the same Recognize Token and places a Recognize Call to
 Bob using a Calling Party Number consisting of the "101" prefix followed
@@ -809,27 +810,27 @@ Note that the two verification calls (Phase 1 and Phase 2) MAY be performed in e
    continues routing the original call toward the PSTN using Alice's
    original Caller-ID.
 
-6. The call reaches Bob's SBC via the PSTN. Because this is a new dialog (initial INVITE), Bob's **CIDVV-aware SBC** forwards the call to the terminating CIDVV platform (CIDVV_B).
+5. The call reaches Bob's SBC via the PSTN. Because this is a new dialog (initial INVITE), Bob's **CIDVV-aware SBC** forwards the call to the terminating CIDVV platform (CIDVV_B).
 
-7. **CIDVV_B** initiates Phase 1 and/or Phase 2 verification calls toward Alice's number (`+12125550100`):
+6. **CIDVV_B** initiates Phase 1 and Phase 2 verification calls toward Alice's number (`+12125550100`):
    - Phase 1: Caller-ID = `+10019495550199`
    - Phase 2: Caller-ID = `+10119495550199`
 
-8. Each verification call arrives at Alice's SBC via the PSTN.
+7. Each verification call arrives at Alice's SBC via the PSTN.
 
-9. **Alice's SBC** detects the leading `+100` or `+101` prefix and routes the call to CIDVV_A.
+8. **Alice's SBC** detects the leading `+100` or `+101` prefix and routes the call to CIDVV_A.
 
-10. **CIDVV_A**:
+9. **CIDVV_A**:
    - For a `+100` prefix: Looks up the cached tuple for the Validity Window and returns SIP **486 Busy Here** if matching state exists.
    - For a `+101` prefix: Returns SIP **603 Decline** for vouching purposes unless the call corresponds to an active token-confirmation step.
 
-11. **CIDVV_B** receives the expected responses for both phases. Once both Phase 1 and Phase 2 have succeeded, it considers the combined result a **Successful Vouch**.
+10. **CIDVV_B** receives the expected responses for both phases. Once both Phase 1 and Phase 2 have succeeded, it considers the combined result a **Successful Vouch**.
 
-12. **CIDVV_B** determines the vouch result and applies its local call-handling policy. If the call is to be advanced, CIDVV_B may release or redirect the held call using implementation-specific behavior, such as returning SIP **302 Moved Temporarily** to Bob's SBC.
+11. **CIDVV_B** determines the vouch result and applies its local call-handling policy. If the call is to be advanced, CIDVV_B may release or redirect the held call using implementation-specific behavior, such as returning SIP **302 Moved Temporarily** to Bob's SBC.
 
-13. Bob's SBC or serving network element advances the original call according to that local behavior, for example by routing the call to Bob's User Agent.
+12. Bob's SBC or serving network element advances the original call according to that local behavior, for example by routing the call to Bob's User Agent.
 
-14. Bob's telephone rings.
+13. Bob's telephone rings.
 
 This mechanism allows Bob's CIDVV platform to verify Alice's Asserted
 Caller-ID before deciding how to handle the original call.
@@ -845,7 +846,10 @@ For example:
 - If the Phase 1 verification call using the `"100"` prefix does not result in a Busy-class response, such as SIP 486 Busy Here, the vouch MUST fail. The implementation MAY omit the Phase 2 verification call.
 - If the Phase 1 verification succeeds but the Phase 2 verification call using the `"101"` prefix does not result in a Rejection-class response, such as SIP 603 Decline, the vouch MUST fail.
 
-Implementations MUST fail closed. Any ambiguity, unexpected response, timeout, or call progression MUST result in an unsuccessful or indeterminate outcome.
+Implementations MUST fail closed. Any ambiguity, unexpected response,
+timeout, provisional response, successful response, media establishment,
+or other verification-call progression MUST result in an unsuccessful or
+indeterminate outcome.
 
 ## Vetting a Caller-ID Number
 
@@ -869,7 +873,7 @@ separately, but together they constitute a single vetting operation.
       |<--- 603 ----|             |             |             |
       |             |             |             |             |
 ~~~~
-{: title="Wake vetting call with 101 - Bob creates Recognize Token and responds with 603"}
+{: title="Wake vetting call with 101 - Bob creates Recognize Token and responds with SIP 603 Decline"}
 
 ### Second Vetting Call using Recognize Token as Caller-ID
 
@@ -913,7 +917,7 @@ Vetting a remote number requires three separate calls (distinct SIP dialogs) tha
 
 1. Alice and Bob agree on a shared secret (e.g., `elephant`) and Alice's vetting Caller-ID (e.g., `+12125550100`).
 
-2. Both parties configure their CIDVV platforms with the shared secret, Alice's vetting Caller-ID, and an optional authorization lifetime (e.g., "one week"). This allows the number owner (Bob) to limit how long the shared secret remains active for vetting.
+2. Both parties configure their CIDVV platforms with the shared secret, Alice's vetting Caller-ID, and an optional authorization lifetime (e.g., "one week"). This allows the number owner (Bob) to limit how long the vetting authorization remains active.
 
 3. Alice's CIDVV platform (CIDVV_A) initiates the **Wake Call** to Bob's number (`+19495550199`) with Caller-ID `+10112125550100`.
 
@@ -921,45 +925,45 @@ Vetting a remote number requires three separate calls (distinct SIP dialogs) tha
    the `101` prefix in the Calling Party Number and routes the call to
    CIDVV_B.
 
-6. **CIDVV_B**:
+5. **CIDVV_B**:
    - Strips the `101` prefix to recover Alice's vetting Caller-ID.
    - Recognizes it as a pre-agreed vetting number.
    - Computes the Recognize Token.
    - Caches the token for the Validity Window.
-   - Rejects the call with SIP **603 Decline**.
+   - Responds with SIP **603 Decline**.
 
-7. CIDVV_A receives the 603 and computes the same Recognize Token.
+6. CIDVV_A receives the 603 and computes the same Recognize Token.
 
-8. CIDVV_A immediately places the **Recognize Call** to Bob using Caller-ID `+101` followed by the Recognize Token (e.g., `+10113093956974`).
+7. CIDVV_A immediately places the **Recognize Call** to Bob using Caller-ID `+101` followed by the Recognize Token (e.g., `+10113093956974`).
 
-9. Bob's SBC, gateway, or other CIDVV-aware network element recognizes
+8. Bob's SBC, gateway, or other CIDVV-aware network element recognizes
    the `101` prefix in the Calling Party Number and routes the call to
    CIDVV_B.
 
-10. **CIDVV_B**:
+9. **CIDVV_B**:
    - Strips the `101` prefix.
    - Verifies the token matches the cached value.
    - Responds with SIP **486 Busy Here**.
 
-11. CIDVV_A receives the 486 and computes the Auth Token.
+10. CIDVV_A receives the 486 and computes the Auth Token.
 
-12. **CIDVV_B**:
+11. **CIDVV_B**:
     - Computes the Auth Token.
     - Initiates the **Auth Call** to Alice's vetting Caller-ID using
       Caller-ID `+101` followed by the Auth Token
       (e.g., `+10112674591304`).
 
-13. Alice's SBC, gateway, or other CIDVV-aware network element recognizes
+12. Alice's SBC, gateway, or other CIDVV-aware network element recognizes
     the `101` prefix in the Calling Party Number and routes the call to
     CIDVV_A.
 
-14. **CIDVV_A**:
+13. **CIDVV_A**:
     - Strips the `101` prefix.
     - Verifies the Auth Token.
     - Responds with SIP **486 Busy Here**.
     - Declares the vetting successful.
 
-15. CIDVV_B receives the 486 and also declares the vetting successful.
+14. CIDVV_B receives the 486 and also declares the vetting successful.
 
 All calls are short signaling-only exchanges. The entire operation MUST complete within the Validity Window.
 
@@ -969,11 +973,11 @@ To reduce signaling load when vetting multiple numbers controlled by the same pa
 
 In this optimization:
 
-1. Alice performs **one Wake Call** to any of Bob's numbers (or a designated primary vetting number) using her pre-agreed vetting Caller-ID prefixed with `+101`. Bob's CIDVV_B creates and caches a session context (tied to Alice's vetting Caller-ID + shared secret).
+1. Alice performs **one Wake Call** to any of Bob's numbers (or a designated primary vetting number) using her pre-agreed vetting Caller-ID prefixed with `+101`. CIDVV_B creates and caches a session context (tied to Alice's vetting Caller-ID + shared secret).
 
 2. For each number to vet (including the first if desired):
    - Alice sends the **Recognize Call** using the per-number Recognize Token.
-   - **CIDVV_B** verifies the token against the current call (using calling number, called number and the shared secret) and responds with 486 Busy Here if successful.
+   - **CIDVV_B** verifies the token against the current call (using calling number, called number, and the shared secret) and responds with SIP **486 Busy Here** if successful.
    - The per-number **Auth Call** proceeds as in the base flow.
    - Upon successful completion of each individual vet (mutual 486 acknowledgments), both sides refresh/restart the Validity Window for the ongoing session.
 
@@ -992,8 +996,6 @@ unchanged.
 **Rationale**: This balances efficiency for bulk vetting (e.g., enterprise portfolios or service-provider batch validation) with strong per-number security properties and operational flexibility.
 
 #### Vetting Failure Cases
-
-A vetting attempt may fail for the following reasons:
 
 A vetting attempt may fail for the following reasons:
 
@@ -1515,8 +1517,6 @@ Where operationally practical, access to CIDVV logs and telemetry SHOULD
 be limited to systems and personnel responsible for operations, security,
 fraud prevention, debugging, or compliance.
 
-## Hash-Based Token Security (Vetting)
-
 ## Token and Shared-Secret Security (Vetting)
 
 The security of the vetting mechanism depends on the shared secret and
@@ -1624,6 +1624,6 @@ RFC Editor: Please remove this section before publication as an RFC.
   responses, with canonical SIP 486 and 603 behavior, are used for
   CIDVV verification signaling.
 - Added a third call to the Vetting process to ensure Alice and Bob each trust that the other possesses the shared secret.
-- Added option Multi-Number Vetting optimization
+- Added optional Multi-Number Vetting optimization.
 - Added this "Changes from Previous Version" appendix to support long-term document maintenance across multiple revisions.
 - Improved Abstract, Introduction, and call flow.
