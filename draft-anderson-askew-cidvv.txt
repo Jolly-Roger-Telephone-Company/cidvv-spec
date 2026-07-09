@@ -34,10 +34,10 @@ Abstract
    signaling mechanism.
 
    CIDVV is complementary to STIR/SHAKEN and other identity frameworks.
-   It provides an incrementally deployable tool that works even in
-   environments where cryptographic attestation is not yet available or
-   sufficient, while being designed to tolerate common forms of
-   intermediate network modification.
+   It provides an incrementally deployable tool that can operate across
+   call paths where a complete cryptographic attestation signal is not
+   available to the terminating side, while being designed to tolerate
+   common forms of intermediate network modification.
 
    By requiring demonstrable real-time control of the Asserted Caller-
    ID, CIDVV strengthens resistance to spoofing in a practical, low-
@@ -209,12 +209,13 @@ Table of Contents
    networks, including international paths.
 
    *CIDVV is complementary to STIR/SHAKEN* and other identity
-   frameworks.  It provides practical protection in environments where
-   cryptographic attestation is not yet fully deployed, while being
-   designed to tolerate common signaling modifications by intermediate
-   networks.  It intentionally uses distinct failure-response behaviors
-   as part of its signaling mechanism and does not require universal
-   adoption to deliver benefit.
+   frameworks.  It provides an additional reachability-based
+   verification signal in environments where a complete cryptographic
+   attestation signal is not available to the terminating side, while
+   being designed to tolerate common signaling modifications by
+   intermediate networks.  It intentionally uses distinct failure-
+   response behaviors as part of its signaling mechanism and does not
+   require universal adoption to deliver benefit.
 
    The mechanism leverages two key elements of the existing telephone
    ecosystem:
@@ -395,14 +396,20 @@ Table of Contents
    dialback authentication, and out-of-band caller-identity
    verification.
 
-   The STIR framework defines mechanisms for cryptographic
-   authentication of telephone calling-party information and for
-   verifying authorization to use a telephone number.  CIDVV is not a
-   replacement for STIR or STIR/SHAKEN.  Instead, CIDVV provides a
-   complementary reachability-based signal that can be used where
-   cryptographic attestation is unavailable, incomplete, not trusted
-   across an interconnect boundary, or not preserved across the full
-   call path.
+   The STIR framework defines mechanisms for signing and verifying
+   telephone calling-party information.  STIR and STIR/SHAKEN are
+   important parts of the telephone identity ecosystem, and CIDVV is not
+   a replacement for them.
+
+   CIDVV provides a complementary signal based on reachability.  It asks
+   whether the party reached through ordinary telephone routing for the
+   Asserted Caller-ID will vouch for a specific call attempt within a
+   short Validity Window.  This signal can be useful where a terminating
+   platform does not have a complete or usable cryptographic attestation
+   signal for a particular call path, or where such information is not
+   available across the full path.  It can also be used alongside STIR
+   verification results, call analytics, traceback processes, reputation
+   systems, and local call-handling policy.
 
    Prior STIR-related work has also considered callback-based
    verification.  For example, [I-D.rosenberg-stir-callback] describes a
@@ -432,10 +439,9 @@ Table of Contents
    delivery of PASSporT objects outside the ordinary SIP signaling path.
    CIDVV addresses a different part of the problem space.  It does not
    transport PASSporTs and does not attempt to prove legal ownership or
-   all delegated rights to use a telephone number.  Instead, CIDVV asks
-   whether the party reachable through ordinary telephone routing for
-   the Asserted Caller-ID can vouch for a specific call attempt within a
-   short Validity Window.
+   all delegated rights to use a telephone number.  Instead, CIDVV
+   provides a real-time reachability signal tied to a specific call
+   attempt.
 
    Number-routing asymmetry remains an important deployment
    consideration.  In many real-world deployments, the party authorized
@@ -447,14 +453,25 @@ Table of Contents
    in the vouching process and maintain the state needed to answer
    verification calls correctly.
 
-   Like other dialback mechanisms, CIDVV must also address reflection
-   and amplification risk.  CIDVV mitigates this risk by using short
-   signaling-only verification calls, requiring non-success termination,
-   avoiding media establishment, defining short-lived state, and
-   requiring deployments to apply rate limits and other ingress and
-   egress controls.  These mitigations do not remove all reflection
-   risk, but they are intended to keep the mechanism operationally
-   bounded and suitable for incremental deployment.
+   Delegated or authorized use of an Asserted Caller-ID, such as an
+   enterprise application, healthcare calling service, contact-center
+   platform, or contracted calling provider, can be supported when that
+   service is integrated with the responsible CIDVV platform for the
+   Asserted Caller-ID.  For example, the delegated service, the
+   enterprise, the enterprise's provider, or another authorized platform
+   can deposit the short-lived call state needed for vouching.  If no
+   such state is deposited, CIDVV does not determine whether the call is
+   malicious; it only indicates that the responsible platform did not
+   vouch for that specific call attempt.
+
+   Like other dialback mechanisms, CIDVV needs to address reflection and
+   amplification risk.  CIDVV treats this as both a deployment and
+   security consideration: each verification event is bounded and
+   signaling-only, while both initiating deployments and the party
+   responsible for an Asserted Caller-ID need controls appropriate to
+   their roles.  Section Signaling Load and Operational Telemetry
+   (Section 5.4) and Section Amplification and Reflection (Section 7.5)
+   discuss these issues in more detail.
 
 2.3.  Design Principles
 
@@ -2121,33 +2138,48 @@ Table of Contents
 
 7.5.  Amplification and Reflection
 
-   CIDVV generates return signaling calls as part of its operation.
-   Care MUST be taken to ensure that this behavior cannot be exploited
-   for amplification or reflection attacks.
+   Like other dialback mechanisms, CIDVV creates reflection risk because
+   a call using a spoofed Asserted Caller-ID can cause verification
+   traffic to be directed toward the party responsible for that number.
+   CIDVV does not eliminate this risk.  Instead, it is designed to keep
+   each verification event bounded: vouching normally generates only two
+   short signaling-only verification calls, those calls are expected to
+   terminate with non-success responses, and they MUST NOT establish
+   media.
 
-   A spoofed call using a widely abused Caller-ID can cause verification
-   traffic to be directed toward the party responsible for that Caller-
-   ID.  This is an intended part of CIDVV's reachability model and may
-   provide useful telemetry, but deployments SHOULD ensure that the
-   resulting verification traffic remains bounded and manageable.
+   Deployments that initiate CIDVV verification calls SHOULD limit their
+   own contribution to reflection traffic through local policy,
+   including rate limits, concurrency limits, retry limits, suppression
+   of repeated failed attempts, and bounded candidate sets for mapped or
+   forwarded numbers.  These controls reduce the amount of verification
+   traffic generated by any single terminating deployment, but they do
+   not by themselves protect a number owner whose Caller-ID is being
+   spoofed across many independent terminating networks.
 
-   Implementations SHOULD initiate return verification calls only in
-   response to valid inbound call attempts or valid CIDVV protocol
-   steps.
+   The party responsible for an Asserted Caller-ID therefore also needs
+   ingress protections at its SBC, proxy, or CIDVV platform.  Such
+   protections can include recognition of CIDVV prefixes, routing CIDVV
+   signaling calls away from ordinary users, rate limiting, source
+   filtering, anomaly detection, capacity planning, and summarization or
+   sampling of telemetry during high-volume spoofing events.
 
-   Implementations SHOULD limit outbound verification-call generation
-   using local policy, including rate limits, concurrency limits, and
-   safeguards against repeated unsuccessful attempts.
+   Incremental deployment also affects this risk model.  CIDVV does not
+   require a coordinated flag day, so verification traffic is expected
+   to grow gradually as additional terminating platforms deploy the
+   protocol.  Enterprises and service providers whose numbers are
+   frequently spoofed may begin seeing CIDVV verification attempts
+   before they fully participate in CIDVV themselves.  This creates an
+   incentive to recognize CIDVV prefixes, route such traffic to an
+   appropriate platform, apply ingress controls, and use the resulting
+   telemetry for spoofing detection and mitigation.
 
-   When multiple candidate called numbers are used for mapped,
-   translated, or forwarded numbers, implementations SHOULD keep the
-   candidate set bounded and authoritative.  A single triggering event
-   SHOULD NOT generate an unbounded number of verification calls.
-
-   Implementations SHOULD avoid generating multiple outbound
-   verification calls for a single triggering event except where
-   explicitly required by CIDVV operation, such as Phase 1 and Phase 2
-   vouching calls or bounded candidate attempts for mapped numbers.
+   CIDVV verification traffic can provide useful telemetry about
+   attempted misuse of a number, but deployments need to treat that
+   telemetry path as an operational interface that may receive abusive
+   or high-volume traffic.  These mitigations do not remove all
+   reflection risk, but they are intended to keep CIDVV signaling
+   bounded, non-media-bearing, observable, and manageable during
+   incremental deployment.
 
 7.6.  Response Code Manipulation
 
@@ -2336,7 +2368,8 @@ B.1.  Changes since draft-anderson-askew-cidvv-00 (May 2026)
 
    *  Added optional Multi-Number Vetting optimization.
 
-   *  Added related work and prior dialback mechanisms.
+   *  Added Related Work, Signaling Load, Operational Telemetry,
+      Amplication, and Reflection sections.
 
    *  Added this "Changes from Previous Version" appendix to support
       long-term document maintenance across multiple revisions.
