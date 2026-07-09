@@ -187,6 +187,69 @@ feature preservation, CIDVV lowers the barrier to deployment while
 providing a practical additional tool for detecting and reducing
 Caller-ID spoofing.
 
+## Related Work and Prior Dialback Mechanisms
+
+CIDVV is related to prior work on telephone-number authorization,
+dialback authentication, and out-of-band caller-identity verification.
+
+The STIR framework defines mechanisms for cryptographic authentication of
+telephone calling-party information and for verifying authorization to
+use a telephone number. CIDVV is not a replacement for STIR or
+STIR/SHAKEN. Instead, CIDVV provides a complementary reachability-based
+signal that can be used where cryptographic attestation is unavailable,
+incomplete, not trusted across an interconnect boundary, or not preserved
+across the full call path.
+
+Prior STIR-related work has also considered callback-based verification.
+For example, {{?I-D.rosenberg-stir-callback}} describes a callback
+mechanism intended to help bootstrap telephone-number validation for
+STIR. That approach relies on STIR-specific mechanisms, SIP behavior,
+certificate handling, and new SIP response codes. CIDVV differs by
+avoiding new SIP headers, new SIP response codes, media establishment,
+and end-to-end SIP dependencies. CIDVV instead carries compact state in
+the Calling Party Number and uses distinguishable non-success response
+behavior as the verification signal.
+
+Caller ID Verification (CIV) {{?I-D.hao-civ}} is another related
+dialback mechanism. CIV uses a reverse verification call and a
+challenge-response exchange involving DTMF. CIDVV differs from CIV by
+avoiding media and DTMF entirely. CIDVV verification calls are
+signaling-only and are expected to terminate with non-success responses.
+This avoids the operational cost, complexity, and delay of establishing
+media paths solely for verification, especially at terminating platforms
+that may need to evaluate large volumes of inbound calls. This design is
+intended to improve deployability across heterogeneous SIP, SS7/TDM,
+ISDN, and international interworking environments where media behavior,
+SIP extensions, or end-to-end signaling features may not be reliably
+preserved.
+
+STIR out-of-band work, including {{?RFC8816}} and {{?RFC9888}}, addresses
+delivery of PASSporT objects outside the ordinary SIP signaling path.
+CIDVV addresses a different part of the problem space. It does not
+transport PASSporTs and does not attempt to prove legal ownership or all
+delegated rights to use a telephone number. Instead, CIDVV asks whether
+the party reachable through ordinary telephone routing for the Asserted
+Caller-ID can vouch for a specific call attempt within a short Validity
+Window.
+
+Number-routing asymmetry remains an important deployment consideration.
+In many real-world deployments, the party authorized to use a number, the
+provider from which the number is obtained, the originating service
+provider, and the platform that receives calls for that number may be
+different entities. CIDVV does not eliminate this operational reality.
+Rather, it requires the responsible party, provider, enterprise SBC, or
+delegated CIDVV platform to participate in the vouching process and
+maintain the state needed to answer verification calls correctly.
+
+Like other dialback mechanisms, CIDVV must also address reflection and
+amplification risk. CIDVV mitigates this risk by using short
+signaling-only verification calls, requiring non-success termination,
+avoiding media establishment, defining short-lived state, and requiring
+deployments to apply rate limits and other ingress and egress controls.
+These mitigations do not remove all reflection risk, but they are intended
+to keep the mechanism operationally bounded and suitable for incremental
+deployment.
+
 ## Design Principles
 
 CIDVV was designed with the following core principles:
@@ -1094,6 +1157,52 @@ would otherwise result in media establishment, the responsible network
 element SHOULD terminate the attempt with a non-success response in a way
 that does not create a false-positive CIDVV verification result.
 
+## Signaling Load and Operational Telemetry
+
+CIDVV introduces additional signaling traffic, but verification calls are
+short signaling-only exchanges and are not intended to establish media.
+This makes the verification load materially different from completing and
+carrying media for fraudulent, spoofed, or nuisance calls.
+
+In many deployments, rejecting or classifying unwanted calls at the
+signaling layer is preferable to allowing those calls to progress far
+enough to consume media resources, alert users, enter contact-center
+queues, or trigger downstream fraud-handling workflows. CIDVV gives
+terminating platforms an additional real-time signal that can be used
+before applying local call-handling policy.
+
+CIDVV verification traffic can also provide operational telemetry to the
+party responsible for an Asserted Caller-ID. If a telephone number is
+widely spoofed, verification attempts for that number are routed toward
+the responsible platform. This allows the responsible enterprise, service
+provider, or delegated CIDVV operator to observe attempted misuse of the
+number and identify patterns that may otherwise be difficult to see from
+ordinary inbound or outbound call records alone.
+
+CIDVV telemetry is not, by itself, a complete traceback mechanism and
+does not necessarily identify every provider in the original call path.
+However, it can provide high-quality traceback leads, including the
+Asserted Caller-ID being misused, the called-number payload associated
+with the verification attempt, timestamps, response outcomes, and
+recurring misuse patterns. Where permitted by law and applicable industry
+procedures, this telemetry can be used to support traceback requests,
+regulatory referrals, fraud investigations, customer notifications, and
+mitigation actions.
+
+Deployments that store or process CIDVV telemetry need to treat it as
+call signaling data and apply appropriate privacy, security, retention,
+and access-control policies. Operators should minimize retained data,
+limit use to operational, security, fraud-prevention, compliance, and
+debugging purposes, and avoid retaining CIDVV telemetry longer than
+necessary for those purposes.
+
+CIDVV-aware SBCs and CIDVV platforms still need appropriate protections
+against excessive signaling volume. Deployments SHOULD apply rate limits,
+source filtering, anomaly detection, concurrency limits, and capacity
+planning appropriate to their traffic profile. Because CIDVV is
+incrementally deployable and does not require a coordinated flag day,
+participating networks can introduce these controls as deployment grows.
+
 ## Response Variability
 
 Implementations SHOULD interpret responses based on behavioral class
@@ -1528,6 +1637,12 @@ Deployments SHOULD handle CIDVV signaling records, verification logs, and
 related telemetry according to their normal privacy, security, retention,
 and access-control policies for call signaling data.
 
+In jurisdictions with data-protection requirements, CIDVV telemetry may
+constitute personal data or communications metadata. Deployments are
+expected to process such telemetry under an appropriate legal basis and
+with suitable purpose limitation, minimization, retention, access-control,
+and security safeguards.
+
 Implementations SHOULD minimize retention of CIDVV telemetry where
 practical. Temporary state used for CIDVV verification MUST be short
 lived and automatically expired.
@@ -1642,5 +1757,6 @@ RFC Editor: Please remove this section before publication as an RFC.
 - Updated termination handling so that Busy-class and Rejection-class responses, with canonical SIP **486 Busy Here** and SIP **603 Decline** behavior, are used for CIDVV verification signaling.
 - Added a third call to the Vetting process to ensure Alice and Bob each trust that the other possesses the shared secret.
 - Added optional Multi-Number Vetting optimization.
+- Added related work and prior dialback mechanisms.
 - Added this "Changes from Previous Version" appendix to support long-term document maintenance across multiple revisions.
 - Improved Abstract, Introduction, and call flow.
