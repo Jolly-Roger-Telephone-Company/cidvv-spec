@@ -5,7 +5,7 @@ category: info
 docname: draft-anderson-askew-cidvv-latest
 submissiontype: IETF
 ipr: trust200902
-date: 2026-07-08
+date: 2026-07-09
 consensus: false
 v: 3
 keyword: telephony, callerid, spoofing, PSTN
