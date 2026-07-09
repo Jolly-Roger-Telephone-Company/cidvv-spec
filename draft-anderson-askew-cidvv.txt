@@ -244,8 +244,9 @@ Table of Contents
 
    *  *Calling Party Number*: The value carried in the signaling
       protocol (e.g., SIP From header or ISUP Calling Party Number
-      parameter).  In many deployments this is the same as the presented
-      Caller-ID, but they are not always identical.
+      parameter).  In many deployments this is the same as the Caller-ID
+      presented to the called party, but the signaling value and user-
+      visible Caller-ID are not always identical.
 
    *  *Alice*: An example participant in CIDVV flows.  In vouching
       flows, Alice is the calling party asserting a Caller-ID.  In
@@ -429,7 +430,7 @@ Table of Contents
    CIDVV defines two related operations:
 
    *  *Vouching* - Allows the called party (or their provider) to verify
-      in real time whether the party responsible for the presented
+      in real time whether the party responsible for the Asserted
       Caller-ID vouches for _this specific call_.
 
    *  *Vetting* - Allows confirmation that a telephone number is under
