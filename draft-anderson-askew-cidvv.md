@@ -94,7 +94,11 @@ CIDVV operates entirely within standard PSTN routing behavior and requires no me
 
 * **Caller-ID**: The telephone number presented to the called party (what the end user sees).
 * **Asserted Caller-ID**: The Caller-ID value that is being vouched or vetted by this protocol. This is the number whose control the calling party claims, and it is used for state management, token computation, and correlation.
-* **Calling Party Number**: The value carried in the signaling protocol (e.g., SIP `From` header or ISUP Calling Party Number parameter). In many deployments this is the same as the presented Caller-ID, but they are not always identical.
+* **Calling Party Number**: The value carried in the signaling protocol
+  (e.g., SIP `From` header or ISUP Calling Party Number parameter). In
+  many deployments this is the same as the Caller-ID presented to the
+  called party, but the signaling value and user-visible Caller-ID are
+  not always identical.
 * **Alice**: An example participant in CIDVV flows. In vouching flows,
   Alice is the calling party asserting a Caller-ID. In vetting flows,
   Alice is the verifier of Bob's number.
@@ -206,7 +210,7 @@ These principles ensure CIDVV can be deployed quickly and broadly while deliveri
 
 CIDVV defines two related operations:
 
-* **Vouching** - Allows the called party (or their provider) to verify in real time whether the party responsible for the presented Caller-ID vouches for *this specific call*.
+* **Vouching** - Allows the called party (or their provider) to verify in real time whether the party responsible for the Asserted Caller-ID vouches for *this specific call*.
 
 * **Vetting** - Allows confirmation that a telephone number is under the control of its expected owner. This is useful for Caller-ID branding services, enterprise trust programs, industry registries, and similar applications.
 
