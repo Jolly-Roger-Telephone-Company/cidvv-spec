@@ -91,21 +91,22 @@ Table of Contents
    1.  Introduction
    2.  Terminology
      2.1.  Motivation and Advantages
-     2.2.  Design Principles
-     2.3.  Simple Overview
-       2.3.1.  Vouching Operation (Primary Use Case)
-       2.3.2.  Vetting Operation
-     2.4.  CIDVV Mechanisms
-       2.4.1.  Vouching Mechanism
-       2.4.2.  Vetting Mechanism
-       2.4.3.  Token Computation Algorithm (Normative)
-       2.4.4.  Detailed Vouching Procedure
-       2.4.5.  Detailed Vetting Procedure
-       2.4.6.  Signaling Prefixes and Call Types
-     2.5.  Response Semantics
-       2.5.1.  Phase 1 Verification ("100" Prefix)
-       2.5.2.  Phase 2 Verification ("101" Prefix)
-       2.5.3.  Vouch Success Response Requirements
+     2.2.  Related Work and Prior Dialback Mechanisms
+     2.3.  Design Principles
+     2.4.  Simple Overview
+       2.4.1.  Vouching Operation (Primary Use Case)
+       2.4.2.  Vetting Operation
+     2.5.  CIDVV Mechanisms
+       2.5.1.  Vouching Mechanism
+       2.5.2.  Vetting Mechanism
+       2.5.3.  Token Computation Algorithm (Normative)
+       2.5.4.  Detailed Vouching Procedure
+       2.5.5.  Detailed Vetting Procedure
+       2.5.6.  Signaling Prefixes and Call Types
+     2.6.  Response Semantics
+       2.6.1.  Phase 1 Verification ("100" Prefix)
+       2.6.2.  Phase 2 Verification ("101" Prefix)
+       2.6.3.  Vouch Success Response Requirements
    3.  Protocol Operation
      3.1.  Vouching Procedure
        3.1.1.  Phase 1 Verification ("100")
@@ -129,9 +130,10 @@ Table of Contents
      5.1.  Behavior of Non-CIDVV Systems
      5.2.  Handling of CIDVV Signaling Calls
      5.3.  Carrier Incentives and SBC Policies
-     5.4.  Response Variability
-     5.5.  Short-Term State Management
-     5.6.  International and Cross-Border Operation
+     5.4.  Signaling Load and Operational Telemetry
+     5.5.  Response Variability
+     5.6.  Short-Term State Management
+     5.7.  International and Cross-Border Operation
    6.  Operational Considerations
      6.1.  Protocol Operation - Vouching
      6.2.  Failure and Restart Behavior
@@ -156,6 +158,7 @@ Table of Contents
      7.10. Interoperability Risks
      7.11. Residual Risk
    8.  IANA Considerations
+   9.  Informative References
    Appendix A.  Acknowledgments
    Appendix B.  Appendix: Changes from Previous Version
      B.1.  Changes since draft-anderson-askew-cidvv-00 (May 2026)
@@ -386,7 +389,74 @@ Table of Contents
    providing a practical additional tool for detecting and reducing
    Caller-ID spoofing.
 
-2.2.  Design Principles
+2.2.  Related Work and Prior Dialback Mechanisms
+
+   CIDVV is related to prior work on telephone-number authorization,
+   dialback authentication, and out-of-band caller-identity
+   verification.
+
+   The STIR framework defines mechanisms for cryptographic
+   authentication of telephone calling-party information and for
+   verifying authorization to use a telephone number.  CIDVV is not a
+   replacement for STIR or STIR/SHAKEN.  Instead, CIDVV provides a
+   complementary reachability-based signal that can be used where
+   cryptographic attestation is unavailable, incomplete, not trusted
+   across an interconnect boundary, or not preserved across the full
+   call path.
+
+   Prior STIR-related work has also considered callback-based
+   verification.  For example, [I-D.rosenberg-stir-callback] describes a
+   callback mechanism intended to help bootstrap telephone-number
+   validation for STIR.  That approach relies on STIR-specific
+   mechanisms, SIP behavior, certificate handling, and new SIP response
+   codes.  CIDVV differs by avoiding new SIP headers, new SIP response
+   codes, media establishment, and end-to-end SIP dependencies.  CIDVV
+   instead carries compact state in the Calling Party Number and uses
+   distinguishable non-success response behavior as the verification
+   signal.
+
+   Caller ID Verification (CIV) [I-D.hao-civ] is another related
+   dialback mechanism.  CIV uses a reverse verification call and a
+   challenge-response exchange involving DTMF.  CIDVV differs from CIV
+   by avoiding media and DTMF entirely.  CIDVV verification calls are
+   signaling-only and are expected to terminate with non-success
+   responses.  This avoids the operational cost, complexity, and delay
+   of establishing media paths solely for verification, especially at
+   terminating platforms that may need to evaluate large volumes of
+   inbound calls.  This design is intended to improve deployability
+   across heterogeneous SIP, SS7/TDM, ISDN, and international
+   interworking environments where media behavior, SIP extensions, or
+   end-to-end signaling features may not be reliably preserved.
+
+   STIR out-of-band work, including [RFC8816] and [RFC9888], addresses
+   delivery of PASSporT objects outside the ordinary SIP signaling path.
+   CIDVV addresses a different part of the problem space.  It does not
+   transport PASSporTs and does not attempt to prove legal ownership or
+   all delegated rights to use a telephone number.  Instead, CIDVV asks
+   whether the party reachable through ordinary telephone routing for
+   the Asserted Caller-ID can vouch for a specific call attempt within a
+   short Validity Window.
+
+   Number-routing asymmetry remains an important deployment
+   consideration.  In many real-world deployments, the party authorized
+   to use a number, the provider from which the number is obtained, the
+   originating service provider, and the platform that receives calls
+   for that number may be different entities.  CIDVV does not eliminate
+   this operational reality.  Rather, it requires the responsible party,
+   provider, enterprise SBC, or delegated CIDVV platform to participate
+   in the vouching process and maintain the state needed to answer
+   verification calls correctly.
+
+   Like other dialback mechanisms, CIDVV must also address reflection
+   and amplification risk.  CIDVV mitigates this risk by using short
+   signaling-only verification calls, requiring non-success termination,
+   avoiding media establishment, defining short-lived state, and
+   requiring deployments to apply rate limits and other ingress and
+   egress controls.  These mitigations do not remove all reflection
+   risk, but they are intended to keep the mechanism operationally
+   bounded and suitable for incremental deployment.
+
+2.3.  Design Principles
 
    CIDVV was designed with the following core principles:
 
@@ -425,7 +495,7 @@ Table of Contents
    while delivering meaningful protection against Caller-ID spoofing
    today.
 
-2.3.  Simple Overview
+2.4.  Simple Overview
 
    CIDVV defines two related operations:
 
@@ -438,7 +508,7 @@ Table of Contents
       branding services, enterprise trust programs, industry registries,
       and similar applications.
 
-2.3.1.  Vouching Operation (Primary Use Case)
+2.4.1.  Vouching Operation (Primary Use Case)
 
    When Alice wants to place a call to Bob while asserting a particular
    Caller-ID:
@@ -477,7 +547,7 @@ Table of Contents
    Alice (or her service provider) genuinely controls the Asserted
    Caller-ID she is presenting for this specific call.
 
-2.3.2.  Vetting Operation
+2.4.2.  Vetting Operation
 
    Vetting allows a party (Alice) to confirm that another party (Bob)
    controls a specific telephone number.  It is particularly useful for
@@ -525,11 +595,11 @@ Table of Contents
    calls remain short signaling-only exchanges with no media.
 
    *Note*: The shared secret and token exchange details are defined in
-   Section Token Computation Algorithm (Section 2.4.3).
+   Section Token Computation Algorithm (Section 2.5.3).
 
-2.4.  CIDVV Mechanisms
+2.5.  CIDVV Mechanisms
 
-2.4.1.  Vouching Mechanism
+2.5.1.  Vouching Mechanism
 
    CIDVV uses two distinct signaling prefixes in the Calling Party
    Number for vouching:
@@ -551,7 +621,7 @@ Table of Contents
    vouch-call timeout (or is missing, altered, or inconsistent), the
    entire vouch MUST be treated as unsuccessful or indeterminate.
 
-2.4.2.  Vetting Mechanism
+2.5.2.  Vetting Mechanism
 
    CIDVV uses a three-step handshake for vetting.  All calls use the 101
    prefix in the Calling Party Number.
@@ -578,7 +648,7 @@ Table of Contents
    Auth Token from the shared secret and the two telephone numbers
    involved.  The tokens are valid only within the Validity Window.
 
-2.4.3.  Token Computation Algorithm (Normative)
+2.5.3.  Token Computation Algorithm (Normative)
 
    CIDVV vetting uses two derived numeric tokens:
 
@@ -677,7 +747,7 @@ Table of Contents
    by provisioning, storage, and access-control boundaries rather than
    by changing the token algorithm.
 
-2.4.4.  Detailed Vouching Procedure
+2.5.4.  Detailed Vouching Procedure
 
    When Alice wants to place a call to Bob using her Asserted Caller-ID,
    the following steps are performed:
@@ -750,7 +820,7 @@ Table of Contents
        *  Allow the original call to continue with an indication that
           the Caller-ID was not verified (e.g., "Unverified Caller-ID").
 
-2.4.5.  Detailed Vetting Procedure
+2.5.5.  Detailed Vetting Procedure
 
    When Alice wants to confirm that Bob controls a particular telephone
    number, the following protocol is used:
@@ -800,7 +870,7 @@ Table of Contents
 
        c.  Calculates an "Auth Token" using the Auth Token input
        ordering defined in Section Token Computation Algorithm
-       (Section 2.4.3) (example: 12674591304).
+       (Section 2.5.3) (example: 12674591304).
 
        d.  Stores the Auth Token temporarily in memory.
 
@@ -856,7 +926,7 @@ Table of Contents
    the shared secret can complete the expected token and response
    sequence.
 
-2.4.6.  Signaling Prefixes and Call Types
+2.5.6.  Signaling Prefixes and Call Types
 
    CIDVV uses the following special prefixes in the Calling Party
    Number:
@@ -893,7 +963,7 @@ Table of Contents
    determined by the Caller-ID used (vetting Caller-ID vs. token value)
    and the current state maintained by the CIDVV platform.
 
-2.5.  Response Semantics
+2.6.  Response Semantics
 
    Because intermediate SIP and SS7/TDM networks may translate, modify,
    or replace response codes, implementations MUST interpret responses
@@ -913,19 +983,19 @@ Table of Contents
    across the signaling path.  Environments that cannot preserve this
    distinction may not support CIDVV vouching.
 
-2.5.1.  Phase 1 Verification ("100" Prefix)
+2.6.1.  Phase 1 Verification ("100" Prefix)
 
    A call using the "100" prefix is the *Phase 1* verification call.  It
    succeeds only if it receives a Busy-class response (e.g., SIP *486
    Busy Here*).
 
-2.5.2.  Phase 2 Verification ("101" Prefix)
+2.6.2.  Phase 2 Verification ("101" Prefix)
 
    A call using the "101" prefix is the *Phase 2* verification call.  It
    succeeds only if it receives a Rejection-class response, with SIP
    *603 Decline* as the canonical example.
 
-2.5.3.  Vouch Success Response Requirements
+2.6.3.  Vouch Success Response Requirements
 
    A successful vouch requires both Phase 1 and Phase 2 to complete with
    their expected behaviors within the Validity Window.
@@ -1089,7 +1159,7 @@ Table of Contents
    memory objects, or other local mechanisms for state storage.  These
    internal storage keys MUST NOT alter the externally visible token
    computation defined in Section Token Computation Algorithm
-   (Section 2.4.3).
+   (Section 2.5.3).
 
    All temporary state MUST expire automatically.  Loss of state,
    expiration of state, or inability to retrieve state MUST cause the
@@ -1125,7 +1195,7 @@ Table of Contents
    for the current vetting attempt.
 
    Bob's platform MUST compute the Recognize Token using the algorithm
-   defined in Section Token Computation Algorithm (Section 2.4.3) and
+   defined in Section Token Computation Algorithm (Section 2.5.3) and
    store the resulting token for the Validity Window.  It then responds
    to the Wake Call with SIP *603 Decline*.
 
@@ -1142,7 +1212,7 @@ Table of Contents
    this response as a successful Recognize.
 
    Bob's CIDVV platform then computes the Auth Token using the algorithm
-   defined in Section Token Computation Algorithm (Section 2.4.3) and
+   defined in Section Token Computation Algorithm (Section 2.5.3) and
    places an Auth Call to Alice using a Calling Party Number consisting
    of the "101" prefix followed by the Auth Token.
 
@@ -1499,7 +1569,7 @@ Table of Contents
    pairs confirm per-number control.
 
    All other requirements, including token computation as defined in
-   Section Token Computation Algorithm (Section 2.4.3), per-vet failure
+   Section Token Computation Algorithm (Section 2.5.3), per-vet failure
    handling, and state isolation as described in Section State Storage
    and Multi-Tenant Isolation (Section 3.3), remain unchanged.
 
@@ -1597,7 +1667,56 @@ Table of Contents
    response in a way that does not create a false-positive CIDVV
    verification result.
 
-5.4.  Response Variability
+5.4.  Signaling Load and Operational Telemetry
+
+   CIDVV introduces additional signaling traffic, but verification calls
+   are short signaling-only exchanges and are not intended to establish
+   media.  This makes the verification load materially different from
+   completing and carrying media for fraudulent, spoofed, or nuisance
+   calls.
+
+   In many deployments, rejecting or classifying unwanted calls at the
+   signaling layer is preferable to allowing those calls to progress far
+   enough to consume media resources, alert users, enter contact-center
+   queues, or trigger downstream fraud-handling workflows.  CIDVV gives
+   terminating platforms an additional real-time signal that can be used
+   before applying local call-handling policy.
+
+   CIDVV verification traffic can also provide operational telemetry to
+   the party responsible for an Asserted Caller-ID.  If a telephone
+   number is widely spoofed, verification attempts for that number are
+   routed toward the responsible platform.  This allows the responsible
+   enterprise, service provider, or delegated CIDVV operator to observe
+   attempted misuse of the number and identify patterns that may
+   otherwise be difficult to see from ordinary inbound or outbound call
+   records alone.
+
+   CIDVV telemetry is not, by itself, a complete traceback mechanism and
+   does not necessarily identify every provider in the original call
+   path.  However, it can provide high-quality traceback leads,
+   including the Asserted Caller-ID being misused, the called-number
+   payload associated with the verification attempt, timestamps,
+   response outcomes, and recurring misuse patterns.  Where permitted by
+   law and applicable industry procedures, this telemetry can be used to
+   support traceback requests, regulatory referrals, fraud
+   investigations, customer notifications, and mitigation actions.
+
+   Deployments that store or process CIDVV telemetry need to treat it as
+   call signaling data and apply appropriate privacy, security,
+   retention, and access-control policies.  Operators should minimize
+   retained data, limit use to operational, security, fraud-prevention,
+   compliance, and debugging purposes, and avoid retaining CIDVV
+   telemetry longer than necessary for those purposes.
+
+   CIDVV-aware SBCs and CIDVV platforms still need appropriate
+   protections against excessive signaling volume.  Deployments SHOULD
+   apply rate limits, source filtering, anomaly detection, concurrency
+   limits, and capacity planning appropriate to their traffic profile.
+   Because CIDVV is incrementally deployable and does not require a
+   coordinated flag day, participating networks can introduce these
+   controls as deployment grows.
+
+5.5.  Response Variability
 
    Implementations SHOULD interpret responses based on behavioral class
    (e.g., Busy-class behavior such as SIP *486 Busy Here* versus
@@ -1606,7 +1725,7 @@ Table of Contents
    or modify response codes, so behavioral class is the preferred
    signal.
 
-5.5.  Short-Term State Management
+5.6.  Short-Term State Management
 
    CIDVV relies on short-lived state for the (Calling Number, Called
    Number) tuple, valid only for the Validity Window.  Implementations
@@ -1616,7 +1735,7 @@ Table of Contents
    calls, customers, tenants, or administrative domains cannot satisfy
    each other's verification requests.
 
-5.6.  International and Cross-Border Operation
+5.7.  International and Cross-Border Operation
 
    International calls often experience higher Post-Dial Delay.
    Vouching call timeouts SHOULD be adaptive: 3-6 seconds is appropriate
@@ -2057,6 +2176,12 @@ Table of Contents
    and related telemetry according to their normal privacy, security,
    retention, and access-control policies for call signaling data.
 
+   In jurisdictions with data-protection requirements, CIDVV telemetry
+   may constitute personal data or communications metadata.  Deployments
+   are expected to process such telemetry under an appropriate legal
+   basis and with suitable purpose limitation, minimization, retention,
+   access-control, and security safeguards.
+
    Implementations SHOULD minimize retention of CIDVV telemetry where
    practical.  Temporary state used for CIDVV verification MUST be short
    lived and automatically expired.
@@ -2069,7 +2194,7 @@ Table of Contents
 
    The security of the vetting mechanism depends on the shared secret
    and the derived Recognize and Auth Tokens.  Tokens MUST be computed
-   as specified in Section Token Computation Algorithm (Section 2.4.3).
+   as specified in Section Token Computation Algorithm (Section 2.5.3).
 
    Shared secrets used for vetting MAY be long-lived configuration
    values.  For example, a vetting agent and a number owner might retain
@@ -2159,6 +2284,32 @@ Table of Contents
 
    This document has no IANA actions.
 
+9.  Informative References
+
+   [I-D.hao-civ]
+              Hao, F., Thomas, B., Smith, S., Azad, M. A., and S. Wang,
+              "Caller ID Verification In Heterogeneous Telecommunication
+              Networks", Work in Progress, Internet-Draft, draft-hao-
+              civ-03, 17 June 2026,
+              <https://datatracker.ietf.org/doc/html/draft-hao-civ-03>.
+
+   [I-D.rosenberg-stir-callback]
+              Rosenberg, J. and C. F. Jennings, "Bootstrapping STIR
+              Deployments with Self-Signed Certs and Callbacks", Work in
+              Progress, Internet-Draft, draft-rosenberg-stir-callback-
+              00, 1 March 2018, <https://datatracker.ietf.org/doc/html/
+              draft-rosenberg-stir-callback-00>.
+
+   [RFC8816]  Rescorla, E. and J. Peterson, "Secure Telephone Identity
+              Revisited (STIR) Out-of-Band Architecture and Use Cases",
+              RFC 8816, DOI 10.17487/RFC8816, February 2021,
+              <https://www.rfc-editor.org/rfc/rfc8816>.
+
+   [RFC9888]  Peterson, J., "Out-of-Band Secure Telephone Identity
+              Revisited (STIR) for Service Providers", RFC 9888,
+              DOI 10.17487/RFC9888, June 2026,
+              <https://www.rfc-editor.org/rfc/rfc9888>.
+
 Appendix A.  Acknowledgments
 
    The authors thank contributors to telephony security research and
@@ -2184,6 +2335,8 @@ B.1.  Changes since draft-anderson-askew-cidvv-00 (May 2026)
       each trust that the other possesses the shared secret.
 
    *  Added optional Multi-Number Vetting optimization.
+
+   *  Added related work and prior dialback mechanisms.
 
    *  Added this "Changes from Previous Version" appendix to support
       long-term document maintenance across multiple revisions.
